@@ -3,6 +3,11 @@
 #
 # Monitorize your Raspberry Pi
 #
+# Copyright © 2019  Javier Pastor (aka VSC55)
+# <jpastor at cerebelum dot net>
+#
+# Modulo basado en el codigo de Lorenzo Carbonell.
+#
 # Copyright © 2019  Lorenzo Carbonell (aka atareao)
 # <lorenzo.carbonell.cerezo at gmail dot com>
 #
@@ -20,7 +25,6 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 import importlib
-import re
 
 
 class Watchful():
@@ -28,14 +32,8 @@ class Watchful():
         pass
 
     def check(self):
-        utils = importlib.import_module('__utils')
-        stdout, stderr = utils.execute('free')
-        print(stdout)
-        x = re.findall(r'Mem\w*:\s+(\d+)\s+(\d+)', stdout)
-        per = float(x[0][1])/float(x[0][0]) * 100.0
-        if per < 50:
-            return True, 'Normal ram used {0:.1f}%'.format(per)
-        return False, 'Excesive ram used {0:.1f}%'.format(per)
+        service = importlib.import_module('__service')
+        return service.status("slapd")
 
 if __name__ == '__main__':
     wf = Watchful()
