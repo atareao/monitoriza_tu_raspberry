@@ -31,12 +31,11 @@ class Watchful():
         utils = importlib.import_module('__utils')
         stdout, stderr = utils.execute('free')
         print(stdout)
-        x = re.findall(r'Memoria:\s+(\d+)\s+(\d+)', stdout)
+        x = re.findall(r'Mem\w*:\s+(\d+)\s+(\d+)', stdout)
         per = float(x[0][1])/float(x[0][0]) * 100.0
         if per < 50:
             return True, 'Normal ram used {0:.1f}%'.format(per)
         return False, 'Excesive ram used {0:.1f}%'.format(per)
-
 
 if __name__ == '__main__':
     wf = Watchful()
