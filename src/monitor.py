@@ -24,6 +24,7 @@ import os
 import sys
 import importlib
 import config
+import socket
 from telegram import Telegram
 
 class Monitor():
@@ -41,6 +42,7 @@ class Monitor():
         self.tg = Telegram(init['token'], init['chat_id'])
 
     def check(self):
+        hostname = socket.gethostname()
         changed = False
         data = self.status.read()
         watchfuls = glob.glob(os.path.join(self.watchfuls_dir, '*.py'))
@@ -56,7 +58,7 @@ class Monitor():
                         and data[watchful_def] != status):
                         data[watchful_def] = status
                         print(watchful_def, status)
-                        self.tg.send_message(message)
+                        self.tg.send_message("["+hostname+"]: "+message)
                         changed = True
             except Exception as e:
                 print(e)
