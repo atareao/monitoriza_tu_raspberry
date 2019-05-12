@@ -1,7 +1,7 @@
 {
   "token": "",
   "chat_id": "",
-  "services": {
+  "service_status": {
     "bind9": true,
     "mariabd": true,
     "nginx": true,

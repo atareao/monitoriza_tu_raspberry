@@ -20,25 +20,68 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 import importlib
+import concurrent.futures
+import pprint
 
 class Watchful():
+    debugMode = False
+
     def __init__(self, monitor):
         self.monitor = monitor
         pass
 
+    def debug(self, message):
+        if self.debugMode:
+            if isinstance(message, str):
+                print(message)
+            else:
+                pprint.pprint(message)
+
     def check(self):
-        service = importlib.import_module('__service')
-        returnDict = {}
-        
-        for (key, value) in self.monitor.config['services'].items():
-            print("Service: {0} - Enabled: {1}".format(key, value))
+        listservice = []
+        for (key, value) in self.monitor.config['service_status'].items():
+            self.debug("Service: {0} - Enabled: {1}".format(key, value))
             if value:
-                status, message = service.status(key)
-                returnDict[key] = {}
-                returnDict[key]['status']=status
-                returnDict[key]['message']=message
+                listservice.append(key)
+
+        returnDict = {}
+        with concurrent.futures.ThreadPoolExecutor(max_workers=5) as executor:
+            future_to_service = {executor.submit(self.service_check, service): service for service in listservice}
+            for future in concurrent.futures.as_completed(future_to_service):
+                service = future_to_service[future]
+                try:
+                    returnDict[service]=future.result()
+                except Exception as exc:
+                    returnDict[service]={}
+                    returnDict[service]['status']=False
+                    returnDict[service]['message']='Service: {0} - Error: {1}'.format(service, exc)
         
+        self.debug(type(returnDict))
+        self.debug(returnDict)
         return True, returnDict
+
+    def service_check(self, service):
+        status, message = self.service_return(service)
+        rCheck = {}
+        rCheck['status']=status
+        rCheck['message']=''
+        if self.monitor.chcek_status(status, 'service_status', service):
+            if status:
+                self.send_message('Service: {0} - Status: Ok'.format(service))
+            else:
+                self.send_message('Service: {0} - **Error: {1}'.format(service, message))
+        return rCheck
+
+    def service_return(self, service):
+        utils = importlib.import_module('__utils')
+        stdout, stderr = utils.execute('systemctl status '+service)
+        if stdout == '':
+            return False, stderr[:-1]
+        return True, ''
+
+    def send_message(self, message):
+        if message:
+            self.monitor.tg_send_message(message)
 
 if __name__ == '__main__':
     wf = Watchful()

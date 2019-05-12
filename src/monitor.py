@@ -6,6 +6,9 @@
 # Copyright © 2019  Lorenzo Carbonell (aka atareao)
 # <lorenzo.carbonell.cerezo at gmail dot com>
 #
+# Copyright © 2019  Javier Pastor (aka VSC55)
+# <jpastor at cerebelum dot net>
+#
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
 # the Free Software Foundation, either version 3 of the License, or
@@ -25,10 +28,13 @@ import sys
 import importlib
 import config
 import socket
+import concurrent.futures
+import pprint
 from telegram import Telegram
 
 class Monitor():
     status_datos = {}
+    debugMode = False
 
     def __init__(self):
         self.dir = os.path.dirname(os.path.abspath(__file__))
@@ -42,6 +48,12 @@ class Monitor():
         self.config = config.Config(os.path.join(config_dir, 'config.json')).read()
         self.tg = Telegram(self.config['token'], self.config['chat_id'])
 
+    def debug(self, message):
+        if self.debugMode:
+            if isinstance(message, str):
+                print(message)
+            else:
+                pprint.pprint(message)
 
     def tg_send_message(self, message):
         if message:
@@ -58,39 +70,68 @@ class Monitor():
                 return True
         return False
 
-    
+    def check_module(self, module_name):
+        try:
+            self.debug("Module: {0}".format(module_name))
+            module = importlib.import_module(module_name)
+            watchful = module.Watchful(self)
+            status, message = watchful.check()
+
+            if isinstance(message, dict):
+                if module_name not in self.status_datos.keys():
+                    self.status_datos[module_name] = {}
+
+                for (key, value) in message.items():
+                    self.debug("Module: {0} - Key: {1} - Val: {2}".format(module_name, key, value))
+                    if self.chcek_status(value['status'], module_name, key):
+                        self.status_datos[module_name][key] = value['status']
+                        self.tg_send_message(value['message'])
+                        self.debug('Module: {0}/{1} - New Status: {2}'.format(module_name, key, value['status']))
+                return True
+            elif isinstance(message, str):
+                if self.chcek_status(status, module_name):
+                    self.status_datos[module_name] = status
+                    self.tg_send_message(message)
+                    self.debug("Module: {0} - New Status: {1}".format(module_name, status))
+                return True
+            else:
+                print('Format not implement: {0}'.format(type(message)))
+                print('Status:')
+                pprint.pprint(status)
+                print('-------------')
+                print('Message:')
+                pprint.pprint(message)
+                print('-------------')
+                print('-------------')
+                print('')
+
+        except Exception as e:
+            print("Check_Module - Module: {0} - Exception: {1}".format(module_name, e))
+
+        return False
+
     def check(self):
+        listmodules = []
         changed = False
         self.status_datos = self.status.read()
         watchfuls = glob.glob(os.path.join(self.watchfuls_dir, '*.py'))
         for watchful_def in watchfuls:
-            try:
-                watchful_def = os.path.splitext(os.path.basename(watchful_def))[0]
-                if watchful_def.find('__') == -1:
-                    print(watchful_def)
-                    module = importlib.import_module(watchful_def)
-                    watchful = module.Watchful(self)
-                    status, message = watchful.check()
+            watchful_def = os.path.splitext(os.path.basename(watchful_def))[0]
+            if watchful_def.find('__') == -1:
+                listmodules.append(watchful_def)
 
-                    if isinstance(message, dict):
-                        if watchful_def not in self.status_datos.keys():
-                            self.status_datos[watchful_def] = {}
+        with concurrent.futures.ThreadPoolExecutor(max_workers=5) as executor:
+            future_to_run_module = {executor.submit(self.check_module, module): module for module in listmodules}
+            for future in concurrent.futures.as_completed(future_to_run_module):
+                module = future_to_run_module[future]
+                try:
+                    if future.result():
+                        changed=True
+                except Exception as exc:
+                    print('Check - Module: {0} - Exception: {1}'.format(module, exc))
 
-                        for (key, value) in message.items():
-                            #print("Module: {0} - Key: {1} - Val: {2}".format(watchful_def, key, value))
-                            if self.chcek_status(value['status'], watchful_def, key):
-                                self.status_datos[watchful_def][key] = value['status']
-                                print("Module: {0}/{1}".format(watchful_def, key), value['status'])
-                                self.tg_send_message(value['message'])
-                                changed = True
-                    else:
-                        if self.chcek_status(status, watchful_def):
-                            self.status_datos[watchful_def] = status
-                            print(watchful_def, status)
-                            self.tg_send_message(message)
-                            changed = True
-            except Exception as e:
-                print("Module: {0} - Exception: {1}".format(watchful_def, e))
+
+        self.debug(self.status_datos)
         if changed is True:
             self.status.save(self.status_datos)
 

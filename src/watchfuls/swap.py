@@ -20,18 +20,28 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 import importlib
+import pprint
 import re
 
 
 class Watchful():
+    debugMode = False
+
     def __init__(self, monitor):
         self.monitor = monitor
         pass
 
+    def debug(self, message):
+        if self.debugMode:
+            if isinstance(message, str):
+                print(message)
+            else:
+                pprint.pprint(message)
+
     def check(self):
         utils = importlib.import_module('__utils')
         stdout, stderr = utils.execute('free')
-        print(stdout)
+        self.debug(stdout)
         x = re.findall(r'Swap:\s+(\d+)\s+(\d+)', stdout)
         per = float(x[0][1])/float(x[0][0]) * 100.0
         if per < 50:

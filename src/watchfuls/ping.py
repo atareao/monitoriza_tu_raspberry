@@ -20,44 +20,59 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 import importlib
-import concurrent.futures
+from multiprocessing.dummy import Pool as ThreadPool
 import pprint
 
 class Watchful():
+    debugMode = False
 
     def __init__(self, monitor):
         self.monitor = monitor
         pass
 
+    def debug(self, message):
+        if self.debugMode:
+            if isinstance(message, str):
+                print(message)
+            else:
+                pprint.pprint(message)
+
     def check(self):
-        listhost = []
+        lHost=[]
         for (key, value) in self.monitor.config['ping'].items():
-            print("Ping: {0} - Enabled: {1}".format(key, value))
+            self.debug("Ping: {0} - Enabled: {1}".format(key, value))
             if value:
-                listhost.append(key)
+                lHost.append(key)
 
-        returnDict = {}
-        with concurrent.futures.ThreadPoolExecutor(max_workers=5) as executor:
-            future_to_ping = {executor.submit(self.ping_check, host): host for host in listhost}
-            for future in concurrent.futures.as_completed(future_to_ping):
-                host = future_to_ping[future]
-                try:
-                    returnDict[host]=future.result()
-                except Exception as exc:
-                    returnDict[host]={}
-                    returnDict[host]['status']=False
-                    returnDict[host]['message']='Ping: {0} - Error: {1}'.format(host, exc)
+        lReturn=[]
+        pool = ThreadPool(5)
+        lReturn = pool.map(self.ping_check, lHost)
+        pool.close()
+        pool.join()
 
-        #pprint.pprint(returnDict)
-        return True, returnDict
+        self.debug(type(lReturn))
+        self.debug(lReturn)
+        
 
+        #Convertir list en dictionary
+        dReturn = {}
+        for valueL1 in lReturn:
+            dReturn = {**dReturn, **valueL1}
+
+        
+        self.debug(type(dReturn))
+        self.debug(dReturn)
+        return True, dReturn
     
     def ping_check(self, host):
+        status_return=self.ping_return(host, 5)
+
         rCheck = {}
-        rCheck['status']=self.ping_return(host, 5)
-        rCheck['message']=''
-        if self.monitor.chcek_status(rCheck['status'], 'ping', host):
-            self.send_message('Ping: {0} {1}'.format(host, 'UP' if rCheck['status'] else 'DOWN' ))
+        rCheck[host] = {}
+        rCheck[host]['status']=status_return
+        rCheck[host]['message']=''
+        if self.monitor.chcek_status(status_return, 'ping', host):
+            self.send_message('Ping: {0} {1}'.format(host, 'UP' if status_return else 'DOWN' ))
         return rCheck
 
     def ping_return(self, host, timeout):
