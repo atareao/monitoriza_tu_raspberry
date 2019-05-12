@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-# -*- coding: UTF-8 -*-
+# -*- coding: utf-8 -*-
 #
 # Monitorize your Raspberry Pi
 #
@@ -26,11 +26,13 @@ import importlib
 def status(name_srv):
     name_srv = name_srv.strip()
     if not name_srv:
-        return False, 'Status Error: Service name is empty!!'
+        return False, 'Status Error: Service name is empty!!' #:bangbang:
 
     utils = importlib.import_module('__utils')
     stdout, stderr = utils.execute('systemctl status '+name_srv)
 
     if stdout == '':
-        return False, 'Status ['+name_srv+'] - Error:'+stderr[:-1]
-    return True, 'Status ['+name_srv+'] - Ok!'
+        return False, 'Status ['+name_srv+'] - Error:'+stderr[:-1] #:rotating_light:
+    return True, 'Status ['+name_srv+'] - Ok!' #:like:
+
+#https://apps.timwhitlock.info/emoji/tables/unicode

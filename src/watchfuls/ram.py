@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-# -*- coding: UTF-8 -*-
+# -*- coding: utf-8 -*-
 #
 # Monitorize your Raspberry Pi
 #
@@ -24,7 +24,8 @@ import re
 
 
 class Watchful():
-    def __init__(self):
+    def __init__(self, monitor):
+        self.monitor = monitor
         pass
 
     def check(self):

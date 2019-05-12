@@ -1,15 +1,10 @@
 #!/usr/bin/env python3
-# -*- coding: UTF-8 -*-
+# -*- coding: utf-8 -*-
 #
 # Monitorize your Raspberry Pi
 #
 # Copyright © 2019  Javier Pastor (aka VSC55)
 # <jpastor at cerebelum dot net>
-#
-# Modulo basado en el codigo de Lorenzo Carbonell.
-#
-# Copyright © 2019  Lorenzo Carbonell (aka atareao)
-# <lorenzo.carbonell.cerezo at gmail dot com>
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -26,14 +21,24 @@
 
 import importlib
 
-
 class Watchful():
-    def __init__(self):
+    def __init__(self, monitor):
+        self.monitor = monitor
         pass
 
     def check(self):
         service = importlib.import_module('__service')
-        return service.status("snmpd")
+        returnDict = {}
+        
+        for (key, value) in self.monitor.config['services'].items():
+            print("Service: {0} - Enabled: {1}".format(key, value))
+            if value:
+                status, message = service.status(key)
+                returnDict[key] = {}
+                returnDict[key]['status']=status
+                returnDict[key]['message']=message
+        
+        return True, returnDict
 
 if __name__ == '__main__':
     wf = Watchful()
