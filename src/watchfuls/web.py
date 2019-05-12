@@ -23,16 +23,17 @@ import importlib
 
 
 class Watchful():
-    def __init__(self):
+    def __init__(self, monitor):
+        self.monitor = monitor
         pass
 
     def check(self):
         utils = importlib.import_module('__utils')
-        cmd = 'curl -sL -w "%{http_code}\n" "http://www.atareao.es/" -o /dev/null'
+        cmd = 'curl -sL -w "%{http_code}\n" "http://www.cerebelum.net/" -o /dev/null'
         stdout, stderr = utils.execute(cmd)
         if stdout.find('200') == -1:
-            return False, 'www.atareao.es down'
-        return True, 'www.atareao.es up'
+            return False, 'www.cerebelum.net down'
+        return True, 'www.cerebelum.net up'
 
 
 if __name__ == '__main__':
