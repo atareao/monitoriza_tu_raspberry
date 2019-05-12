@@ -6,11 +6,6 @@
 # Copyright © 2019  Javier Pastor (aka VSC55)
 # <jpastor at cerebelum dot net>
 #
-# Modulo basado en el codigo de Lorenzo Carbonell.
-#
-# Copyright © 2019  Lorenzo Carbonell (aka atareao)
-# <lorenzo.carbonell.cerezo at gmail dot com>
-#
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
 # the Free Software Foundation, either version 3 of the License, or
@@ -37,8 +32,8 @@ class Watchful():
         
         for (key, value) in self.monitor.config['services'].items():
             print("Service: {0} - Enabled: {1}".format(key, value))
-            status, message = service.status(key)
             if value:
+                status, message = service.status(key)
                 returnDict[key] = {}
                 returnDict[key]['status']=status
                 returnDict[key]['message']=message

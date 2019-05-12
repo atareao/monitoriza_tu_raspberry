@@ -6,6 +6,9 @@
 # Copyright © 2019  Lorenzo Carbonell (aka atareao)
 # <lorenzo.carbonell.cerezo at gmail dot com>
 #
+# Copyright © 2019  Javier Pastor (aka VSC55)
+# <jpastor at cerebelum dot net>
+#
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
 # the Free Software Foundation, either version 3 of the License, or
@@ -29,12 +32,19 @@ class Watchful():
 
     def check(self):
         utils = importlib.import_module('__utils')
-        cmd = 'curl -sL -w "%{http_code}\n" "http://www.cerebelum.net/" -o /dev/null'
-        stdout, stderr = utils.execute(cmd)
-        if stdout.find('200') == -1:
-            return False, 'www.cerebelum.net down'
-        return True, 'www.cerebelum.net up'
 
+        returnDict = {}
+        for (key, value) in self.monitor.config['web'].items():
+            print("Web: {0} - Enabled: {1}".format(key, value))
+            if value:
+                cmd = 'curl -sL -w "%{http_code}\n" http://'+key+' -o /dev/null'
+                stdout, stderr = utils.execute(cmd)
+
+                returnDict[key] = {}
+                returnDict[key]['status']=False if stdout.find('200') == -1 else True
+                returnDict[key]['message']='Web: {0} {1}'.format(key, 'UP' if returnDict[key]['status'] else 'DOWN' )
+
+        return True, returnDict
 
 if __name__ == '__main__':
     wf = Watchful()

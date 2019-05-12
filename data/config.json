@@ -2,11 +2,15 @@
   "token": "",
   "chat_id": "",
   "services": {
-      "bind9": true,
-      "mariabd": true,
-      "nginx": true,
-      "slapd": true,
-      "snmpd": true,
-      "webmin": true
+    "bind9": true,
+    "mariabd": true,
+    "nginx": true,
+    "slapd": true,
+    "snmpd": true,
+    "webmin": true
+  },
+  "web": {
+    "www.atareao.es": true,
+    "www.cerebelum.net": true
   }
 }

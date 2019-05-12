@@ -56,7 +56,9 @@ class Monitor():
                     status, message = watchful.check()
 
                     if isinstance(message, dict):
-                        if watchful_def not in data.keys() : data[watchful_def] = {}
+                        if watchful_def not in data.keys():
+                            data[watchful_def] = {}
+
                         for (key, value) in message.items():
                             #print("key: {0} - val: {1}".format(key, value))
                             if key not in data[watchful_def].keys() or (key in data[watchful_def].keys() and data[watchful_def][key] != value['status']):
