@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-# -*- coding: UTF-8 -*-
+# -*- coding: utf-8 -*-
 #
 # Monitorize your Raspberry Pi
 #
@@ -43,7 +43,7 @@ class Watchful():
                 returnDict[key] = {}
                 returnDict[key]['status']=False if stdout.find('200') == -1 else True
                 returnDict[key]['message']='Web: {0} {1}'.format(key, 'UP' if returnDict[key]['status'] else 'DOWN' )
-
+        
         return True, returnDict
 
 if __name__ == '__main__':
