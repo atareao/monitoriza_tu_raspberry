@@ -28,6 +28,7 @@ import socket
 from telegram import Telegram
 
 class Monitor():
+    status_datos = {}
 
     def __init__(self):
         self.dir = os.path.dirname(os.path.abspath(__file__))
@@ -47,9 +48,20 @@ class Monitor():
             hostname = socket.gethostname()
             self.tg.send_message("[{0}]: {1}".format(hostname, message))
 
+
+    def chcek_status(self, status, module, module_subkey=''):
+        if module_subkey:
+            if module not in self.status_datos.keys() or module_subkey not in self.status_datos[module].keys() or (module_subkey in self.status_datos[module].keys() and  self.status_datos[module][module_subkey] != status):
+                return True
+        else:
+            if module not in self.status_datos.keys() or (module in self.status_datos.keys() and  self.status_datos[module] != status):
+                return True
+        return False
+
+    
     def check(self):
         changed = False
-        data = self.status.read()
+        self.status_datos = self.status.read()
         watchfuls = glob.glob(os.path.join(self.watchfuls_dir, '*.py'))
         for watchful_def in watchfuls:
             try:
@@ -61,26 +73,26 @@ class Monitor():
                     status, message = watchful.check()
 
                     if isinstance(message, dict):
-                        if watchful_def not in data.keys():
-                            data[watchful_def] = {}
+                        if watchful_def not in self.status_datos.keys():
+                            self.status_datos[watchful_def] = {}
 
                         for (key, value) in message.items():
-                            #print("key: {0} - val: {1}".format(key, value))
-                            if key not in data[watchful_def].keys() or (key in data[watchful_def].keys() and data[watchful_def][key] != value['status']):
-                                data[watchful_def][key] = value['status']
+                            #print("Module: {0} - Key: {1} - Val: {2}".format(watchful_def, key, value))
+                            if self.chcek_status(value['status'], watchful_def, key):
+                                self.status_datos[watchful_def][key] = value['status']
                                 print("Module: {0}/{1}".format(watchful_def, key), value['status'])
                                 self.tg_send_message(value['message'])
                                 changed = True
                     else:
-                        if watchful_def not in data.keys() or (watchful_def in data.keys() and data[watchful_def] != status):
-                            data[watchful_def] = status
+                        if self.chcek_status(status, watchful_def):
+                            self.status_datos[watchful_def] = status
                             print(watchful_def, status)
                             self.tg_send_message(message)
                             changed = True
             except Exception as e:
-                print("Exception: {0}".format(e))
+                print("Module: {0} - Exception: {1}".format(watchful_def, e))
         if changed is True:
-            self.status.save(data)
+            self.status.save(self.status_datos)
 
 if __name__ == '__main__':
     monitor = Monitor()
