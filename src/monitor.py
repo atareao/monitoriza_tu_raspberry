@@ -38,8 +38,8 @@ class Monitor():
         else:
             config_dir = '/etc/watchful/'
         self.status = config.Config(os.path.join(config_dir, 'status.json'))
-        init = config.Config(os.path.join(config_dir, 'config.json')).read()
-        self.tg = Telegram(init['token'], init['chat_id'])
+        self.config = config.Config(os.path.join(config_dir, 'config.json')).read()
+        self.tg = Telegram(self.config['token'], self.config['chat_id'])
 
     def check(self):
         hostname = socket.gethostname()
@@ -52,20 +52,31 @@ class Monitor():
                 if watchful_def.find('__') == -1:
                     print(watchful_def)
                     module = importlib.import_module(watchful_def)
-                    watchful = module.Watchful()
+                    watchful = module.Watchful(self)
                     status, message = watchful.check()
-                    if watchful_def not in data.keys() or (watchful_def in data.keys()
-                        and data[watchful_def] != status):
-                        data[watchful_def] = status
-                        print(watchful_def, status)
-                        self.tg.send_message("["+hostname+"]: "+message)
-                        changed = True
+
+                    if isinstance(message, dict):
+                        if watchful_def not in data.keys() : data[watchful_def] = {}
+                        for (key, value) in message.items():
+                            #print("key: {0} - val: {1}".format(key, value))
+                            if key not in data[watchful_def].keys() or (key in data[watchful_def].keys() and data[watchful_def][key] != value['status']):
+                                data[watchful_def][key] = value['status']
+                                print("Module: {0}/{1}".format(watchful_def, key), value['status'])
+                                if value['message']:
+                                    self.tg.send_message("[{0}]: {1}".format(hostname, value['message']))
+                                changed = True
+                    else:
+                        if watchful_def not in data.keys() or (watchful_def in data.keys() and data[watchful_def] != status):
+                            data[watchful_def] = status
+                            print(watchful_def, status)
+                            if message:
+                                self.tg.send_message("[{0}]: {1}".format(hostname, message))
+                            changed = True
             except Exception as e:
-                print(e)
+                print("Exception: {0}".format(e))
         if changed is True:
             self.status.save(data)
 
 if __name__ == '__main__':
     monitor = Monitor()
     monitor.check()
- 

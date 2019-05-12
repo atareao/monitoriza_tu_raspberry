@@ -26,14 +26,24 @@
 
 import importlib
 
-
 class Watchful():
-    def __init__(self):
+    def __init__(self, monitor):
+        self.monitor = monitor
         pass
 
     def check(self):
         service = importlib.import_module('__service')
-        return service.status("snmpd")
+        returnDict = {}
+        
+        for (key, value) in self.monitor.config['services'].items():
+            print("Service: {0} - Enabled: {1}".format(key, value))
+            status, message = service.status(key)
+            if value:
+                returnDict[key] = {}
+                returnDict[key]['status']=status
+                returnDict[key]['message']=message
+        
+        return True, returnDict
 
 if __name__ == '__main__':
     wf = Watchful()

@@ -1,1 +1,14 @@
-{"token":"", "chat_id":""}
+{
+  "token": "",
+  "chat_id": "",
+  "services": [
+    {
+      "bind9": true,
+      "mariabd": true,
+      "nginx": true,
+      "slapd": true,
+      "snmpd": true,
+      "webmin": true
+    }
+  ]
+}

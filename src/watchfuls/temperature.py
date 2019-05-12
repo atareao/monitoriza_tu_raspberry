@@ -23,7 +23,8 @@ import importlib
 
 
 class Watchful():
-    def __init__(self):
+    def __init__(self, monitor):
+        self.monitor = monitor
         pass
 
     def check(self):
