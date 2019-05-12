@@ -3,9 +3,6 @@
 #
 # Monitorize your Raspberry Pi
 #
-# Copyright © 2019  Lorenzo Carbonell (aka atareao)
-# <lorenzo.carbonell.cerezo at gmail dot com>
-#
 # Copyright © 2019  Javier Pastor (aka VSC55)
 # <jpastor at cerebelum dot net>
 #
@@ -22,19 +19,27 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-import os
-import shlex
-import subprocess
+import importlib
 
-def execute(command, parser=None):
-    command_with_args = shlex.split(command)
-    execution = subprocess.Popen(command_with_args, stdout=subprocess.PIPE,
-                                    stderr=subprocess.PIPE)
-    stdout, stderr = execution.communicate()
-    return stdout.decode(), stderr.decode()
+class Watchful():
+    def __init__(self, monitor):
+        self.monitor = monitor
+        pass
 
-def execute_call(command, parser=None):
-    command_with_args = shlex.split(command)
-    return_code = subprocess.call(command_with_args, stdout=open(os.devnull, 'w'),
-                                 stderr=open(os.devnull, 'w'))
-    return return_code
+    def check(self):
+        utils = importlib.import_module('__utils')
+
+        returnDict = {}
+        for (key, value) in self.monitor.config['ping'].items():
+            print("Ping: {0} - Enabled: {1}".format(key, value))
+            if value:
+                returncode = utils.execute_call('ping -c 1 {0}'.format(key))
+                returnDict[key] = {}
+                returnDict[key]['status']=False if returncode == 1 else True
+                returnDict[key]['message']='Ping: {0} {1}'.format(key, 'UP' if returnDict[key]['status'] else 'DOWN' )
+        
+        return True, returnDict
+
+if __name__ == '__main__':
+    wf = Watchful()
+    print(wf.check())
