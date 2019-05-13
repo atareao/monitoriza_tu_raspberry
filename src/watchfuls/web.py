@@ -27,14 +27,23 @@ import concurrent.futures
 import pprint
 
 class Watchful():
+    debugMode = False
+
     def __init__(self, monitor):
         self.monitor = monitor
         pass
 
+    def debug(self, message):
+        if self.debugMode:
+            if isinstance(message, str):
+                print(message)
+            else:
+                pprint.pprint(message)
+
     def check(self):
         listurl = []
         for (key, value) in self.monitor.config['web'].items():
-            print("Web: {0} - Enabled: {1}".format(key, value))
+            self.debug("Web: {0} - Enabled: {1}".format(key, value))
             if value:
                 listurl.append(key)
 
@@ -50,7 +59,9 @@ class Watchful():
                     returnDict[url]['status']=False
                     returnDict[url]['message']='Web: {0} - Error: {1}'.format(url, exc)
         
-        #pprint.pprint(returnDict)
+        
+        self.debug(type(returnDict))
+        self.debug(returnDict)
         return True, returnDict
 
     def web_check(self, url):
