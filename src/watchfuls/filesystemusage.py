@@ -19,18 +19,17 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-import importlib
 import re
+import lib.tools
+from lib.module_base import ModuleBase
 
+class Watchful(ModuleBase):
 
-class Watchful():
-    def __init__(self, monitor):
-        self.monitor = monitor
-        pass
+    def __init__(self, monitor, debug = False):
+        ModuleBase.__init__(self,__name__, monitor, debug)
 
     def check(self):
-        utils = importlib.import_module('__utils')
-        stdout, stderr = utils.execute('df -x squashfs -x tmpfs')
+        stdout, stderr = lib.tools.execute('df -x squashfs -x tmpfs')
         reg = r'\/dev\/([^\s]*)\s+\d+\s+\d+\s+\d+\s+(\d+)\%\s+([^\n]*)'
         for fs in re.findall(reg, stdout):
             if float(fs[1]) > 85:
