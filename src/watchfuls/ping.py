@@ -21,8 +21,10 @@
 
 import importlib
 import concurrent.futures
+import pprint
 
 class Watchful():
+
     def __init__(self, monitor):
         self.monitor = monitor
         pass
@@ -44,8 +46,9 @@ class Watchful():
                 except Exception as exc:
                     returnDict[host]={}
                     returnDict[host]['status']=False
-                    returnDict[host]['message']='Ping: {0} - Error: {1}'.format(key, exc)
-                
+                    returnDict[host]['message']='Ping: {0} - Error: {1}'.format(host, exc)
+
+        #pprint.pprint(returnDict)
         return True, returnDict
 
     
@@ -53,15 +56,21 @@ class Watchful():
         rCheck = {}
         rCheck['status']=self.ping_return(host, 5)
         rCheck['message']=''
-        self.monitor.tg_send_message('Ping: {0} {1}'.format(host, 'UP' if rCheck['status'] else 'DOWN' ))
+        if self.monitor.chcek_status(rCheck['status'], 'ping', host):
+            self.send_message('Ping: {0} {1}'.format(host, 'UP' if rCheck['status'] else 'DOWN' ))
         return rCheck
 
     def ping_return(self, host, timeout):
         utils = importlib.import_module('__utils')
-        rCode = utils.execute_call('ping -c 1 -W {0} {1}'.format(timeout, host))        
+        rCode = utils.execute_call('ping -c 1 -W {0} {1}'.format(timeout, host))
         if rCode == 0:
            return True
         return False
+   
+    def send_message(self, message):
+        if message:
+            self.monitor.tg_send_message(message)
+        
 
 if __name__ == '__main__':
     wf = Watchful()

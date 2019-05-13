@@ -23,7 +23,8 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 import importlib
-
+import concurrent.futures
+import pprint
 
 class Watchful():
     def __init__(self, monitor):
@@ -31,21 +32,47 @@ class Watchful():
         pass
 
     def check(self):
-        utils = importlib.import_module('__utils')
-
-        returnDict = {}
+        listurl = []
         for (key, value) in self.monitor.config['web'].items():
             print("Web: {0} - Enabled: {1}".format(key, value))
             if value:
-                cmd = 'curl -sL -w "%{http_code}\n" http://'+key+' -o /dev/null'
-                stdout, stderr = utils.execute(cmd)
+                listurl.append(key)
 
-                returnDict[key] = {}
-                returnDict[key]['status']=False if stdout.find('200') == -1 else True
-                returnDict[key]['message']='Web: {0} {1}'.format(key, 'UP' if returnDict[key]['status'] else 'DOWN' )
+        returnDict = {}
+        with concurrent.futures.ThreadPoolExecutor(max_workers=5) as executor:
+            future_to_url = {executor.submit(self.web_check, url): url for url in listurl}
+            for future in concurrent.futures.as_completed(future_to_url):
+                url = future_to_url[future]
+                try:
+                    returnDict[url]=future.result()
+                except Exception as exc:
+                    returnDict[url]={}
+                    returnDict[url]['status']=False
+                    returnDict[url]['message']='Web: {0} - Error: {1}'.format(url, exc)
         
+        #pprint.pprint(returnDict)
         return True, returnDict
 
+    def web_check(self, url):
+        rCheck = {}
+        rCheck['status']=self.web_return(url)
+        rCheck['message']=''
+        if self.monitor.chcek_status(rCheck['status'], 'web', url):
+            self.send_message('Web: {0} - Status: {1}'.format(url, 'UP' if rCheck['status'] else 'DOWN' ))
+        return rCheck
+
+    def web_return(self, url):
+        utils = importlib.import_module('__utils')
+        cmd = 'curl -sL -w "%{http_code}\n" http://'+url+' -o /dev/null'
+        stdout, stderr = utils.execute(cmd)
+        if stdout.find('200') == -1:
+           return False
+        return True
+
+    def send_message(self, message):
+        if message:
+            self.monitor.tg_send_message(message)
+        
 if __name__ == '__main__':
     wf = Watchful()
     print(wf.check())
