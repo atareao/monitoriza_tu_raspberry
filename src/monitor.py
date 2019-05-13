@@ -25,12 +25,14 @@
 import glob
 import os
 import sys
+import traceback
 import importlib
-import config
 import socket
-import concurrent.futures
 import pprint
-from telegram import Telegram
+import concurrent.futures
+from lib.config import Config
+from lib.telegram import Telegram
+from lib.module_base import ModuleBase
 
 class Monitor():
     status_datos = {}
@@ -44,8 +46,8 @@ class Monitor():
             config_dir = os.path.normpath(os.path.join(self.dir, '../data/'))
         else:
             config_dir = '/etc/watchful/'
-        self.status = config.Config(os.path.join(config_dir, 'status.json'))
-        self.config = config.Config(os.path.join(config_dir, 'config.json')).read()
+        self.status = Config(os.path.join(config_dir, 'status.json'))
+        self.config = Config(os.path.join(config_dir, 'config.json')).read()
         self.tg = Telegram(self.config['token'], self.config['chat_id'])
 
     def debug(self, message):
@@ -60,7 +62,6 @@ class Monitor():
             hostname = socket.gethostname()
             self.tg.send_message("[{0}]: {1}".format(hostname, message))
 
-
     def chcek_status(self, status, module, module_subkey=''):
         if module_subkey:
             if module not in self.status_datos.keys() or module_subkey not in self.status_datos[module].keys() or (module_subkey in self.status_datos[module].keys() and  self.status_datos[module][module_subkey] != status):
@@ -74,7 +75,7 @@ class Monitor():
         try:
             self.debug("Module: {0}".format(module_name))
             module = importlib.import_module(module_name)
-            watchful = module.Watchful(self)
+            watchful = module.Watchful(self, self.debugMode)
             status, message = watchful.check()
 
             if isinstance(message, dict):
@@ -95,19 +96,21 @@ class Monitor():
                     self.debug("Module: {0} - New Status: {1}".format(module_name, status))
                 return True
             else:
-                print('Format not implement: {0}'.format(type(message)))
-                print('Status:')
+                print('WARNING: Format not implement: {0}'.format(type(message)))
+                print('Data Status:')
                 pprint.pprint(status)
-                print('-------------')
-                print('Message:')
+                print ('-'*60)
+                print('Data Message:')
                 pprint.pprint(message)
-                print('-------------')
-                print('-------------')
+                print ('-'*60)
+                print ('-'*60)
                 print('')
 
         except Exception as e:
-            print("Check_Module - Module: {0} - Exception: {1}".format(module_name, e))
-
+            print ("Exception in user code:")
+            print ('-'*60)
+            traceback.print_exc(file=sys.stdout)
+            print ('-'*60)
         return False
 
     def check(self):
@@ -128,8 +131,10 @@ class Monitor():
                     if future.result():
                         changed=True
                 except Exception as exc:
-                    print('Check - Module: {0} - Exception: {1}'.format(module, exc))
-
+                    print ("Exception in user code:")
+                    print ('-'*60)
+                    traceback.print_exc(file=sys.stdout)
+                    print ('-'*60)
 
         self.debug(self.status_datos)
         if changed is True:

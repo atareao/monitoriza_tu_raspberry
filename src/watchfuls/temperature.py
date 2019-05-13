@@ -19,13 +19,12 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-import importlib
+from lib.module_base import ModuleBase
 
+class Watchful(ModuleBase):
 
-class Watchful():
-    def __init__(self, monitor):
-        self.monitor = monitor
-        pass
+    def __init__(self, monitor, debug = False):
+        ModuleBase.__init__(self,__name__, monitor, debug)
 
     def check(self):
         f = open('/sys/class/thermal/thermal_zone0/temp', 'r')

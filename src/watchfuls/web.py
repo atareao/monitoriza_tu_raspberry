@@ -22,34 +22,25 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-import importlib
 import concurrent.futures
-import pprint
+import lib.tools
+from lib.module_base import ModuleBase
 
-class Watchful():
-    debugMode = False
-
-    def __init__(self, monitor):
-        self.monitor = monitor
-        pass
-
-    def debug(self, message):
-        if self.debugMode:
-            if isinstance(message, str):
-                print(message)
-            else:
-                pprint.pprint(message)
-
+class Watchful(ModuleBase):
+    
+    def __init__(self, monitor, debug = False):
+        ModuleBase.__init__(self,__name__, monitor, debug)
+        
     def check(self):
         listurl = []
-        for (key, value) in self.monitor.config['web'].items():
+        for (key, value) in self.monitor.config[self.NameModule].items():
             self.debug("Web: {0} - Enabled: {1}".format(key, value))
             if value:
                 listurl.append(key)
 
         returnDict = {}
         with concurrent.futures.ThreadPoolExecutor(max_workers=5) as executor:
-            future_to_url = {executor.submit(self.web_check, url): url for url in listurl}
+            future_to_url = {executor.submit(self.__web_check, url): url for url in listurl}
             for future in concurrent.futures.as_completed(future_to_url):
                 url = future_to_url[future]
                 try:
@@ -64,25 +55,21 @@ class Watchful():
         self.debug(returnDict)
         return True, returnDict
 
-    def web_check(self, url):
+    def __web_check(self, url):
         rCheck = {}
-        rCheck['status']=self.web_return(url)
+        rCheck['status']=self.__web_return(url)
         rCheck['message']=''
-        if self.monitor.chcek_status(rCheck['status'], 'web', url):
+        if self.monitor.chcek_status(rCheck['status'], self.NameModule, url):
             self.send_message('Web: {0} - Status: {1}'.format(url, 'UP' if rCheck['status'] else 'DOWN' ))
         return rCheck
 
-    def web_return(self, url):
-        utils = importlib.import_module('__utils')
+    def __web_return(self, url):
         cmd = 'curl -sL -w "%{http_code}\n" http://'+url+' -o /dev/null'
-        stdout, stderr = utils.execute(cmd)
+        
+        stdout, stderr =  lib.tools.execute(cmd)
         if stdout.find('200') == -1:
            return False
         return True
-
-    def send_message(self, message):
-        if message:
-            self.monitor.tg_send_message(message)
         
 if __name__ == '__main__':
     wf = Watchful()

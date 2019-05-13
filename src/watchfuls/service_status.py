@@ -19,34 +19,25 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-import importlib
 import concurrent.futures
-import pprint
+import lib.tools
+from lib.module_base import ModuleBase
 
-class Watchful():
-    debugMode = False
+class Watchful(ModuleBase):
 
-    def __init__(self, monitor):
-        self.monitor = monitor
-        pass
-
-    def debug(self, message):
-        if self.debugMode:
-            if isinstance(message, str):
-                print(message)
-            else:
-                pprint.pprint(message)
+    def __init__(self, monitor, debug = False):
+        ModuleBase.__init__(self,__name__, monitor, debug)
 
     def check(self):
         listservice = []
-        for (key, value) in self.monitor.config['service_status'].items():
+        for (key, value) in self.monitor.config[self.NameModule].items():
             self.debug("Service: {0} - Enabled: {1}".format(key, value))
             if value:
                 listservice.append(key)
 
         returnDict = {}
         with concurrent.futures.ThreadPoolExecutor(max_workers=5) as executor:
-            future_to_service = {executor.submit(self.service_check, service): service for service in listservice}
+            future_to_service = {executor.submit(self.__service_check, service): service for service in listservice}
             for future in concurrent.futures.as_completed(future_to_service):
                 service = future_to_service[future]
                 try:
@@ -60,28 +51,24 @@ class Watchful():
         self.debug(returnDict)
         return True, returnDict
 
-    def service_check(self, service):
-        status, message = self.service_return(service)
+    def __service_check(self, service):
+        status, message = self.__service_return(service)
         rCheck = {}
         rCheck['status']=status
         rCheck['message']=''
-        if self.monitor.chcek_status(status, 'service_status', service):
+        if self.monitor.chcek_status(status, self.NameModule, service):
             if status:
                 self.send_message('Service: {0} - Status: Ok'.format(service))
             else:
                 self.send_message('Service: {0} - **Error: {1}'.format(service, message))
         return rCheck
 
-    def service_return(self, service):
-        utils = importlib.import_module('__utils')
-        stdout, stderr = utils.execute('systemctl status '+service)
+    def __service_return(self, service):
+        stdout, stderr = lib.tools.execute('systemctl status '+service)
         if stdout == '':
             return False, stderr[:-1]
         return True, ''
 
-    def send_message(self, message):
-        if message:
-            self.monitor.tg_send_message(message)
 
 if __name__ == '__main__':
     wf = Watchful()

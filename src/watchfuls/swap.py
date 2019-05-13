@@ -19,28 +19,17 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-import importlib
-import pprint
 import re
+import lib.tools
+from lib.module_base import ModuleBase
 
-
-class Watchful():
-    debugMode = False
-
-    def __init__(self, monitor):
-        self.monitor = monitor
-        pass
-
-    def debug(self, message):
-        if self.debugMode:
-            if isinstance(message, str):
-                print(message)
-            else:
-                pprint.pprint(message)
+class Watchful(ModuleBase):
+    
+    def __init__(self, monitor, debug = False):
+        ModuleBase.__init__(self,__name__, monitor, debug)
 
     def check(self):
-        utils = importlib.import_module('__utils')
-        stdout, stderr = utils.execute('free')
+        stdout, stderr = lib.tools.execute('free')
         self.debug(stdout)
         x = re.findall(r'Swap:\s+(\d+)\s+(\d+)', stdout)
         per = float(x[0][1])/float(x[0][0]) * 100.0

@@ -19,34 +19,25 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-import importlib
+import lib.tools
 from multiprocessing.dummy import Pool as ThreadPool
-import pprint
+from lib.module_base import ModuleBase
 
-class Watchful():
-    debugMode = False
+class Watchful(ModuleBase):
 
-    def __init__(self, monitor):
-        self.monitor = monitor
-        pass
-
-    def debug(self, message):
-        if self.debugMode:
-            if isinstance(message, str):
-                print(message)
-            else:
-                pprint.pprint(message)
+    def __init__(self, monitor, debug = False):
+        ModuleBase.__init__(self,__name__, monitor, debug)
 
     def check(self):
         lHost=[]
-        for (key, value) in self.monitor.config['ping'].items():
+        for (key, value) in self.monitor.config[self.NameModule].items():
             self.debug("Ping: {0} - Enabled: {1}".format(key, value))
             if value:
                 lHost.append(key)
 
         lReturn=[]
         pool = ThreadPool(5)
-        lReturn = pool.map(self.ping_check, lHost)
+        lReturn = pool.map(self.__ping_check, lHost)
         pool.close()
         pool.join()
 
@@ -64,28 +55,23 @@ class Watchful():
         self.debug(dReturn)
         return True, dReturn
     
-    def ping_check(self, host):
-        status_return=self.ping_return(host, 5)
+    def __ping_check(self, host):
+        status_return=self.__ping_return(host, 5)
 
         rCheck = {}
         rCheck[host] = {}
         rCheck[host]['status']=status_return
         rCheck[host]['message']=''
-        if self.monitor.chcek_status(status_return, 'ping', host):
+        if self.monitor.chcek_status(status_return, self.NameModule, host):
             self.send_message('Ping: {0} {1}'.format(host, 'UP' if status_return else 'DOWN' ))
         return rCheck
 
-    def ping_return(self, host, timeout):
-        utils = importlib.import_module('__utils')
-        rCode = utils.execute_call('ping -c 1 -W {0} {1}'.format(timeout, host))
+    def __ping_return(self, host, timeout):
+        rCode = lib.tools.execute_call('ping -c 1 -W {0} {1}'.format(timeout, host))
         if rCode == 0:
            return True
         return False
    
-    def send_message(self, message):
-        if message:
-            self.monitor.tg_send_message(message)
-        
 
 if __name__ == '__main__':
     wf = Watchful()
