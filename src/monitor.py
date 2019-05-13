@@ -75,7 +75,7 @@ class Monitor():
         try:
             self.debug("Module: {0}".format(module_name))
             module = importlib.import_module(module_name)
-            watchful = module.Watchful(self)
+            watchful = module.Watchful(self, self.debugMode)
             status, message = watchful.check()
 
             if isinstance(message, dict):
