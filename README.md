@@ -24,4 +24,4 @@
 # cd /usr/src/monitoriza_tu_raspberry
 # sudo sh ./uninstall.sh
 ```
-Note: All the configuration will be deleted.
+* Note: All the configuration will be deleted.
