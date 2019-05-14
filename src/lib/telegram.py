@@ -27,5 +27,9 @@ class Telegram():
         self.chat_id = chat_id
 
     def send_message(self, message):
-        requests.post('https://api.telegram.org/bot{0}/sendMessage'.format(self.token),
-                data={'chat_id': self.chat_id, 'text': message})
+        if  message and self.token and self.chat_id:
+            requests.post('https://api.telegram.org/bot{0}/sendMessage'.format(self.token), 
+                          data={'chat_id': self.chat_id, 'text': message, 'parse_mode':'Markdown'})
+
+
+#https://apps.timwhitlock.info/emoji/tables/unicode
