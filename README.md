@@ -9,19 +9,20 @@
 # cd /usr/src
 # git clone https://github.com/vsc55/monitoriza_tu_raspberry.git
 # cd monitoriza_tu_raspberry
-# sudo sh ./install.sh
+# chmod +x *.sh
+# sudo install.sh
 ```
 
 ### Update:
 ```
 # cd /usr/src/monitoriza_tu_raspberry
 # git pull
-# sudo sh ./update.sh
+# sudo update.sh
 ```
 
 ### Uninstall:
 ```
 # cd /usr/src/monitoriza_tu_raspberry
-# sudo sh ./uninstall.sh
+# sudo uninstall.sh
 ```
 * Note: All the configuration will be deleted.
