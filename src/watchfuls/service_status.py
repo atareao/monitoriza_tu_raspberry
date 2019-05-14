@@ -58,9 +58,9 @@ class Watchful(ModuleBase):
         rCheck['message']=''
         if self.monitor.chcek_status(status, self.NameModule, service):
             if status:
-                self.send_message('Service: {0} - Status: Ok'.format(service))
+                self.send_message('Service: {0} - Status: '.format(service) + u'\U00002705')
             else:
-                self.send_message('Service: {0} - **Error: {1}'.format(service, message))
+                self.send_message('Service: {0} - *Error: {1}* '.format(service, message) + u'\U0000274E')
         return rCheck
 
     def __service_return(self, service):

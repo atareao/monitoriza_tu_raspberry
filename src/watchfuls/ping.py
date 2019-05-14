@@ -63,7 +63,7 @@ class Watchful(ModuleBase):
         rCheck[host]['status']=status_return
         rCheck[host]['message']=''
         if self.monitor.chcek_status(status_return, self.NameModule, host):
-            self.send_message('Ping: {0} {1}'.format(host, 'UP' if status_return else 'DOWN' ))
+            self.send_message('Ping: {0} {1}'.format(host, 'UP ' + u'\U0001F53C' if status_return else 'DOWN ' + u'\U0001F53D'))
         return rCheck
 
     def __ping_return(self, host, timeout):
@@ -71,7 +71,6 @@ class Watchful(ModuleBase):
         if rCode == 0:
            return True
         return False
-   
 
 if __name__ == '__main__':
     wf = Watchful()

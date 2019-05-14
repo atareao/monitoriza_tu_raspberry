@@ -31,8 +31,8 @@ class Watchful(ModuleBase):
         temp = float(f.read().split('\n')[0])/1000.0
         f.close()
         if temp <= 80:
-            return True, 'Temperature ok {0} ºC'.format(temp)
-        return False, 'Over temperature warning {0} ºC'.format(temp)
+            return True, 'Temperature ok {0} ºC '.format(temp) + u'\U00002705'
+        return False, 'Over temperature warning {0} ºC '.format(temp) + u'\U0001F525'
 
 
 if __name__ == '__main__':

@@ -60,7 +60,7 @@ class Watchful(ModuleBase):
         rCheck['status']=self.__web_return(url)
         rCheck['message']=''
         if self.monitor.chcek_status(rCheck['status'], self.NameModule, url):
-            self.send_message('Web: {0} - Status: {1}'.format(url, 'UP' if rCheck['status'] else 'DOWN' ))
+            self.send_message('Web: {0} - Status: {1}'.format(url, 'UP ' + u'\U0001F53C' if rCheck['status'] else 'DOWN ' + u'\U0001F53D' ))
         return rCheck
 
     def __web_return(self, url):

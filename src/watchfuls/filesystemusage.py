@@ -33,9 +33,9 @@ class Watchful(ModuleBase):
         reg = r'\/dev\/([^\s]*)\s+\d+\s+\d+\s+\d+\s+(\d+)\%\s+([^\n]*)'
         for fs in re.findall(reg, stdout):
             if float(fs[1]) > 85:
-                return False, 'Warning partition {0} ({1}) used {2}%'.format(
-                    fs[0], fs[2], fs[1])
-        return True, 'Filesystem used under 80%'
+                return False, 'Warning partition {0} ({1}) used {2}% '.format(
+                    fs[0], fs[2], fs[1]) + u'\U000026A0'
+        return True, 'Filesystem used under 80% ' + u'\U00002705'
 
 
 if __name__ == '__main__':
