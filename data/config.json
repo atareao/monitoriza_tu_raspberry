@@ -1,21 +1,9 @@
 {
-  "token": "",
-  "chat_id": "",
-  "service_status": {
-    "bind9": true,
-    "mariabd": true,
-    "nginx": true,
-    "slapd": true,
-    "snmpd": true,
-    "webmin": true
+  "global": {
+    "debug": false
   },
-  "web": {
-    "www.atareao.es": true,
-    "www.cerebelum.net": true,
-    "www.dominio.com": false
-  },
-  "ping": {
-    "192.168.1.1": true,
-    "192.168.1.200":  true
+  "telegram": {
+    "token": "",
+    "chat_id": ""
   }
 }

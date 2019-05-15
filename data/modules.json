@@ -1,0 +1,30 @@
+{
+  "service_status": {
+    "threads": 5,
+    "list": {
+      "bind9": true,
+      "mariabd": true,
+      "nginx": true,
+      "slapd": true,
+      "snmpd": true,
+      "webmin": true
+    }
+  },
+  "web": {
+    "threads": 5,
+    "list": {
+      "www.atareao.es": true,
+      "www.cerebelum.net": true,
+      "www.google.ffdfes": true,
+      "www.dominio.com": false
+    }
+  },
+  "ping": {
+    "threads": 5,
+    "list": {
+      "192.168.1.1": true,
+      "192.168.1.200":  true,
+      "192.168.88.4": true
+    }
+  }
+}
