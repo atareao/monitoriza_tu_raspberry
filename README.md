@@ -25,4 +25,4 @@
 # cd /usr/src/monitoriza_tu_raspberry
 # sudo uninstall.sh
 ```
-* Note: All the configuration will be deleted.
+* Note: If no parameter is specified "/etc/watchful" is not erased. If you want a full uninstall must add the "-a" parameter.
