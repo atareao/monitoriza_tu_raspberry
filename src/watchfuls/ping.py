@@ -30,13 +30,13 @@ class Watchful(ModuleBase):
 
     def check(self):
         lHost=[]
-        for (key, value) in self.monitor.config[self.NameModule].items():
+        for (key, value) in self.read_conf('list').items():
             self.debug("Ping: {0} - Enabled: {1}".format(key, value))
             if value:
                 lHost.append(key)
 
         lReturn=[]
-        pool = ThreadPool(5)
+        pool = ThreadPool(self.read_conf('threads',5))
         lReturn = pool.map(self.__ping_check, lHost)
         pool.close()
         pool.join()

@@ -30,16 +30,16 @@ class Watchful(ModuleBase):
     
     def __init__(self, monitor, debug = False):
         ModuleBase.__init__(self,__name__, monitor, debug)
-        
+
     def check(self):
         listurl = []
-        for (key, value) in self.monitor.config[self.NameModule].items():
+        for (key, value) in self.read_conf('list').items():
             self.debug("Web: {0} - Enabled: {1}".format(key, value))
             if value:
                 listurl.append(key)
 
         returnDict = {}
-        with concurrent.futures.ThreadPoolExecutor(max_workers=5) as executor:
+        with concurrent.futures.ThreadPoolExecutor(max_workers=self.read_conf('threads',5)) as executor:
             future_to_url = {executor.submit(self.__web_check, url): url for url in listurl}
             for future in concurrent.futures.as_completed(future_to_url):
                 url = future_to_url[future]

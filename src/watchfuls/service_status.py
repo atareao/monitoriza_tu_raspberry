@@ -30,13 +30,13 @@ class Watchful(ModuleBase):
 
     def check(self):
         listservice = []
-        for (key, value) in self.monitor.config[self.NameModule].items():
+        for (key, value) in self.read_conf('list').items():
             self.debug("Service: {0} - Enabled: {1}".format(key, value))
             if value:
                 listservice.append(key)
 
         returnDict = {}
-        with concurrent.futures.ThreadPoolExecutor(max_workers=5) as executor:
+        with concurrent.futures.ThreadPoolExecutor(max_workers=self.read_conf('threads',5)) as executor:
             future_to_service = {executor.submit(self.__service_check, service): service for service in listservice}
             for future in concurrent.futures.as_completed(future_to_service):
                 service = future_to_service[future]
