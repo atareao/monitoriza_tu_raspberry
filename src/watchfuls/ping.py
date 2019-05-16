@@ -20,6 +20,7 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 import lib.tools
+import time
 from multiprocessing.dummy import Pool as ThreadPool
 from lib.module_base import ModuleBase
 
@@ -67,9 +68,12 @@ class Watchful(ModuleBase):
         return rCheck
 
     def __ping_return(self, host, timeout):
-        rCode = lib.tools.execute_call('ping -c 1 -W {0} {1}'.format(timeout, host))
-        if rCode == 0:
-           return True
+        counter = 0
+        while counter < 3:
+            rCode = lib.tools.execute_call('ping -c 1 -W {0} {1}'.format(timeout, host))
+            if rCode == 0:
+                return True
+            counter += 1
         return False
 
 if __name__ == '__main__':
