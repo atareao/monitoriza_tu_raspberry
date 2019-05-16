@@ -73,6 +73,7 @@ class Watchful(ModuleBase):
             rCode = lib.tools.execute_call('ping -c 1 -W {0} {1}'.format(timeout, host))
             if rCode == 0:
                 return True
+            time.sleep(1)
             counter += 1
         return False
 
