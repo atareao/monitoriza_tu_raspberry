@@ -36,7 +36,6 @@ from lib.module_base import ModuleBase
 
 class Monitor():
     status_datos = {}
-    debugMode = False
 
     def __init__(self):
         self.dir = os.path.dirname(os.path.abspath(__file__))
@@ -48,7 +47,14 @@ class Monitor():
             config_dir = '/etc/watchful/'
         self.status = Config(os.path.join(config_dir, 'status.json'))
         self.config = Config(os.path.join(config_dir, 'config.json')).read()
-        self.tg = Telegram(self.config['token'], self.config['chat_id'])
+        self.config_modules = Config(os.path.join(config_dir, 'modules.json')).read()
+        self.tg = Telegram(self.config['telegram']['token'], self.config['telegram']['chat_id'])
+
+    @property
+    def debugMode(self, valueIsNotConfig=False):
+        if 'debug' in self.config['global'].keys():
+            return self.config['global']['debug']
+        return valueIsNotConfig
 
     def debug(self, message):
         if self.debugMode:

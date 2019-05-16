@@ -64,7 +64,23 @@ class ModuleBase(object):
             if self.monitor:
                 self.monitor.tg_send_message(message)
 
+    def read_conf(self, findkey=None, default_val=None, select_module=None):
+        if self.monitor:
+            if not select_module:
+                select_module = self.NameModule
 
+            if select_module:
+                if select_module in self.monitor.config_modules.keys():
+                    if not findkey:
+                        return self.monitor.config_modules[select_module]
+                    if findkey in self.monitor.config_modules[select_module].keys():
+                        return self.monitor.config_modules[select_module][findkey]
+                    else:
+                        return default_val
+
+        if findkey or default_val:
+            return default_val
+        return []
         
 if __name__ == '__main__':
     moduel = ModuleBase()
