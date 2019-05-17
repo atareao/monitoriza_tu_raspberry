@@ -21,23 +21,15 @@
 
 import re
 import lib.tools
+import globales
 from lib.debug import *
+from lib.monitor import *
 from lib.module_base import *
 
 class Watchful(ModuleBase):
 
-    def __init__(self):
-        global debug_monitor
-        global monitor
-        ModuleBase.__init__(self,__name__)
-        
-        print("INIT 1")
-        print ("Type:" + str(type(debug_monitor)))
-        print("INIT 2")
-        if not debug_monitor:
-            print ("Debug is Null!")
-        debug.print("Prueba", DebugLevel.warning, True)
-        print("END TEST")
+    def __init__(self, monitor):
+        ModuleBase.__init__(self, monitor, __name__)
 
     def check(self):
         stdout, stderr = lib.tools.execute('df -x squashfs -x tmpfs')

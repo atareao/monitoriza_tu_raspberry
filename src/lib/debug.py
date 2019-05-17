@@ -65,19 +65,18 @@ class Debug(object):
         msg_print = msg_print + '-'*60+'\n'
         print (msg_print)
 
-
            
 if __name__ == '__main__':
-
-    debug = Debug(False)
-    try:
-        debug.print("Msg Test 1 - Enabled = False and Level Debug - No Show")
-        debug.print("Msg Test 2 - Level Error - Yes Show", DebugLevel.error)
-        debug.print("Msg Test 3 - Force = True and Level Debug - Yes Show", DebugLevel.debug, True)
-        debug.enabled = True
-        debug.print("Msg Test 4 - Enabled = True and Level Debug - Yes Show")
+    pass
+#    debug = Debug(False)
+#    try:
+#        debug.print("Msg Test 1 - Enabled = False and Level Debug - No Show")
+#        debug.print("Msg Test 2 - Level Error - Yes Show", DebugLevel.error)
+#        debug.print("Msg Test 3 - Force = True and Level Debug - Yes Show", DebugLevel.debug, True)
+#        debug.enabled = True
+#        debug.print("Msg Test 4 - Enabled = True and Level Debug - Yes Show")
     
-        test = 1 + A
+#        test = 1 + A
         
-    except Exception as exc:
-        debug.Exception()
+#    except Exception as exc:
+#        debug.Exception()

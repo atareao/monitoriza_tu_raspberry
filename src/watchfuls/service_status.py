@@ -21,20 +21,20 @@
 
 import concurrent.futures
 import lib.tools
-from monitor import debug
-from monitor import  monitor
-from lib.debug import Debug, DebugLevel
-from lib.module_base import ModuleBase
+import globales
+from lib.debug import *
+from lib.monitor import *
+from lib.module_base import *
 
 class Watchful(ModuleBase):
 
-    def __init__(self):
-        ModuleBase.__init__(self,__name__)
+    def __init__(self, monitor):
+        ModuleBase.__init__(self, monitor, __name__)
 
     def check(self):
         listservice = []
         for (key, value) in self.read_conf('list').items():
-            debug.print("Service: {0} - Enabled: {1}".format(key, value), DebugLevel.info)
+            globales.GlobDebug.print("Service: {0} - Enabled: {1}".format(key, value), DebugLevel.info)
             if value:
                 listservice.append(key)
 
@@ -50,8 +50,12 @@ class Watchful(ModuleBase):
                     returnDict[service]['status']=False
                     returnDict[service]['message']='Service: {0} - Error: {1}'.format(service, exc)
         
-        debug.print(type(returnDict), DebugLevel.debug)
-        debug.print(returnDict, DebugLevel.debug)
+        msg_debug = '*'*60 + '\n'
+        msg_debug = msg_debug + "Debug [{0}] - Data Return:\n".format(self.NameModule)
+        msg_debug = msg_debug + "Type: {0}\n".format(type(returnDict))
+        msg_debug = msg_debug + str(returnDict) + '\n'
+        msg_debug = msg_debug + '*'*60 + '\n'
+        globales.GlobDebug.print(msg_debug, DebugLevel.debug)
         return True, returnDict
 
     def __service_check(self, service):
@@ -59,7 +63,7 @@ class Watchful(ModuleBase):
         rCheck = {}
         rCheck['status']=status
         rCheck['message']=''
-        if monitor.chcek_status(status, self.NameModule, service):
+        if self.chcek_status(status, self.NameModule, service):
             if status:
                 self.send_message('Service: {0} - Status: '.format(service) + u'\U00002705')
             else:
@@ -74,6 +78,5 @@ class Watchful(ModuleBase):
 
 
 if __name__ == '__main__':
-    debug = Debug(True)
     wf = Watchful()
     print(wf.check())

@@ -25,14 +25,14 @@
 import codecs
 import json
 import os
-from lib.debug import *
+import globales
+#from lib.debug import *
 
 __all__ = ['Config']
 
 class Config(object):
 
     def __init__(self, file):
-        global debug
         self.file = file
 
     @property 
@@ -50,7 +50,7 @@ class Config(object):
                 data = json.loads(f.read())
                 f.close()
             except Exception as e:
-                debug.Exception(e)
+                globales.GlobDebug.Exception(e)
         else:
             print("Warnging: File ({0}) not exist!!!".format(self.file))
         return data
@@ -61,6 +61,6 @@ class Config(object):
             f.write(json.dumps(data))
             f.close()
         except Exception as e:
-            debug.Exception(e)
+            globales.GlobDebug.Exception(e)
             return False
         return True

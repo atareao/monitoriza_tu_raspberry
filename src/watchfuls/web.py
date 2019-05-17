@@ -24,20 +24,20 @@
 
 import concurrent.futures
 import lib.tools
+import globales
 from lib.debug import *
+from lib.monitor import *
 from lib.module_base import *
 
 class Watchful(ModuleBase):
     
-    def __init__(self):
-        global debug
-        global monitor
-        ModuleBase.__init__(self,__name__)
+    def __init__(self, monitor):
+        ModuleBase.__init__(self, monitor, __name__)
 
     def check(self):
         listurl = []
         for (key, value) in self.read_conf('list').items():
-            debug.print("Web: {0} - Enabled: {1}".format(key, value), DebugLevel.info)
+            globales.GlobDebug.print("Web: {0} - Enabled: {1}".format(key, value), DebugLevel.info)
             if value:
                 listurl.append(key)
 
@@ -53,16 +53,19 @@ class Watchful(ModuleBase):
                     returnDict[url]['status']=False
                     returnDict[url]['message']='Web: {0} - Error: {1}'.format(url, exc)
         
-        
-        debug.print(type(returnDict), DebugLevel.debug)
-        debug(returnDict, DebugLevel.debug)
+        msg_debug = '*'*60 + '\n'
+        msg_debug = msg_debug + "Debug [{0}] - Data Return:\n".format(self.NameModule)
+        msg_debug = msg_debug + "Type: {0}\n".format(type(returnDict))
+        msg_debug = msg_debug + str(returnDict) + '\n'
+        msg_debug = msg_debug + '*'*60 + '\n'
+        globales.GlobDebug.print(msg_debug, DebugLevel.debug)
         return True, returnDict
 
     def __web_check(self, url):
         rCheck = {}
         rCheck['status']=self.__web_return(url)
         rCheck['message']=''
-        if monitor.chcek_status(rCheck['status'], self.NameModule, url):
+        if self.chcek_status(rCheck['status'], self.NameModule, url):
             self.send_message('Web: {0} - Status: {1}'.format(url, 'UP ' + u'\U0001F53C' if rCheck['status'] else 'DOWN ' + u'\U0001F53D' ))
         return rCheck
 
@@ -75,6 +78,5 @@ class Watchful(ModuleBase):
         return True
         
 if __name__ == '__main__':
-    debug = Debug(True)
     wf = Watchful()
     print(wf.check())

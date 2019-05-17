@@ -21,18 +21,19 @@
 
 import re
 import lib.tools
-from monitor import debug
-from lib.debug import Debug, DebugLevel
-from lib.module_base import ModuleBase
+import globales
+from lib.debug import *
+from lib.monitor import *
+from lib.module_base import *
 
 class Watchful(ModuleBase):
 
-    def __init__(self):
-        ModuleBase.__init__(self,__name__)
+    def __init__(self, monitor):
+        ModuleBase.__init__(self, monitor, __name__)
 
     def check(self):
         stdout, stderr = lib.tools.execute('free')
-        debug.print(stdout, DebugLevel.debug)
+        globales.GlobDebug.print(stdout, DebugLevel.debug)
         x = re.findall(r'Mem\w*:\s+(\d+)\s+(\d+)', stdout)
         per = float(x[0][1])/float(x[0][0]) * 100.0
         if per < 50:
@@ -40,6 +41,5 @@ class Watchful(ModuleBase):
         return False, 'Excesive ram used {0:.1f}% '.format(per) + u'\U000026A0'
 
 if __name__ == '__main__':
-    debug = Debug(True)
     wf = Watchful()
     print(wf.check())
