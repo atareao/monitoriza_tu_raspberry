@@ -20,11 +20,15 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 from lib.module_base import ModuleBase
+import globales
+from lib.debug import *
+from lib.monitor import *
+from lib.module_base import *
 
 class Watchful(ModuleBase):
 
-    def __init__(self, monitor, debug = False):
-        ModuleBase.__init__(self,__name__, monitor, debug)
+    def __init__(self, monitor):
+        ModuleBase.__init__(self, monitor, __name__)
 
     def check(self):
         f = open('/sys/class/thermal/thermal_zone0/temp', 'r')

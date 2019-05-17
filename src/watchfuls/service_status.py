@@ -21,17 +21,20 @@
 
 import concurrent.futures
 import lib.tools
-from lib.module_base import ModuleBase
+import globales
+from lib.debug import *
+from lib.monitor import *
+from lib.module_base import *
 
 class Watchful(ModuleBase):
 
-    def __init__(self, monitor, debug = False):
-        ModuleBase.__init__(self,__name__, monitor, debug)
+    def __init__(self, monitor):
+        ModuleBase.__init__(self, monitor, __name__)
 
     def check(self):
         listservice = []
         for (key, value) in self.read_conf('list').items():
-            self.debug("Service: {0} - Enabled: {1}".format(key, value))
+            globales.GlobDebug.print("Service: {0} - Enabled: {1}".format(key, value), DebugLevel.info)
             if value:
                 listservice.append(key)
 
@@ -47,8 +50,12 @@ class Watchful(ModuleBase):
                     returnDict[service]['status']=False
                     returnDict[service]['message']='Service: {0} - Error: {1}'.format(service, exc)
         
-        self.debug(type(returnDict))
-        self.debug(returnDict)
+        msg_debug = '*'*60 + '\n'
+        msg_debug = msg_debug + "Debug [{0}] - Data Return:\n".format(self.NameModule)
+        msg_debug = msg_debug + "Type: {0}\n".format(type(returnDict))
+        msg_debug = msg_debug + str(returnDict) + '\n'
+        msg_debug = msg_debug + '*'*60 + '\n'
+        globales.GlobDebug.print(msg_debug, DebugLevel.debug)
         return True, returnDict
 
     def __service_check(self, service):
@@ -56,7 +63,7 @@ class Watchful(ModuleBase):
         rCheck = {}
         rCheck['status']=status
         rCheck['message']=''
-        if self.monitor.chcek_status(status, self.NameModule, service):
+        if self.chcek_status(status, self.NameModule, service):
             if status:
                 self.send_message('Service: {0} - Status: '.format(service) + u'\U00002705')
             else:

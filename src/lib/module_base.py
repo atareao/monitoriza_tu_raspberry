@@ -19,42 +19,24 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-import pprint
+import globales
+from lib.debug import *
+from lib.monitor import *
+
+__all__ = ['ModuleBase']
 
 class ModuleBase(object):
-    _monitor = None
-    _nameModule = ''
 
-    def __init__(self, name='', monitor=None, debug = False):
-        self._debugMode = debug
-        self._monitor = monitor
+    def __init__(self, monitor, name=None):
+        self.monitor = monitor
         if name:
-            self._nameModule = name
+            self.__nameModule = name
         else:
-            self._nameModule = __name__
+            self.__nameModule = __name__
 
     @property
     def NameModule(self):
-        return self._nameModule
-
-    @property
-    def debugMode(self):
-        return self._debugMode
-
-    @debugMode.setter
-    def debugMode(self, value):
-        self._debugMode = value
-
-    def debug(self, message):
-        if self.debugMode:
-            if isinstance(message, str):
-                print(message)
-            else:
-                pprint.pprint(message)
-
-    @property
-    def monitor(self):
-        return self._monitor
+        return self.__nameModule
 
     def check(self):
         pass
@@ -62,7 +44,7 @@ class ModuleBase(object):
     def send_message(self, message):
         if message:
             if self.monitor:
-                self.monitor.tg_send_message(message)
+                self.monitor.send_message(message)
 
     def read_conf(self, findkey=None, default_val=None, select_module=None):
         if self.monitor:
@@ -81,7 +63,8 @@ class ModuleBase(object):
         if findkey or default_val:
             return default_val
         return []
-        
-if __name__ == '__main__':
-    moduel = ModuleBase()
-    print(moduel.check())
+
+    def chcek_status(self, status, module, module_subkey):
+        if self.monitor:
+            return self.monitor.chcek_status(status, module, module_subkey)
+        return None

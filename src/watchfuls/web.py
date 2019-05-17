@@ -24,17 +24,20 @@
 
 import concurrent.futures
 import lib.tools
-from lib.module_base import ModuleBase
+import globales
+from lib.debug import *
+from lib.monitor import *
+from lib.module_base import *
 
 class Watchful(ModuleBase):
     
-    def __init__(self, monitor, debug = False):
-        ModuleBase.__init__(self,__name__, monitor, debug)
+    def __init__(self, monitor):
+        ModuleBase.__init__(self, monitor, __name__)
 
     def check(self):
         listurl = []
         for (key, value) in self.read_conf('list').items():
-            self.debug("Web: {0} - Enabled: {1}".format(key, value))
+            globales.GlobDebug.print("Web: {0} - Enabled: {1}".format(key, value), DebugLevel.info)
             if value:
                 listurl.append(key)
 
@@ -50,16 +53,19 @@ class Watchful(ModuleBase):
                     returnDict[url]['status']=False
                     returnDict[url]['message']='Web: {0} - Error: {1}'.format(url, exc)
         
-        
-        self.debug(type(returnDict))
-        self.debug(returnDict)
+        msg_debug = '*'*60 + '\n'
+        msg_debug = msg_debug + "Debug [{0}] - Data Return:\n".format(self.NameModule)
+        msg_debug = msg_debug + "Type: {0}\n".format(type(returnDict))
+        msg_debug = msg_debug + str(returnDict) + '\n'
+        msg_debug = msg_debug + '*'*60 + '\n'
+        globales.GlobDebug.print(msg_debug, DebugLevel.debug)
         return True, returnDict
 
     def __web_check(self, url):
         rCheck = {}
         rCheck['status']=self.__web_return(url)
         rCheck['message']=''
-        if self.monitor.chcek_status(rCheck['status'], self.NameModule, url):
+        if self.chcek_status(rCheck['status'], self.NameModule, url):
             self.send_message('Web: {0} - Status: {1}'.format(url, 'UP ' + u'\U0001F53C' if rCheck['status'] else 'DOWN ' + u'\U0001F53D' ))
         return rCheck
 

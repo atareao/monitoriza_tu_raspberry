@@ -21,16 +21,19 @@
 
 import re
 import lib.tools
-from lib.module_base import ModuleBase
+import globales
+from lib.debug import *
+from lib.monitor import *
+from lib.module_base import *
 
 class Watchful(ModuleBase):
     
-    def __init__(self, monitor, debug = False):
-        ModuleBase.__init__(self,__name__, monitor, debug)
+    def __init__(self, monitor):
+        ModuleBase.__init__(self, monitor, __name__)
 
     def check(self):
         stdout, stderr = lib.tools.execute('free')
-        self.debug(stdout)
+        globales.GlobDebug.print(stdout, DebugLevel.debug)
         x = re.findall(r'Swap:\s+(\d+)\s+(\d+)', stdout)
         per = float(x[0][1])/float(x[0][0]) * 100.0
         if per < 50:
