@@ -25,11 +25,14 @@
 import codecs
 import json
 import os
-import sys
-import traceback
+from lib.debug import *
+
+__all__ = ['Config']
 
 class Config(object):
+
     def __init__(self, file):
+        global debug
         self.file = file
 
     @property 
@@ -47,14 +50,9 @@ class Config(object):
                 data = json.loads(f.read())
                 f.close()
             except Exception as e:
-                print ("Exception in user code:")
-                print ('-'*60)
-                print (e)
-                print ('-'*60)
-                traceback.print_exc(file=sys.stdout)
-                print ('-'*60)
+                debug.Exception(e)
         else:
-            print("File ({0}) not exist!".format(self.file))
+            print("Warnging: File ({0}) not exist!!!".format(self.file))
         return data
 
     def save(self, data):
@@ -63,11 +61,6 @@ class Config(object):
             f.write(json.dumps(data))
             f.close()
         except Exception as e:
-            print ("Exception in user code:")
-            print ('-'*60)
-            print (e)
-            print ('-'*60)
-            traceback.print_exc(file=sys.stdout)
-            print ('-'*60)
+            debug.Exception(e)
             return False
         return True

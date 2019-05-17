@@ -21,17 +21,20 @@
 
 import lib.tools
 from multiprocessing.dummy import Pool as ThreadPool
+from monitor import debug
+from monitor import  monitor
+from lib.debug import Debug, DebugLevel
 from lib.module_base import ModuleBase
 
 class Watchful(ModuleBase):
 
-    def __init__(self, monitor, debug = False):
-        ModuleBase.__init__(self,__name__, monitor, debug)
+    def __init__(self):
+        ModuleBase.__init__(self,__name__)
 
     def check(self):
         lHost=[]
         for (key, value) in self.read_conf('list').items():
-            self.debug("Ping: {0} - Enabled: {1}".format(key, value))
+            debug.print("Ping: {0} - Enabled: {1}".format(key, value), DebugLevel.info)
             if value:
                 lHost.append(key)
 
@@ -41,8 +44,8 @@ class Watchful(ModuleBase):
         pool.close()
         pool.join()
 
-        self.debug(type(lReturn))
-        self.debug(lReturn)
+        debug.print(type(lReturn), DebugLevel.debug)
+        debug.print(lReturn, DebugLevel.debug)
         
 
         #Convertir list en dictionary
@@ -51,8 +54,8 @@ class Watchful(ModuleBase):
             dReturn = {**dReturn, **valueL1}
 
         
-        self.debug(type(dReturn))
-        self.debug(dReturn)
+        debug.print(type(dReturn), DebugLevel.debug)
+        debug.print(dReturn, DebugLevel.debug)
         return True, dReturn
     
     def __ping_check(self, host):
@@ -62,7 +65,7 @@ class Watchful(ModuleBase):
         rCheck[host] = {}
         rCheck[host]['status']=status_return
         rCheck[host]['message']=''
-        if self.monitor.chcek_status(status_return, self.NameModule, host):
+        if monitor.chcek_status(status_return, self.NameModule, host):
             self.send_message('Ping: {0} {1}'.format(host, 'UP ' + u'\U0001F53C' if status_return else 'DOWN ' + u'\U0001F53D'))
         return rCheck
 
@@ -73,5 +76,6 @@ class Watchful(ModuleBase):
         return False
 
 if __name__ == '__main__':
+    debug = Debug(True)
     wf = Watchful()
     print(wf.check())

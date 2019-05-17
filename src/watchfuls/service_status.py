@@ -21,17 +21,20 @@
 
 import concurrent.futures
 import lib.tools
+from monitor import debug
+from monitor import  monitor
+from lib.debug import Debug, DebugLevel
 from lib.module_base import ModuleBase
 
 class Watchful(ModuleBase):
 
-    def __init__(self, monitor, debug = False):
-        ModuleBase.__init__(self,__name__, monitor, debug)
+    def __init__(self):
+        ModuleBase.__init__(self,__name__)
 
     def check(self):
         listservice = []
         for (key, value) in self.read_conf('list').items():
-            self.debug("Service: {0} - Enabled: {1}".format(key, value))
+            debug.print("Service: {0} - Enabled: {1}".format(key, value), DebugLevel.info)
             if value:
                 listservice.append(key)
 
@@ -47,8 +50,8 @@ class Watchful(ModuleBase):
                     returnDict[service]['status']=False
                     returnDict[service]['message']='Service: {0} - Error: {1}'.format(service, exc)
         
-        self.debug(type(returnDict))
-        self.debug(returnDict)
+        debug.print(type(returnDict), DebugLevel.debug)
+        debug.print(returnDict, DebugLevel.debug)
         return True, returnDict
 
     def __service_check(self, service):
@@ -56,7 +59,7 @@ class Watchful(ModuleBase):
         rCheck = {}
         rCheck['status']=status
         rCheck['message']=''
-        if self.monitor.chcek_status(status, self.NameModule, service):
+        if monitor.chcek_status(status, self.NameModule, service):
             if status:
                 self.send_message('Service: {0} - Status: '.format(service) + u'\U00002705')
             else:
@@ -71,5 +74,6 @@ class Watchful(ModuleBase):
 
 
 if __name__ == '__main__':
+    debug = Debug(True)
     wf = Watchful()
     print(wf.check())

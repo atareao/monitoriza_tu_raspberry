@@ -24,17 +24,20 @@
 
 import concurrent.futures
 import lib.tools
-from lib.module_base import ModuleBase
+from lib.debug import *
+from lib.module_base import *
 
 class Watchful(ModuleBase):
     
-    def __init__(self, monitor, debug = False):
-        ModuleBase.__init__(self,__name__, monitor, debug)
+    def __init__(self):
+        global debug
+        global monitor
+        ModuleBase.__init__(self,__name__)
 
     def check(self):
         listurl = []
         for (key, value) in self.read_conf('list').items():
-            self.debug("Web: {0} - Enabled: {1}".format(key, value))
+            debug.print("Web: {0} - Enabled: {1}".format(key, value), DebugLevel.info)
             if value:
                 listurl.append(key)
 
@@ -51,15 +54,15 @@ class Watchful(ModuleBase):
                     returnDict[url]['message']='Web: {0} - Error: {1}'.format(url, exc)
         
         
-        self.debug(type(returnDict))
-        self.debug(returnDict)
+        debug.print(type(returnDict), DebugLevel.debug)
+        debug(returnDict, DebugLevel.debug)
         return True, returnDict
 
     def __web_check(self, url):
         rCheck = {}
         rCheck['status']=self.__web_return(url)
         rCheck['message']=''
-        if self.monitor.chcek_status(rCheck['status'], self.NameModule, url):
+        if monitor.chcek_status(rCheck['status'], self.NameModule, url):
             self.send_message('Web: {0} - Status: {1}'.format(url, 'UP ' + u'\U0001F53C' if rCheck['status'] else 'DOWN ' + u'\U0001F53D' ))
         return rCheck
 
@@ -72,5 +75,6 @@ class Watchful(ModuleBase):
         return True
         
 if __name__ == '__main__':
+    debug = Debug(True)
     wf = Watchful()
     print(wf.check())

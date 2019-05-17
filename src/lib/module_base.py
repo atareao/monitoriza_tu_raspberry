@@ -19,62 +19,43 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-import pprint
+from lib.debug import *
+from monitor import *
+
+__all__ = ['ModuleBase']
 
 class ModuleBase(object):
-    _monitor = None
-    _nameModule = ''
-
-    def __init__(self, name='', monitor=None, debug = False):
-        self._debugMode = debug
-        self._monitor = monitor
+    def __init__(self, name=None):
+        global debug
+        global monitor
         if name:
-            self._nameModule = name
+            self.__nameModule = name
         else:
-            self._nameModule = __name__
+            self.__nameModule = __name__
 
     @property
     def NameModule(self):
-        return self._nameModule
-
-    @property
-    def debugMode(self):
-        return self._debugMode
-
-    @debugMode.setter
-    def debugMode(self, value):
-        self._debugMode = value
-
-    def debug(self, message):
-        if self.debugMode:
-            if isinstance(message, str):
-                print(message)
-            else:
-                pprint.pprint(message)
-
-    @property
-    def monitor(self):
-        return self._monitor
+        return self.__nameModule
 
     def check(self):
         pass
 
     def send_message(self, message):
         if message:
-            if self.monitor:
-                self.monitor.tg_send_message(message)
+            if monitor:
+                monitor.send_message(message)
 
     def read_conf(self, findkey=None, default_val=None, select_module=None):
-        if self.monitor:
+        if monitor:
             if not select_module:
                 select_module = self.NameModule
 
             if select_module:
-                if select_module in self.monitor.config_modules.keys():
+                if select_module in monitor.config_modules.keys():
                     if not findkey:
-                        return self.monitor.config_modules[select_module]
-                    if findkey in self.monitor.config_modules[select_module].keys():
-                        return self.monitor.config_modules[select_module][findkey]
+                        return monitor.config_modules[select_module]
+                    if findkey in monitor.config_modules[select_module].keys():
+                        return monitor.config_modules[select_module][findkey]
                     else:
                         return default_val
 
@@ -83,5 +64,6 @@ class ModuleBase(object):
         return []
         
 if __name__ == '__main__':
+    debug = Debug(True)
     moduel = ModuleBase()
     print(moduel.check())

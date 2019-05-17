@@ -23,8 +23,8 @@ from lib.module_base import ModuleBase
 
 class Watchful(ModuleBase):
 
-    def __init__(self, monitor, debug = False):
-        ModuleBase.__init__(self,__name__, monitor, debug)
+    def __init__(self):
+        ModuleBase.__init__(self,__name__)
 
     def check(self):
         f = open('/sys/class/thermal/thermal_zone0/temp', 'r')

@@ -25,127 +25,137 @@
 import glob
 import os
 import sys
-import traceback
 import importlib
 import socket
 import pprint
+import logging
 import concurrent.futures
-from lib.config import Config
-from lib.telegram import Telegram
-from lib.module_base import ModuleBase
+from lib.telegram import *
+from lib.debug import *
+from lib.config import *
+from lib.module_base import *
+
+__all__ = ['debug', 'monitor', 'Monitor']
+
+debug = None
+monitor = None
 
 class Monitor():
-    status_datos = {}
 
     def __init__(self):
-        self.dir = os.path.dirname(os.path.abspath(__file__))
-        self.watchfuls_dir = os.path.join(self.dir, 'watchfuls')
-        sys.path.insert(1, self.watchfuls_dir)
-        if self.dir.find('src') != -1:
-            config_dir = os.path.normpath(os.path.join(self.dir, '../data/'))
-        else:
-            config_dir = '/etc/watchful/'
-        self.status = Config(os.path.join(config_dir, 'status.json'))
-        self.config = Config(os.path.join(config_dir, 'config.json')).read()
-        self.config_modules = Config(os.path.join(config_dir, 'modules.json')).read()
-        self.tg = Telegram(self.config['telegram']['token'], self.config['telegram']['chat_id'])
+        __status_datos = {}
+        global debug
+        if not debug:
+            debug = Debug(True)
+
+        self.__readConfig()
+        self.__readStatus()
+        self.__initTelegram()
+        sys.path.insert(1, self.modules_dir)
+
+    def __readConfig(self):
+        self.config_global = Config(os.path.join(self.config_dir, 'config.json')).read()
+        self.config_modules = Config(os.path.join(self.config_dir, 'modules.json')).read()
+
+        if self.config_global:
+            if 'global' in self.config_global.keys() and 'debug' in self.config_global['global']:
+                #debug.enabled = self.config_global['global']['debug']
+                pass
+        
+    def __readStatus(self):
+        self.status = Config(os.path.join(self.config_dir, 'status.json'))
+
+    def __initTelegram(self):
+        if self.config_global:
+            self.tg = Telegram(self.config_global['telegram']['token'], self.config_global['telegram']['chat_id'])
 
     @property
-    def debugMode(self, valueIsNotConfig=False):
-        if 'debug' in self.config['global'].keys():
-            return self.config['global']['debug']
-        return valueIsNotConfig
+    def dir(self):
+        return os.path.dirname(os.path.abspath(__file__))
 
-    def debug(self, message):
-        if self.debugMode:
-            if isinstance(message, str):
-                print(message)
-            else:
-                pprint.pprint(message)
+    @property
+    def modules_dir(self):
+        return os.path.join(self.dir, 'watchfuls')
 
-    def tg_send_message(self, message):
+    @property
+    def config_dir(self):
+        if self.dir.find('src') != -1:
+            return os.path.normpath(os.path.join(self.dir, '../data/'))
+        else:
+            return '/etc/watchful/'
+
+
+    def send_message(self, message):
         if message:
             hostname = socket.gethostname()
             self.tg.send_message("[{0}]: {1}".format(hostname, message))
 
     def chcek_status(self, status, module, module_subkey=''):
         if module_subkey:
-            if module not in self.status_datos.keys() or module_subkey not in self.status_datos[module].keys() or (module_subkey in self.status_datos[module].keys() and  self.status_datos[module][module_subkey] != status):
+            if module not in self.__status_datos.keys() or module_subkey not in self.__status_datos[module].keys() or (module_subkey in self.__status_datos[module].keys() and  self.__status_datos[module][module_subkey] != status):
                 return True
         else:
-            if module not in self.status_datos.keys() or (module in self.status_datos.keys() and  self.status_datos[module] != status):
+            if module not in self.__status_datos.keys() or (module in self.__status_datos.keys() and  self.__status_datos[module] != status):
                 return True
         return False
 
     def check_module(self, module_name):
         try:
-            self.debug("Module: {0}".format(module_name))
-            module = importlib.import_module(module_name)
-            watchful = module.Watchful(self, self.debugMode)
-            status, message = watchful.check()
+            debug.print("Module: {0}".format(module_name), DebugLevel.info)
+            module_import = importlib.import_module(module_name)
+            module = module_import.Watchful()
+            status, message = module.check()
 
             if isinstance(message, dict):
-                if module_name not in self.status_datos.keys():
-                    self.status_datos[module_name] = {}
+                if module_name not in self.__status_datos.keys():
+                    self.__status_datos[module_name] = {}
 
                 for (key, value) in message.items():
-                    self.debug("Module: {0} - Key: {1} - Val: {2}".format(module_name, key, value))
+                    debug.print("Module: {0} - Key: {1} - Val: {2}".format(module_name, key, value), DebugLevel.debug)
                     if self.chcek_status(value['status'], module_name, key):
-                        self.status_datos[module_name][key] = value['status']
-                        self.tg_send_message(value['message'])
-                        self.debug('Module: {0}/{1} - New Status: {2}'.format(module_name, key, value['status']))
+                        self.__status_datos[module_name][key] = value['status']
+                        self.send_message(value['message'])
+                        debug.print('Module: {0}/{1} - New Status: {2}'.format(module_name, key, value['status']), DebugLevel.debug)
                 return True
             elif isinstance(message, str):
                 if self.chcek_status(status, module_name):
-                    self.status_datos[module_name] = status
-                    self.tg_send_message(message)
-                    self.debug("Module: {0} - New Status: {1}".format(module_name, status))
+                    self.__status_datos[module_name] = status
+                    self.send_message(message)
+                    debug.print("Module: {0} - New Status: {1}".format(module_name, status), DebugLevel.debug)
                 return True
             else:
-                print('WARNING: Format not implement: {0}'.format(type(message)))
-                print('Data Status:')
-                pprint.pprint(status)
-                print ('-'*60)
-                print('Data Message:')
-                pprint.pprint(message)
-                print ('-'*60)
-                print ('-'*60)
-                print('')
+                debug.print('WARNING: Format not implement: {0}\nData Status:\n{1}\n{2}\nData Message:\n{3}\n{2}\n{2}\n\n'.format(type(message), pprint.pprint(status),'-'*60, pprint.pprint(message)))
 
         except Exception as e:
-            print ("Exception in user code:")
-            print ('-'*60)
-            traceback.print_exc(file=sys.stdout)
-            print ('-'*60)
+            debug.Exception(e)
         return False
 
     def check(self):
-        listmodules = []
-        changed = False
-        self.status_datos = self.status.read()
-        watchfuls = glob.glob(os.path.join(self.watchfuls_dir, '*.py'))
-        for watchful_def in watchfuls:
-            watchful_def = os.path.splitext(os.path.basename(watchful_def))[0]
-            if watchful_def.find('__') == -1:
-                listmodules.append(watchful_def)
+        list_modules = []
+        for module_def in glob.glob(os.path.join(self.modules_dir, '*.py')):
+            module_def = os.path.splitext(os.path.basename(module_def))[0]
+            if module_def.find('__') == -1:
+                list_modules.append(module_def)
+                break
 
+        changed = False
+        self.__status_datos = self.status.read()
         with concurrent.futures.ThreadPoolExecutor(max_workers=5) as executor:
-            future_to_run_module = {executor.submit(self.check_module, module): module for module in listmodules}
+            future_to_run_module = {executor.submit(self.check_module, module): module for module in list_modules}
             for future in concurrent.futures.as_completed(future_to_run_module):
                 module = future_to_run_module[future]
                 try:
                     if future.result():
                         changed=True
                 except Exception as exc:
-                    print ("Exception in user code:")
-                    print ('-'*60)
-                    traceback.print_exc(file=sys.stdout)
-                    print ('-'*60)
+                    debug.Exception(exc)
 
-        self.debug(self.status_datos)
+        debug.print("Debug Status Save:", DebugLevel.debug)
+        debug.print(self.__status_datos, DebugLevel.debug)
         if changed is True:
-            self.status.save(self.status_datos)
+            self.status.save(self.__status_datos)
 
 if __name__ == '__main__':
+    debug = Debug(True)
     monitor = Monitor()
     monitor.check()

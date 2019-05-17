@@ -21,16 +21,18 @@
 
 import re
 import lib.tools
+from monitor import debug
+from lib.debug import Debug, DebugLevel
 from lib.module_base import ModuleBase
 
 class Watchful(ModuleBase):
     
-    def __init__(self, monitor, debug = False):
-        ModuleBase.__init__(self,__name__, monitor, debug)
+    def __init__(self):
+        ModuleBase.__init__(self,__name__)
 
     def check(self):
         stdout, stderr = lib.tools.execute('free')
-        self.debug(stdout)
+        debug.print(stdout, DebugLevel.debug)
         x = re.findall(r'Swap:\s+(\d+)\s+(\d+)', stdout)
         per = float(x[0][1])/float(x[0][0]) * 100.0
         if per < 50:
@@ -39,5 +41,6 @@ class Watchful(ModuleBase):
 
 
 if __name__ == '__main__':
+    debug = Debug(True)
     wf = Watchful()
     print(wf.check())
