@@ -17,6 +17,7 @@
 ```
 # cd /usr/src/monitoriza_tu_raspberry
 # git pull
+# chmod +x *.sh
 # sudo update.sh
 ```
 
