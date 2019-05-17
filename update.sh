@@ -16,7 +16,9 @@ do
   NAMEDIR=${NAMEDIR%"/"}
   PATH_DEST="/opt/watchful/${NAMEDIR}"
   mkdir ${PATH_DEST}
-  cp $f*.py ${PATH_DEST}/
+  if [[ "${NAMEDIR:0:2}" != "__" ]]; then
+	cp $f*.py ${PATH_DEST}/
+  fi  
 done
 for f in data/*.json
 do
