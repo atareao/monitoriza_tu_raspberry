@@ -8,6 +8,7 @@ systemctl stop watchful.timer
 
 rm -f '/etc/watchful/status.json'
 rm -rf '/opt/watchful'
+mkdir -p '/var/lib/watchful'
 mkdir -p '/opt/watchful'
 cp src/*.py /opt/watchful/
 for f in src/*/

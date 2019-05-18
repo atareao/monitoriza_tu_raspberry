@@ -39,17 +39,23 @@ __all__ = ['Monitor']
 
 class Monitor(object):
 
-    def __init__(self, dir_base, dir_config, dir_modules):
+    def __init__(self, dir_base, dir_config, dir_modules, dir_var):
         self.dir_base = dir_base
         self.dir_config = dir_config
         self.dir_modules = dir_modules
+        self.dir_var = dir_var
 
         self.readConfig()
         self.readStatus()
         #self.status = None  #Descomentar para pruebas, omite el contenido status.json, dará error (self.status.save(self.__status_datos))
         self.initTelegram()
-        
-        
+
+
+    def __checkDir(salf, pathdir):
+        if pathdir:
+            if not os.path.isdir(pathdir):
+                os.makedirs(pathdir, exist_ok=True)
+
     def readConfig(self):
         if self.dir_config:
             self.config = Config(os.path.join(self.dir_config, 'config.json')).read()
@@ -59,10 +65,13 @@ class Monitor(object):
             self.config = {}
             self.config_monitor = {}
             self.config_modules = {}
-        
+
     def readStatus(self):
-        if self.dir_config:
-            self.status = Config(os.path.join(self.dir_config, 'status.json'))
+        if self.dir_var:
+            self.__checkDir(self.dir_var)
+            self.status = Config(os.path.join(self.dir_var, 'status.json'))
+            if not self.status.isExist:
+                self.status.save({})
         else:
             self.status = None
 
@@ -93,6 +102,13 @@ class Monitor(object):
     @dir_modules.setter
     def dir_modules(self, val):
         self.__dir_modules = val
+
+    @property
+    def dir_var(self):
+        return self.__dir_var
+    @dir_var.setter
+    def dir_var(self, val):
+        self.__dir_var = val
 
 
     def read_conf(self, findkey=None, default_val=None):
@@ -168,7 +184,7 @@ class Monitor(object):
         self.__status_datos = {}
         if self.status:
             self.__status_datos = self.status.read()
-            
+
         max_threads = self.read_conf('threads',5)
         globales.GlobDebug.print("Monitor Max Threads: {0}".format(max_threads), DebugLevel.debug)
         with concurrent.futures.ThreadPoolExecutor(max_workers= max_threads) as executor:
