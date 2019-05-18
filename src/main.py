@@ -38,6 +38,11 @@ def _config_dir():
     else:
         return '/etc/watchful/'
 
+def _var_dir():
+    if _dir().find('src') != -1:
+        return '/var/lib/watchful/dev'
+    else:
+        return '/var/lib/watchful/'
 
 if __name__ == "__main__":
     globales.GlobDebug = Debug(True)
@@ -51,5 +56,5 @@ if __name__ == "__main__":
 
     #globales.GlobDebug.enabled = True
 
-    globales.GlobMonitor = Monitor(_dir(), _config_dir(), _modules_dir())
+    globales.GlobMonitor = Monitor(_dir(), _config_dir(), _modules_dir(), _var_dir())
     globales.GlobMonitor.check()

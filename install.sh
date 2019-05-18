@@ -6,6 +6,7 @@ fi
 
 mkdir -p '/etc/watchful'
 mkdir -p '/opt/watchful'
+mkdir -p '/var/lib/watchful'
 cp src/*.py /opt/watchful/
 for f in src/*/
 do
