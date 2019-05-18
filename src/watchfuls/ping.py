@@ -29,7 +29,7 @@ from lib.module_base import *
 class Watchful(ModuleBase):
 
     def __init__(self, monitor):
-        ModuleBase.__init__(self, monitor, __name__)
+        super().__init__(monitor, __name__)
 
     def check(self):
         lHost=[]

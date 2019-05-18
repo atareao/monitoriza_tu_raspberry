@@ -29,7 +29,7 @@ from lib.module_base import *
 class Watchful(ModuleBase):
 
     def __init__(self, monitor):
-        ModuleBase.__init__(self, monitor, __name__)
+        super().__init__(monitor, __name__)
 
     def check(self):
         stdout, stderr = lib.tools.execute('df -x squashfs -x tmpfs')
@@ -39,7 +39,6 @@ class Watchful(ModuleBase):
                 return False, 'Warning partition {0} ({1}) used {2}% '.format(
                     fs[0], fs[2], fs[1]) + u'\U000026A0'
         return True, 'Filesystem used under 80% ' + u'\U00002705'
-
 
 if __name__ == '__main__':
     wf = Watchful()
