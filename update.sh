@@ -7,6 +7,8 @@ fi
 systemctl stop watchful.timer
 
 rm -f '/etc/watchful/status.json'
+rm -f '/var/lib/watchful/status.json'
+rm -f '/var/lib/watchful/dev/status.json'
 rm -rf '/opt/watchful'
 mkdir -p '/var/lib/watchful'
 mkdir -p '/opt/watchful'

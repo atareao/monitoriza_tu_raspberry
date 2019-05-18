@@ -122,7 +122,7 @@ class Monitor(object):
         if message and self.tg:
             hostname = socket.gethostname()
             #Hay que enviar "\[" ya que solo "[" se lo come Telegram en modo "Markdown".
-            self.tg.send_message("\[{0} {1}]: {2}".format(u'\U0001F4BB',hostname, message))
+            self.tg.send_message("{0} \[{1}]: {2}".format(u'\U0001F4BB',hostname, message))
 
 
     def chcek_status(self, status, module, module_subkey=''):

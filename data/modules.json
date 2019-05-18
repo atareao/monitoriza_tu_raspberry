@@ -15,7 +15,6 @@
     "list": {
       "www.atareao.es": true,
       "www.cerebelum.net": true,
-      "www.google.ffdfes": true,
       "www.dominio.com": false
     }
   },
@@ -25,6 +24,22 @@
       "192.168.1.1": true,
       "192.168.1.200":  true,
       "192.168.88.4": true
+    }
+  },
+  "temperature": {
+    "alert": 80
+  },
+  "ram": {
+    "alert": 60
+  },
+  "swap": {
+    "alert": 60
+  },
+  "filesystemusage": {
+    "alert": 85,
+    "list": {
+      "/": 80,
+      "/boot": 80
     }
   }
 }

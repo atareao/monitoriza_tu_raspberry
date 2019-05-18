@@ -6,6 +6,9 @@
 # Copyright © 2019  Lorenzo Carbonell (aka atareao)
 # <lorenzo.carbonell.cerezo at gmail dot com>
 #
+# Copyright © 2019  Javier Pastor (aka vsc55)
+# <jpastor at cerebelum dot net>
+#
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
 # the Free Software Foundation, either version 3 of the License, or
@@ -19,7 +22,6 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-from lib.module_base import ModuleBase
 import globales
 from lib.debug import *
 from lib.monitor import *
@@ -27,16 +29,26 @@ from lib.module_base import *
 
 class Watchful(ModuleBase):
 
+    #temperatura en ºC que se usara si no se ha configurado el modulo, o se ha definido un valor igual o menor que 0.
+    __default_alert=80
+
     def __init__(self, monitor):
         super().__init__(monitor, __name__)
 
     def check(self):
+        temp_alert= self.read_conf("alert", self.__default_alert)
+        if isinstance(temp_alert, str):
+            temp_alert=temp_alert.strip()
+        if not temp_alert or temp_alert <= 0:
+            temp_alert=self.__default_alert
+
+        #TODO: Pendiente controlar multiples "thermal_zone*"
         f = open('/sys/class/thermal/thermal_zone0/temp', 'r')
         temp = float(f.read().split('\n')[0])/1000.0
         f.close()
-        if temp <= 80:
-            return True, 'Temperature ok {0} ºC '.format(temp) + u'\U00002705'
-        return False, 'Over temperature warning {0} ºC '.format(temp) + u'\U0001F525'
+        if temp <= float(temp_alert):
+            return True, 'Temperature Ok {0} ºC {1}'.format(temp, u'\U00002705')
+        return False, 'Over temperature Warning {0} ºC {1}'.format(temp, u'\U0001F525')
 
 
 if __name__ == '__main__':
