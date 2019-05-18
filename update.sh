@@ -4,7 +4,11 @@ if [ "$(id -u)" != "0" ]; then
     exit 1
 fi
 
+systemctl disable watchful.timer
 systemctl stop watchful.timer
+rm '/lib/systemd/system/watchful.service'
+rm '/lib/systemd/system/watchful.timer'
+systemctl daemon-reload
 
 rm -f '/etc/watchful/status.json'
 rm -f '/var/lib/watchful/status.json'
@@ -39,4 +43,9 @@ do
   fi
 done
 
+cp data/watchful.service /lib/systemd/system/
+cp data/watchful.timer /lib/systemd/system/
+
+systemctl daemon-reload
+systemctl enable watchful.timer
 systemctl start watchful.timer
