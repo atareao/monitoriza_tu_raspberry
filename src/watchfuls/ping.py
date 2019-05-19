@@ -23,24 +23,24 @@ import lib.tools
 import time
 from multiprocessing.dummy import Pool as ThreadPool
 import globales
-from lib.debug import *
-from lib.monitor import *
-from lib.module_base import *
+import lib.debug
+import lib.module_base
+import lib.monitor
 
-class Watchful(ModuleBase):
+class Watchful(lib.module_base.ModuleBase):
 
     def __init__(self, monitor):
         super().__init__(monitor, __name__)
 
     def check(self):
         lHost=[]
-        for (key, value) in self.read_conf('list').items():
-            globales.GlobDebug.print("Ping: {0} - Enabled: {1}".format(key, value), DebugLevel.info)
+        for (key, value) in self.get_conf('list', {}).items():
+            globales.GlobDebug.print("Ping: {0} - Enabled: {1}".format(key, value), lib.debug.DebugLevel.info)
             if value:
                 lHost.append(key)
 
         lReturn=[]
-        pool = ThreadPool(self.read_conf('threads',5))
+        pool = ThreadPool(self.get_conf('threads', self._default_threads))
         lReturn = pool.map(self.__ping_check, lHost)
         pool.close()
         pool.join()
@@ -51,7 +51,7 @@ class Watchful(ModuleBase):
         msg_debug = msg_debug + "Type: {0}\n".format(type(lReturn))
         msg_debug = msg_debug + str(lReturn) + '\n'
         msg_debug = msg_debug + '*'*60 + '\n'
-        globales.GlobDebug.print(msg_debug, DebugLevel.debug)
+        globales.GlobDebug.print(msg_debug, lib.debug.DebugLevel.debug)
         
 
         #Convertir list en dictionary
@@ -65,7 +65,7 @@ class Watchful(ModuleBase):
         msg_debug = msg_debug + "Type: {0}\n".format(type(dReturn))
         msg_debug = msg_debug + str(dReturn) + '\n'
         msg_debug = msg_debug + '*'*60 + '\n'
-        globales.GlobDebug.print(msg_debug, DebugLevel.debug)
+        globales.GlobDebug.print(msg_debug, lib.debug.DebugLevel.debug)
         return True, dReturn
     
     def __ping_check(self, host):

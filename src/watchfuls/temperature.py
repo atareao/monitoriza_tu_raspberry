@@ -23,11 +23,11 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 import globales
-from lib.debug import *
-from lib.monitor import *
-from lib.module_base import *
+import lib.debug
+import lib.module_base
+import lib.monitor
 
-class Watchful(ModuleBase):
+class Watchful(lib.module_base.ModuleBase):
 
     #temperatura en ºC que se usara si no se ha configurado el modulo, o se ha definido un valor igual o menor que 0.
     __default_alert=80
@@ -36,7 +36,7 @@ class Watchful(ModuleBase):
         super().__init__(monitor, __name__)
 
     def check(self):
-        temp_alert= self.read_conf("alert", self.__default_alert)
+        temp_alert= self.get_conf("alert", self.__default_alert)
         if isinstance(temp_alert, str):
             temp_alert=temp_alert.strip()
         if not temp_alert or temp_alert <= 0:

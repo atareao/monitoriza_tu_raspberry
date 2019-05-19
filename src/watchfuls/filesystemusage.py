@@ -22,11 +22,11 @@
 import re
 import lib.tools
 import globales
-from lib.debug import *
-from lib.monitor import *
-from lib.module_base import *
+import lib.debug
+import lib.module_base
+import lib.monitor
 
-class Watchful(ModuleBase):
+class Watchful(lib.module_base.ModuleBase):
 
     #porcentaje que se usara si no se ha configurado el modulo, o se ha definido un valor que no esté entre 0 y 100.
     __default_alert=85
@@ -36,9 +36,9 @@ class Watchful(ModuleBase):
 
     def check(self):
 
-        list_partition=self.read_conf('list')
+        list_partition=self.get_conf('list', {})
 
-        usage_alert= self.read_conf("alert", self.__default_alert)
+        usage_alert= self.get_conf("alert", self.__default_alert)
         if isinstance(usage_alert, str):
             usage_alert=usage_alert.strip()
         if not usage_alert or usage_alert < 0 or usage_alert > 100:
@@ -69,7 +69,7 @@ class Watchful(ModuleBase):
         msg_debug = msg_debug + "Type: {0}\n".format(type(returnDict))
         msg_debug = msg_debug + str(returnDict) + '\n'
         msg_debug = msg_debug + '*'*60 + '\n'
-        globales.GlobDebug.print(msg_debug, DebugLevel.debug)
+        globales.GlobDebug.print(msg_debug, lib.debug.DebugLevel.debug)
         return True, returnDict
 
 

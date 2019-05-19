@@ -20,20 +20,19 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 import globales
-import datetime 
-from lib.debug import *
-from lib.configStore import *
+import datetime
+import lib.configStore
 
 __all__ = ['Config']
 
-class Config(ConfigStore):
+class Config(lib.configStore.ConfigStore):
 
     __load=None
     __update=None
 
-    def __init__(self, file):
+    def __init__(self, file, init_data=None):
         super().__init__(file)
-        self.data = None
+        self.data = init_data
 
     @property
     def data(self):
@@ -41,25 +40,25 @@ class Config(ConfigStore):
 
     @data.setter
     def data(self, val):
-        __update = datetime.datetime.now()
+        self.__update = datetime.datetime.now()
         self.__data = val
 
     @property
     def isChanged(self):
-        if __update and not __load:
+        if self.__update and not self.__load:
             #Se han insertado datos manulamente, no se ha leido ningun archivo.
             return True
-        if not __update or not __load:
+        if not self.__update or not self.__load:
             #No se ha cargado ningun archivo ni se han insertado datos.
             return False
-        if __update > __load:
+        if self.__update > self.__load:
             #la fecha de actualizacione es superior a la de carga por lo que se ha modificado.
             return True
         return False
 
     @property
     def isLoad(self):
-        if __load:
+        if self.__load != None:
             return True
         return False
 
@@ -87,21 +86,19 @@ class Config(ConfigStore):
             return False
         return True
 
-    def read_conf(self, findkey, default_val=None, returnType=None):
-        return self.__read_conf_find(self.data, findkey , default_val, returnType)
+    def get_conf(self, findkey, default_val=None, returnType=None):
+        return self.__get_conf(self.data, findkey , default_val, returnType)
 
-    def __read_conf_find(self, data, findkey, default_val=None, returnType=None):
+    def __get_conf(self, data, findkey, default_val=None, returnType=None):
         dataReturn = None
         if data:
             if isinstance(findkey, dict):
                 #Se anula ya que hace cosas raras en ocasiones da None otras lee bien.
-                return None
+                raise ValueError('findkey type dict in not valid.')
 
             elif isinstance(findkey, list) or isinstance(findkey, dict) or isinstance(findkey, tuple):
-
-                #print("findkey:",findkey)
-                #print("count:",len(findkey))
-
+#                print("findkey:",findkey)
+#                print("count:",len(findkey))
                 if isinstance(findkey, dict):
                     i = findkey.popitem()[0]
                     [key for key in findkey if key == i]
@@ -110,17 +107,16 @@ class Config(ConfigStore):
                         findkey = list(findkey)
                     i = findkey.pop(0)
                     
-                print("i:",i)
-
+#                print("i:",i)
                 if i in data.keys():
-                    #print("d:", data[i])
-                    #print("t:",type(data[i]))
+#                    print("d:", data[i])
+#                    print("t:",type(data[i]))
 
                     if isinstance(data[i], list) or isinstance(data[i], tuple) or isinstance(data[i], dict):
                         if len(findkey) == 0:
                             dataReturn = data[i]
                         else:
-                            dataReturn = self.__read_conf_find(data[i], findkey, default_val, returnType)
+                            dataReturn = self.__get_conf(data[i], findkey, default_val, returnType)
                     else:
                         if len(findkey) == 0:
                             dataReturn = data[i]
@@ -128,33 +124,31 @@ class Config(ConfigStore):
                     return None
 
             else:
-                print ("other:", findkey)
+#                print ("other:", findkey)
+#                print ("other dataType:", type(data))
+#                print ("other data:", data)
                 if findkey in data.keys():
-                    return data[findkey]
-                return None
-             
+                    dataReturn = data[findkey]
+                else:
+                    dataReturn = None
 
         if dataReturn != None:
             return dataReturn
 
-
         if isinstance(returnType, list):
-            if default_val:
-                return default_val
-            return []
+            if not default_val:
+                return []
         elif isinstance(returnType, dict):
-            if default_val:
-                return default_val
-            return {}
+            if not default_val:
+                return {}
         elif isinstance(returnType, tuple):
-            if default_val:
-                return default_val
-            return ()
+            if not default_val:
+                return ()
         elif isinstance(returnType, int) or isinstance(returnType, bool):
-            if default_val:
-                return default_val
-            return None
+            if default_val != None:
+                return None
         else:
-            if default_val:
-                return default_val
-            return ''
+            if not default_val:
+                return ''
+
+        return default_val
