@@ -48,7 +48,7 @@ class Watchful(lib.module_base.ModuleBase):
                 except Exception as exc:
                     returnDict[service]={}
                     returnDict[service]['status']=False
-                    returnDict[service]['message']='Service: {0} - Error: {1}'.format(service, exc)
+                    returnDict[service]['message']='Service: {0} - *Error: {1}* {1}'.format(service, exc, u'\U0001F4A5')
         
         msg_debug = '*'*60 + '\n'
         msg_debug = msg_debug + "Debug [{0}] - Data Return:\n".format(self.NameModule)
@@ -64,10 +64,14 @@ class Watchful(lib.module_base.ModuleBase):
         rCheck['status']=status
         rCheck['message']=''
         if self.chcek_status(status, self.NameModule, service):
+
+            sMessage='Service: {0}'.format(service)
             if status:
-                self.send_message('Service: {0} - Status: '.format(service) + u'\U00002705')
+                sMessage='{0} {1}'.format(sMessage, u'\U00002705')
             else:
-                self.send_message('Service: {0} - *Error: {1}* '.format(service, message) + u'\U0000274E')
+                sMessage='{0} - *Error: {1}* {2}'.format(sMessage, message, u'\U000026A0')
+
+            self.send_message(sMessage, status)
         return rCheck
 
     def __service_return(self, service):

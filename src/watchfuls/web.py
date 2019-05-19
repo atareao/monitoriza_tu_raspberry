@@ -62,11 +62,20 @@ class Watchful(lib.module_base.ModuleBase):
         return True, returnDict
 
     def __web_check(self, url):
+        status=self.__web_return(url)
+
         rCheck = {}
-        rCheck['status']=self.__web_return(url)
+        rCheck['status']=status
         rCheck['message']=''
-        if self.chcek_status(rCheck['status'], self.NameModule, url):
-            self.send_message('Web: {0} - Status: {1}'.format(url, 'UP ' + u'\U0001F53C' if rCheck['status'] else 'DOWN ' + u'\U0001F53D' ))
+        if self.chcek_status(status, self.NameModule, url):
+
+            sMessage='Web: {0}'.format(url)
+            if status:
+                sMessage='{0} {1}'.format(sMessage, u'\U0001F53C')
+            else:
+                sMessage='{0} {1}'.format(sMessage, u'\U0001F53D')
+            self.send_message(sMessage, status)
+
         return rCheck
 
     def __web_return(self, url):

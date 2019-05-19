@@ -61,10 +61,10 @@ class ModuleBase(object):
         else:
             raise ValueError('Type not valid, only Monitor valid type.')
 
-    def send_message(self, message):
+    def send_message(self, message, status=None):
         if message:
             if self._monitor:
-                self._monitor.send_message(message)
+                self._monitor.send_message(message, status)
 
     def get_conf(self, findkey=None, default_val=None, select_module=None):
         if default_val == None:

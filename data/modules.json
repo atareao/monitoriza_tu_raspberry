@@ -15,15 +15,18 @@
     "list": {
       "www.atareao.es": true,
       "www.cerebelum.net": true,
-      "www.dominio.com": false
+	  "www.dominio.com": false,
+      "www.dominio.net": true
     }
   },
   "ping": {
     "threads": 5,
+	"attempt": 3,
+	"timeout": 5,
     "list": {
       "192.168.1.1": true,
       "192.168.1.200":  true,
-      "192.168.88.4": true
+      "192.168.86.4": true
     }
   },
   "temperature": {

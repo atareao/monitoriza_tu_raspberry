@@ -119,11 +119,16 @@ class Monitor(object):
             return self.config_monitor.get_conf(findkey, default_val)
         return default_val
 
-    def send_message(self, message):
+    def send_message(self, message, status=None):
         if message and self.tg:
             hostname = socket.gethostname()
             #Hay que enviar "\[" ya que solo "[" se lo come Telegram en modo "Markdown".
-            self.tg.send_message("{0} \[{1}]: {2}".format(u'\U0001F4BB',hostname, message))
+            message = "{0} \[{1}]: {2}".format(u'\U0001F4BB',hostname, message)
+            if status == True:
+                message = "{0} {1}".format(u'\U00002705' ,message)
+            elif status == False:
+                message = "{0} {1}".format(u'\U0000274E' ,message)
+            self.tg.send_message(message)
 
 
     def chcek_status(self, status, module, module_subkey=''):
@@ -152,13 +157,13 @@ class Monitor(object):
                     globales.GlobDebug.print("Module: {0} - Key: {1} - Val: {2}".format(module_name, key, value), lib.debug.DebugLevel.debug)
                     if self.chcek_status(value['status'], module_name, key):
                         self.__status_datos[module_name][key] = value['status']
-                        self.send_message(value['message'])
+                        self.send_message(value['message'], value['status'])
                         globales.GlobDebug.print('Module: {0}/{1} - New Status: {2}'.format(module_name, key, value['status']), lib.debug.DebugLevel.debug)
                 return True
             elif isinstance(message, str):
                 if self.chcek_status(status, module_name):
                     self.__status_datos[module_name] = status
-                    self.send_message(message)
+                    self.send_message(message, status)
                     globales.GlobDebug.print("Module: {0} - New Status: {1}".format(module_name, status), lib.debug.DebugLevel.debug)
                 return True
             else:

@@ -61,8 +61,7 @@ class Watchful(lib.module_base.ModuleBase):
                 returnDict[mount_point]['message']='Warning partition {0} ({1}) used {2}% {3}'.format(fs[0], fs[2], fs[1], u'\U000026A0')
             else:
                 returnDict[mount_point]['status']=True
-                returnDict[mount_point]['message']='Filesystem used under {0}% {1}'.format(for_usage_alert, u'\U00002705')
-                
+                returnDict[mount_point]['message']='Filesystem used {0}% {1}'.format(fs[1], u'\U00002705')
 
         msg_debug = '*'*60 + '\n'
         msg_debug = msg_debug + "Debug [{0}] - Data Return:\n".format(self.NameModule)
