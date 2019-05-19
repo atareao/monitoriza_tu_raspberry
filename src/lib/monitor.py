@@ -71,7 +71,8 @@ class Monitor(object):
             self.__checkDir(self.dir_var)
             self.status = Config(os.path.join(self.dir_var, 'status.json'))
             if not self.status.isExist:
-                self.status.save({})
+                self.status.data = {}
+                self.status.save()
         else:
             self.status = None
 
@@ -200,4 +201,5 @@ class Monitor(object):
         globales.GlobDebug.print("Debug Status Save:", DebugLevel.debug)
         globales.GlobDebug.print(self.__status_datos, DebugLevel.debug)
         if changed is True:
-            self.status.save(self.__status_datos)
+            self.status.data = self.__status_datos
+            self.status.save()
