@@ -25,24 +25,24 @@
 import concurrent.futures
 import lib.tools
 import globales
-from lib.debug import *
-from lib.monitor import *
-from lib.module_base import *
+import lib.debug
+import lib.module_base
+import lib.monitor
 
-class Watchful(ModuleBase):
-    
+class Watchful(lib.module_base.ModuleBase):
+
     def __init__(self, monitor):
         super().__init__(monitor, __name__)
 
     def check(self):
         listurl = []
-        for (key, value) in self.read_conf('list').items():
-            globales.GlobDebug.print("Web: {0} - Enabled: {1}".format(key, value), DebugLevel.info)
+        for (key, value) in self.get_conf('list', {}).items():
+            globales.GlobDebug.print("Web: {0} - Enabled: {1}".format(key, value), lib.debug.DebugLevel.info)
             if value:
                 listurl.append(key)
 
         returnDict = {}
-        with concurrent.futures.ThreadPoolExecutor(max_workers=self.read_conf('threads',5)) as executor:
+        with concurrent.futures.ThreadPoolExecutor(max_workers=self.get_conf('threads', self._default_threads)) as executor:
             future_to_url = {executor.submit(self.__web_check, url): url for url in listurl}
             for future in concurrent.futures.as_completed(future_to_url):
                 url = future_to_url[future]
@@ -58,7 +58,7 @@ class Watchful(ModuleBase):
         msg_debug = msg_debug + "Type: {0}\n".format(type(returnDict))
         msg_debug = msg_debug + str(returnDict) + '\n'
         msg_debug = msg_debug + '*'*60 + '\n'
-        globales.GlobDebug.print(msg_debug, DebugLevel.debug)
+        globales.GlobDebug.print(msg_debug, lib.debug.DebugLevel.debug)
         return True, returnDict
 
     def __web_check(self, url):

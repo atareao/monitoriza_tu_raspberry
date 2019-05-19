@@ -21,5 +21,8 @@
 
 __all__ = ['GlobDebug','GlobMonitor']
 
+import lib.debug
+import lib.monitor
+
 GlobDebug = None
 GlobMonitor = None

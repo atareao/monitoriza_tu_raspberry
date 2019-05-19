@@ -22,15 +22,18 @@
 import globales
 import os
 import sys
-from lib.debug import *
-from lib.config import *
-from lib.monitor import *
+import lib.debug
+import lib.monitor
+import lib.config
 
 def _dir():
     return os.path.dirname(os.path.abspath(__file__))
 
 def _modules_dir():
     return os.path.join(_dir(), 'watchfuls')
+
+def _lib_dir():
+    return os.path.join(_dir(), 'lib')
 
 def _config_dir():
     if _dir().find('src') != -1:
@@ -45,16 +48,16 @@ def _var_dir():
         return '/var/lib/watchful/'
 
 if __name__ == "__main__":
-    globales.GlobDebug = Debug(True)
+    sys.path.append(_lib_dir())
+    sys.path.append(_modules_dir())
 
-    Config_General = Config(os.path.join(_config_dir(), 'config.json')).read()
-    if Config_General:
-        if 'global' in Config_General.keys() and 'debug' in Config_General['global']:
-            globales.GlobDebug.enabled = Config_General['global']['debug']
+    globales.GlobDebug =  lib.debug.Debug(True)
 
-    sys.path.insert(1, _modules_dir())
-
+    Config = lib.config.Config(os.path.join(_config_dir(), 'config.json'))
+    Config.read()
+    if Config:
+        globales.GlobDebug.enabled = Config.get_conf(['global','debug'], globales.GlobDebug.enabled)
     #globales.GlobDebug.enabled = True
 
-    globales.GlobMonitor = Monitor(_dir(), _config_dir(), _modules_dir(), _var_dir())
+    globales.GlobMonitor = lib.monitor.Monitor(_dir(), _config_dir(), _modules_dir(), _var_dir())
     globales.GlobMonitor.check()

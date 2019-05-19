@@ -22,11 +22,11 @@
 import re
 import lib.tools
 import globales
-from lib.debug import *
-from lib.monitor import *
-from lib.module_base import *
+import lib.debug
+import lib.module_base
+import lib.monitor
 
-class Watchful(ModuleBase):
+class Watchful(lib.module_base.ModuleBase):
     
     #porcentaje de SWAP que se usara si no se ha configurado el modulo, o se ha definido un valor que no esté entre 0 y 100.
     __default_alert=60
@@ -35,14 +35,14 @@ class Watchful(ModuleBase):
         super().__init__(monitor, __name__)
 
     def check(self):
-        usage_alert= self.read_conf("alert", self.__default_alert)
+        usage_alert= self.get_conf("alert", self.__default_alert)
         if isinstance(usage_alert, str):
             usage_alert=usage_alert.strip()
         if not usage_alert or usage_alert < 0 or usage_alert > 100:
             usage_alert=self.__default_alert
 
         stdout, stderr = lib.tools.execute('free')
-        globales.GlobDebug.print(stdout, DebugLevel.debug)
+        globales.GlobDebug.print(stdout, lib.debug.DebugLevel.debug)
 
         x = re.findall(r'Swap:\s+(\d+)\s+(\d+)', stdout)
         per = float(x[0][1])/float(x[0][0]) * 100.0
