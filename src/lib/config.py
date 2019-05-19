@@ -87,7 +87,6 @@ class Config(lib.configStore.ConfigStore):
         return True
 
 
-
     """
     Get the stored value of the key you specify, search supports different levels.
 
@@ -103,6 +102,12 @@ class Config(lib.configStore.ConfigStore):
             It is the type of object (empty), which will return if def_val is not 
             defined or def_val is None and the key we are looking for was not found.
             For example, if we specify rType = list, it returns [].
+
+    Return:
+        Returns the value of the key that we are looking for and if this key does not 
+        exist, it will return def_val.
+        If def_val is None it will return an object (empty) of the type that is 
+        defined in rType.
 
     Warnings: 
         Parameter "findkey" is not support type "dict".
@@ -186,18 +191,21 @@ class Config(lib.configStore.ConfigStore):
                 return ''
 
         return def_val
-
-
+    
 
     """
     Check if a key exists in the stored data, supporting search in different levels.
 
     Parameters:
-        key: It is the key we want to know if it exists. This parameter accepts 
-             the following types [string | tuple | list].
+        findkey: It is the key we want to know if it exists. This parameter accepts 
+                 the following types [string | tuple | list].
+
+    Return:
+        True  = Yes exist.
+        False = Not exists.
 
     Warnings: 
-        Parameter "Key" is not support type "dict".
+        Parameter "findkey" is not support type "dict".
         https://docs.python.org/3/library/collections.html#collections.OrderedDict
 
         Ordered dictionaries are just like regular dictionaries but have some 
@@ -225,46 +233,103 @@ class Config(lib.configStore.ConfigStore):
             y3 = False
             y4 = True
     """
-    def isExist_Conf(self, key):
-        return self.__isExist_Conf(self.data, key)
+    def isExist_Conf(self, findkey):
+        return self.__isExist_Conf(self.data, findkey)
 
-    def __isExist_Conf(self, data, key):
-        if key and data:
-            if isinstance(key, list) or isinstance(key, tuple):
-                if isinstance(key, tuple):
-                    key = list(key)
-                i = key.pop(0)
+    def __isExist_Conf(self, data, findkey):
+        if findkey and data:
+            if isinstance(findkey, list) or isinstance(findkey, tuple):
+                if isinstance(findkey, tuple):
+                    findkey = list(findkey)
+                i = findkey.pop(0)
                 if i in data.keys():
                     if isinstance(data[i], list) or isinstance(data[i], tuple) or isinstance(data[i], dict):
                         #comprueba que no hay más niveles de búsqueda
-                        if len(key) == 0:
+                        if len(findkey) == 0:
                             return True
                         else:
-                            if self.__isExist_Conf(data[i], key):
+                            if self.__isExist_Conf(data[i], findkey):
                                 return True
                     else:
                         #comprueba que no hay más niveles de búsqueda
-                        if len(key) == 0:
+                        if len(findkey) == 0:
                             return True
 
-            elif isinstance(key, str):
-                if key in data.keys():
+            elif isinstance(findkey, str):
+                if findkey in data.keys():
                     return True
 
             else:
-                raise ValueError('key type [{0}] in not valid.'.format(type(key)))
+                raise ValueError('key type [{0}] in not valid.'.format(type(findkey)))
         
         return False
 
 
+    """
+    It allows us to modify the value of the key we want. AT THE MOMENT THE OPTION OF
+    MULTIPLE LEVELS IS NOT SUPPORTED. :(
+
+    Parameters:
+        findkey: It is the key that we want to look for to modify its value. At the moment 
+                 the option of multiple levels is not supported. It only accepts String type.
+
+    Example:
+        Config Load:
+        { }
+
+        Function:
+            x.set_conf("level0", True)
+            x.set_conf("level1", {"opt1": "OK"}")
+
+        Config after set:
+        {
+            "level0: True,
+            "level1": { 
+                "opt1": "OK"
+            }
+        }
+    """
+    def set_conf(self, findkey, val):
+        if not findkey:
+            return False
+
+        if self.data == None:
+                self.data = {}
+
+        isExisteKey = self.isExist_Conf(findkey)
+
+        if isinstance(findkey, list) or isinstance(findkey, tuple):
+            raise ValueError('key type [{0}] in not valid.'.format(type(findkey)))
+
+            if isinstance(findkey, tuple):
+                findkey = list(findkey)
+
+            print (len(findkey))
+            if isExisteKey:
+                pass
+            else:
+                pass
+
+            #i = findkey.pop(0)
+            #if i in data.keys():
+            #    if isinstance(data[i], list) or isinstance(data[i], tuple) or isinstance(data[i], dict):
+            #        #comprueba que no hay más niveles de búsqueda
+            #        if len(findkey) == 0:
+            #            return True
+            #        else:
+            #            if self.__isExist_Conf(data[i], findkey):
+            #                return True
+            #    else:
+            #        #comprueba que no hay más niveles de búsqueda
+            #        if len(findkey) == 0:
+            #            return True
 
 
-
-    #def set_conf(self, key, val):
-    #    if not key:
-    #        return False
-
-    #    if not self.__isExist_Conf(data, key):
-    #        pass
-
+        elif isinstance(findkey, str):
+            self.data[findkey]  = val
+            return True
+        
+        else:
+            raise ValueError('key type [{0}] in not valid.'.format(type(findkey)))
+        
         
