@@ -141,7 +141,6 @@ class Monitor(object):
 
 
     def check_module(self, module_name):
-        
         try:
             globales.GlobDebug.print("Module: {0}".format(module_name), lib.debug.DebugLevel.info)
             module_import = importlib.import_module(module_name)

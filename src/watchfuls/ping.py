@@ -48,21 +48,18 @@ class Watchful(lib.module_base.ModuleBase):
         pool.close()
         pool.join()
 
-
         msg_debug = '*'*60 + '\n'
         msg_debug = msg_debug + "Debug [{0}] - Data Work:\n".format(self.NameModule)
         msg_debug = msg_debug + "Type: {0}\n".format(type(lReturn))
         msg_debug = msg_debug + str(lReturn) + '\n'
         msg_debug = msg_debug + '*'*60 + '\n'
         globales.GlobDebug.print(msg_debug, lib.debug.DebugLevel.debug)
-        
 
         #Convertir list en dictionary
         dReturn = {}
         for valueL1 in lReturn:
             dReturn = {**dReturn, **valueL1}
 
-        
         msg_debug = '*'*60 + '\n'
         msg_debug = msg_debug + "Debug [{0}] - Data Return:\n".format(self.NameModule)
         msg_debug = msg_debug + "Type: {0}\n".format(type(dReturn))

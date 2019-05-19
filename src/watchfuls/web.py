@@ -80,7 +80,6 @@ class Watchful(lib.module_base.ModuleBase):
     def __web_return(self, url):
         #TODO: Pendiente añadir soporte https.
         cmd = 'curl -sL -w "%{http_code}\n" http://'+url+' -o /dev/null'
-        
         stdout, stderr =  lib.tools.execute(cmd)
         if stdout.find('200') == -1:
            return False

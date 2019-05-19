@@ -66,7 +66,6 @@ class Debug(object):
         msg_print = msg_print + '-'*60+'\n'
         print (msg_print)
 
-           
 if __name__ == '__main__':
     pass
 #    debug = Debug(False)

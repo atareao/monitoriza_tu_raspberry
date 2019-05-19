@@ -110,7 +110,7 @@ class Config(lib.configStore.ConfigStore):
         defined in rType.
 
     Warnings: 
-        Parameter "findkey" is not support type "dict".
+        Parameter 'findkey' is not support type 'dict'.
         https://docs.python.org/3/library/collections.html#collections.OrderedDict
 
         Ordered dictionaries are just like regular dictionaries but have some 
@@ -121,17 +121,17 @@ class Config(lib.configStore.ConfigStore):
     Example:
         Config Load:
         {
-            "levle1": { 
-                level2: "OK"
+            'levle1': { 
+                'level2': 'OK'
             }
         }
 
         Function:
-            y1 = x.get_conf(["level1", "level2"], "Not Exist!")
-            y2 = x.get_conf(("level1", "level2"), "Not Exist!")
-            y3 = x.get_conf(("level1", "level2","level3"), "Not Exist!")
-            y4 = x.get_conf("level1", "Not Exist!")
-            y5 = x.get_conf("level2", None, list)
+            y1 = x.get_conf(['level1', 'level2'], 'Not Exist!')
+            y2 = x.get_conf(('level1', 'level2'), 'Not Exist!')
+            y3 = x.get_conf(('level1', 'level2', 'level3'), 'Not Exist!')
+            y4 = x.get_conf('level1', 'Not Exist!')
+            y5 = x.get_conf('level2', None, list)
 
         Return:
             y1 = OK
@@ -205,7 +205,7 @@ class Config(lib.configStore.ConfigStore):
         False = Not exists.
 
     Warnings: 
-        Parameter "findkey" is not support type "dict".
+        Parameter 'findkey' is not support type 'dict'.
         https://docs.python.org/3/library/collections.html#collections.OrderedDict
 
         Ordered dictionaries are just like regular dictionaries but have some 
@@ -216,16 +216,16 @@ class Config(lib.configStore.ConfigStore):
     Example:
         Config Load:
         {
-            "levle1": { 
-                level2: "OK"
+            'levle1': { 
+                'level2': 'OK'
             }
         }
 
         Query:
-            y1 = x.isExist_conf(["level1", "level2"])
-            y2 = x.isExist_conf(("level1", "level2"))
-            y3 = x.isExist_conf(("level1", "level2","level3"))
-            y4 = x.isExist_conf("level1")
+            y1 = x.isExist_conf(['level1', 'level2'])
+            y2 = x.isExist_conf(('level1', 'level2'))
+            y3 = x.isExist_conf(('level1', 'level2','level3'))
+            y4 = x.isExist_conf('level1')
 
         Return:
             y1 = True
@@ -278,14 +278,14 @@ class Config(lib.configStore.ConfigStore):
         { }
 
         Function:
-            x.set_conf("level0", True)
-            x.set_conf("level1", {"opt1": "OK"}")
+            x.set_conf('level0', True)
+            x.set_conf('level1', {'opt1': 'OK'}")
 
         Config after set:
         {
-            "level0: True,
-            "level1": { 
-                "opt1": "OK"
+            'level0': True,
+            'level1': { 
+                'opt1': 'OK'
             }
         }
     """
@@ -301,33 +301,31 @@ class Config(lib.configStore.ConfigStore):
         if isinstance(findkey, list) or isinstance(findkey, tuple):
             raise ValueError('key type [{0}] in not valid.'.format(type(findkey)))
 
-            if isinstance(findkey, tuple):
-                findkey = list(findkey)
-
-            print (len(findkey))
-            if isExisteKey:
-                pass
-            else:
-                pass
-
-            #i = findkey.pop(0)
-            #if i in data.keys():
-            #    if isinstance(data[i], list) or isinstance(data[i], tuple) or isinstance(data[i], dict):
-            #        #comprueba que no hay más niveles de búsqueda
-            #        if len(findkey) == 0:
-            #            return True
-            #        else:
-            #            if self.__isExist_Conf(data[i], findkey):
-            #                return True
-            #    else:
-            #        #comprueba que no hay más niveles de búsqueda
-            #        if len(findkey) == 0:
-            #            return True
-
+            #if isinstance(findkey, tuple):
+            #    findkey = list(findkey)
+            #
+            #print (len(findkey))
+            #if isExisteKey:
+            #    pass
+            #else:
+            #    pass
+            #
+            ##i = findkey.pop(0)
+            ##if i in data.keys():
+            ##    if isinstance(data[i], list) or isinstance(data[i], tuple) or isinstance(data[i], dict):
+            ##        #comprueba que no hay más niveles de búsqueda
+            ##        if len(findkey) == 0:
+            ##            return True
+            ##        else:
+            ##            if self.__isExist_Conf(data[i], findkey):
+            ##                return True
+            ##    else:
+            ##        #comprueba que no hay más niveles de búsqueda
+            ##        if len(findkey) == 0:
+            ##            return True
 
         elif isinstance(findkey, str):
             self.data[findkey]  = val
             return True
-        
         else:
             raise ValueError('key type [{0}] in not valid.'.format(type(findkey)))
