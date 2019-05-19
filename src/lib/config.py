@@ -86,75 +86,185 @@ class Config(lib.configStore.ConfigStore):
             return False
         return True
 
-    def get_conf(self, findkey, default_val=None, returnType=None):
-        return self.__get_conf(self.data, findkey , default_val, returnType)
 
-    def __get_conf(self, data, findkey, default_val=None, returnType=None):
+
+    """
+    Get the stored value of the key you specify, search supports different levels.
+
+    Parameters:
+        findkey:
+            It is the key that contains the setting you want to read. This 
+            parameter accepts the following types [string | tuple | list].
+
+        def_val: 
+            It is the value that returns if the key we are looking for is not found.
+
+        rType:
+            It is the type of object (empty), which will return if def_val is not 
+            defined or def_val is None and the key we are looking for was not found.
+            For example, if we specify rType = list, it returns [].
+
+    Warnings: 
+        Parameter "findkey" is not support type "dict".
+        https://docs.python.org/3/library/collections.html#collections.OrderedDict
+
+        Ordered dictionaries are just like regular dictionaries but have some 
+        extra capabilities relating to ordering operations. They have become less 
+        important now that the built-in dict class gained the ability to remember 
+        insertion order (this new behavior became guaranteed in Python 3.7).
+
+    Example:
+        Config Load:
+        {
+            "levle1": { 
+                level2: "OK"
+            }
+        }
+
+        Function:
+            y1 = x.get_conf(["level1", "level2"], "Not Exist!")
+            y2 = x.get_conf(("level1", "level2"), "Not Exist!")
+            y3 = x.get_conf(("level1", "level2","level3"), "Not Exist!")
+            y4 = x.get_conf("level1", "Not Exist!")
+            y5 = x.get_conf("level2", None, list)
+
+        Return:
+            y1 = OK
+            y2 = OK
+            y3 = Not Exist!
+            y4 = OK
+            y5 = {}
+    """
+    def get_conf(self, findkey, def_val=None, rType=None):
+        return self.__get_conf(self.data, findkey , def_val, rType)
+
+    def __get_conf(self, data, findkey, def_val=None, rType=None):
         dataReturn = None
         if data:
-            if isinstance(findkey, dict):
-                """
-                Se anula ya dict no mantine simpre el orden de los elementos.
-                https://docs.python.org/3/library/collections.html#collections.OrderedDict
-
-                Ordered dictionaries are just like regular dictionaries but have some 
-                extra capabilities relating to ordering operations. They have become less 
-                important now that the built-in dict class gained the ability to remember 
-                insertion order (this new behavior became guaranteed in Python 3.7).
-                """
-                raise ValueError('findkey type dict in not valid.')
-
-            elif isinstance(findkey, list) or isinstance(findkey, tuple):
-#                print("findkey:",findkey)
-#                print("count:",len(findkey))
-
+            if isinstance(findkey, list) or isinstance(findkey, tuple):
                 if isinstance(findkey, tuple):
                     findkey = list(findkey)
 
                 i = findkey.pop(0)
-                    
-#                print("i:",i)
                 if i in data.keys():
-#                    print("d:", data[i])
-#                    print("t:",type(data[i]))
 
                     if isinstance(data[i], list) or isinstance(data[i], tuple) or isinstance(data[i], dict):
+                        #comprueba que no hay más niveles de búsqueda
                         if len(findkey) == 0:
                             dataReturn = data[i]
                         else:
-                            dataReturn = self.__get_conf(data[i], findkey, default_val, returnType)
+                            dataReturn = self.__get_conf(data[i], findkey, def_val, rType)
                     else:
+                        #comprueba que no hay más niveles de búsqueda
                         if len(findkey) == 0:
                             dataReturn = data[i]
                 else:
                     return None
 
-            else:
-#                print ("other:", findkey)
-#                print ("other dataType:", type(data))
-#                print ("other data:", data)
+            elif isinstance(findkey, str):
                 if findkey in data.keys():
                     dataReturn = data[findkey]
                 else:
                     dataReturn = None
 
+            else:
+                raise ValueError('findkey type [{0}] in not valid.'.format(type(findkey)))
+
         if dataReturn != None:
             return dataReturn
 
-        if isinstance(returnType, list):
-            if not default_val:
+        if not def_val:
+            if isinstance(rType, list):
                 return []
-        elif isinstance(returnType, dict):
-            if not default_val:
+            elif isinstance(rType, dict):
                 return {}
-        elif isinstance(returnType, tuple):
-            if not default_val:
+            elif isinstance(rType, tuple):
                 return ()
-        elif isinstance(returnType, int) or isinstance(returnType, bool):
-            if default_val != None:
+            elif isinstance(rType, int) or isinstance(rType, bool):
                 return None
-        else:
-            if not default_val:
+            else:
                 return ''
 
-        return default_val
+        return def_val
+
+
+
+    """
+    Check if a key exists in the stored data, supporting search in different levels.
+
+    Parameters:
+        key: It is the key we want to know if it exists. This parameter accepts 
+             the following types [string | tuple | list].
+
+    Warnings: 
+        Parameter "Key" is not support type "dict".
+        https://docs.python.org/3/library/collections.html#collections.OrderedDict
+
+        Ordered dictionaries are just like regular dictionaries but have some 
+        extra capabilities relating to ordering operations. They have become less 
+        important now that the built-in dict class gained the ability to remember 
+        insertion order (this new behavior became guaranteed in Python 3.7).
+
+    Example:
+        Config Load:
+        {
+            "levle1": { 
+                level2: "OK"
+            }
+        }
+
+        Query:
+            y1 = x.isExist_conf(["level1", "level2"])
+            y2 = x.isExist_conf(("level1", "level2"))
+            y3 = x.isExist_conf(("level1", "level2","level3"))
+            y4 = x.isExist_conf("level1")
+
+        Return:
+            y1 = True
+            y2 = True
+            y3 = False
+            y4 = True
+    """
+    def isExist_Conf(self, key):
+        return self.__isExist_Conf(self.data, key)
+
+    def __isExist_Conf(self, data, key):
+        if key and data:
+            if isinstance(key, list) or isinstance(key, tuple):
+                if isinstance(key, tuple):
+                    key = list(key)
+                i = key.pop(0)
+                if i in data.keys():
+                    if isinstance(data[i], list) or isinstance(data[i], tuple) or isinstance(data[i], dict):
+                        #comprueba que no hay más niveles de búsqueda
+                        if len(key) == 0:
+                            return True
+                        else:
+                            if self.__isExist_Conf(data[i], key):
+                                return True
+                    else:
+                        #comprueba que no hay más niveles de búsqueda
+                        if len(key) == 0:
+                            return True
+
+            elif isinstance(key, str):
+                if key in data.keys():
+                    return True
+
+            else:
+                raise ValueError('key type [{0}] in not valid.'.format(type(key)))
+        
+        return False
+
+
+
+
+
+    #def set_conf(self, key, val):
+    #    if not key:
+    #        return False
+
+    #    if not self.__isExist_Conf(data, key):
+    #        pass
+
+        
