@@ -49,7 +49,7 @@ class Watchful(lib.module_base.ModuleBase):
                     returnDict[service]={}
                     returnDict[service]['status']=False
                     returnDict[service]['message']='Service: {0} - *Error: {1}* {1}'.format(service, exc, u'\U0001F4A5')
-        
+
         msg_debug = '*'*60 + '\n'
         msg_debug = msg_debug + "Debug [{0}] - Data Return:\n".format(self.NameModule)
         msg_debug = msg_debug + "Type: {0}\n".format(type(returnDict))
@@ -74,6 +74,7 @@ class Watchful(lib.module_base.ModuleBase):
             self.send_message(sMessage, status)
         return rCheck
 
+    @classmethod
     def __service_return(self, service):
         stdout, stderr = lib.tools.execute('systemctl status '+service)
         if stdout == '':
@@ -82,5 +83,5 @@ class Watchful(lib.module_base.ModuleBase):
 
 
 if __name__ == '__main__':
-    wf = Watchful()
+    wf = Watchful(None)
     print(wf.check())

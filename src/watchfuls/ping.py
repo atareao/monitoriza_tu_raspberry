@@ -70,7 +70,7 @@ class Watchful(lib.module_base.ModuleBase):
         msg_debug = msg_debug + '*'*60 + '\n'
         globales.GlobDebug.print(msg_debug, lib.debug.DebugLevel.debug)
         return True, dReturn
-    
+
     def __ping_check(self, host):
         #TODO: Pendiente poder configurar número de intentos y timeout para cada IP
         status=self.__ping_return(host, self.get_conf('threads', self.__default_timeout), self.get_conf('attempt', self.__default_attempt))
@@ -90,6 +90,7 @@ class Watchful(lib.module_base.ModuleBase):
 
         return rCheck
 
+    @classmethod
     def __ping_return(self, host, timeout, attempt):
         counter = 0
         while counter < attempt:
@@ -101,5 +102,5 @@ class Watchful(lib.module_base.ModuleBase):
         return False
 
 if __name__ == '__main__':
-    wf = Watchful()
+    wf = Watchful(None)
     print(wf.check())

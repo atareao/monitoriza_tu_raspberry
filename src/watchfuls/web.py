@@ -68,16 +68,15 @@ class Watchful(lib.module_base.ModuleBase):
         rCheck['status']=status
         rCheck['message']=''
         if self.chcek_status(status, self.NameModule, url):
-
             sMessage='Web: {0}'.format(url)
             if status:
                 sMessage='{0} {1}'.format(sMessage, u'\U0001F53C')
             else:
                 sMessage='{0} {1}'.format(sMessage, u'\U0001F53D')
             self.send_message(sMessage, status)
-
         return rCheck
 
+    @classmethod
     def __web_return(self, url):
         #TODO: Pendiente añadir soporte https.
         cmd = 'curl -sL -w "%{http_code}\n" http://'+url+' -o /dev/null'
@@ -86,7 +85,7 @@ class Watchful(lib.module_base.ModuleBase):
         if stdout.find('200') == -1:
            return False
         return True
-        
+
 if __name__ == '__main__':
-    wf = Watchful()
+    wf = Watchful(None)
     print(wf.check())

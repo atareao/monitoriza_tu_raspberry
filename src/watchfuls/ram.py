@@ -51,5 +51,5 @@ class Watchful(lib.module_base.ModuleBase):
         return False, 'Excesive RAM used {0:.1f}% {1}'.format(per, u'\U000026A0')
 
 if __name__ == '__main__':
-    wf = Watchful()
+    wf = Watchful(None)
     print(wf.check())

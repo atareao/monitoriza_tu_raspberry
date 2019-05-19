@@ -25,7 +25,6 @@
 import globales
 import glob
 import os
-import sys
 import importlib
 import socket
 import pprint
@@ -50,7 +49,7 @@ class Monitor(object):
         #self.status = None  #Descomentar para pruebas, omite el contenido status.json, dará error (self.status.save(self.__status_datos))
         self.initTelegram()
 
-
+    @classmethod
     def __checkDir(salf, pathdir):
         if pathdir:
             if not os.path.isdir(pathdir):
@@ -181,7 +180,6 @@ class Monitor(object):
         return False
 
     def check(self):
-        
         list_modules = []
         for module_def in glob.glob(os.path.join(self.dir_modules, '*.py')):
             module_def = os.path.splitext(os.path.basename(module_def))[0]

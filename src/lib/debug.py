@@ -19,7 +19,7 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-import sys
+#import sys
 import pprint
 import traceback
 from enum import Enum
@@ -54,6 +54,7 @@ class Debug(object):
             else:
                 pprint.pprint(message)
 
+    @classmethod
     def Exception(self, ex = None):
         msg_print = 'Exception in user code:\n'
         msg_print = msg_print + '-'*60+'\n'
@@ -75,8 +76,6 @@ if __name__ == '__main__':
 #        debug.print("Msg Test 3 - Force = True and Level Debug - Yes Show", DebugLevel.debug, True)
 #        debug.enabled = True
 #        debug.print("Msg Test 4 - Enabled = True and Level Debug - Yes Show")
-    
 #        test = 1 + A
-        
 #    except Exception as exc:
 #        debug.Exception()

@@ -19,7 +19,6 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-import globales
 import lib.monitor
 import lib.debug
 
@@ -80,7 +79,6 @@ class ModuleBase(object):
                 else:
                     return self._monitor.config_modules.get_conf([select_module, findkey], default_val)
 
-            
         #    if select_module:
         #        if select_module in self.monitor.config_modules.keys():
         #            if not findkey:

@@ -22,7 +22,6 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-import globales
 import lib.debug
 import lib.module_base
 import lib.monitor
@@ -52,5 +51,5 @@ class Watchful(lib.module_base.ModuleBase):
 
 
 if __name__ == '__main__':
-    wf = Watchful()
+    wf = Watchful(None)
     print(wf.check())

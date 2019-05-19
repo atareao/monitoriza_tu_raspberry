@@ -27,7 +27,6 @@ import lib.module_base
 import lib.monitor
 
 class Watchful(lib.module_base.ModuleBase):
-    
     #porcentaje de SWAP que se usara si no se ha configurado el modulo, o se ha definido un valor que no esté entre 0 y 100.
     __default_alert=60
 
@@ -52,5 +51,5 @@ class Watchful(lib.module_base.ModuleBase):
 
 
 if __name__ == '__main__':
-    wf = Watchful()
+    wf = Watchful(None)
     print(wf.check())

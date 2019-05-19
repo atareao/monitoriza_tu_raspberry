@@ -55,7 +55,7 @@ class Watchful(lib.module_base.ModuleBase):
                 for_usage_alert=list_partition[mount_point]
             else:
                 for_usage_alert=usage_alert
-                
+
             if float(fs[1]) > float(for_usage_alert):
                 returnDict[mount_point]['status']=False
                 returnDict[mount_point]['message']='Warning partition {0} ({1}) used {2}% {3}'.format(fs[0], fs[2], fs[1], u'\U000026A0')
@@ -73,5 +73,5 @@ class Watchful(lib.module_base.ModuleBase):
 
 
 if __name__ == '__main__':
-    wf = Watchful()
+    wf = Watchful(None)
     print(wf.check())

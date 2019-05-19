@@ -331,5 +331,3 @@ class Config(lib.configStore.ConfigStore):
         
         else:
             raise ValueError('key type [{0}] in not valid.'.format(type(findkey)))
-        
-        

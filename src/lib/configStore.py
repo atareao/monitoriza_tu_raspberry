@@ -35,7 +35,7 @@ class ConfigStore(object):
     def __init__(self, file):
         self.file = file
 
-    @property 
+    @property
     def isExist(self):
         if self.file:
             if os.path.isfile(self.file):
