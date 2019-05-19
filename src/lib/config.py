@@ -93,19 +93,25 @@ class Config(lib.configStore.ConfigStore):
         dataReturn = None
         if data:
             if isinstance(findkey, dict):
-                #Se anula ya que hace cosas raras en ocasiones da None otras lee bien.
+                """
+                Se anula ya dict no mantine simpre el orden de los elementos.
+                https://docs.python.org/3/library/collections.html#collections.OrderedDict
+
+                Ordered dictionaries are just like regular dictionaries but have some 
+                extra capabilities relating to ordering operations. They have become less 
+                important now that the built-in dict class gained the ability to remember 
+                insertion order (this new behavior became guaranteed in Python 3.7).
+                """
                 raise ValueError('findkey type dict in not valid.')
 
-            elif isinstance(findkey, list) or isinstance(findkey, dict) or isinstance(findkey, tuple):
+            elif isinstance(findkey, list) or isinstance(findkey, tuple):
 #                print("findkey:",findkey)
 #                print("count:",len(findkey))
-                if isinstance(findkey, dict):
-                    i = findkey.popitem()[0]
-                    [key for key in findkey if key == i]
-                else:
-                    if isinstance(findkey, tuple):
-                        findkey = list(findkey)
-                    i = findkey.pop(0)
+
+                if isinstance(findkey, tuple):
+                    findkey = list(findkey)
+
+                i = findkey.pop(0)
                     
 #                print("i:",i)
                 if i in data.keys():
