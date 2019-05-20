@@ -50,14 +50,14 @@ def _var_dir():
 if __name__ == "__main__":
     sys.path.append(_lib_dir())
     sys.path.append(_modules_dir())
-
+    
     globales.GlobDebug =  lib.debug.Debug(True)
-
+    
     Config = lib.config.Config(os.path.join(_config_dir(), 'config.json'))
     Config.read()
     if Config:
         globales.GlobDebug.enabled = Config.get_conf(['global','debug'], globales.GlobDebug.enabled)
     #globales.GlobDebug.enabled = True
-
+    
     globales.GlobMonitor = lib.monitor.Monitor(_dir(), _config_dir(), _modules_dir(), _var_dir())
     globales.GlobMonitor.check()
