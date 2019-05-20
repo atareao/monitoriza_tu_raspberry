@@ -49,6 +49,8 @@ class Watchful(lib.module_base.ModuleBase):
 
         returnDict = {}
         for fs in re.findall(reg, stdout):
+            #fs = ('root', '12', '/')
+            #fs = ('mmcblk0p6', '32', '/boot')
             mount_point=fs[2]
             returnDict[mount_point]={}
             if mount_point in list_partition.keys():
@@ -61,7 +63,7 @@ class Watchful(lib.module_base.ModuleBase):
                 returnDict[mount_point]['message']='Warning partition {0} ({1}) used {2}% {3}'.format(fs[0], fs[2], fs[1], u'\U000026A0')
             else:
                 returnDict[mount_point]['status']=True
-                returnDict[mount_point]['message']='Filesystem partition {0} ({1}) used {0}% {1}'.format(fs[0], fs[2], fs[1], u'\U00002705')
+                returnDict[mount_point]['message']='Filesystem partition {0} ({1}) used {2}% {3}'.format(fs[0], fs[2], fs[1], u'\U00002705')
 
         msg_debug = '*'*60 + '\n'
         msg_debug = msg_debug + "Debug [{0}] - Data Return:\n".format(self.NameModule)
