@@ -22,28 +22,36 @@
 import lib.tools
 import time
 from multiprocessing.dummy import Pool as ThreadPool
-from lib.module_base import ModuleBase
+import globales
+import lib.debug
+import lib.module_base
+import lib.monitor
 
-class Watchful(ModuleBase):
+class Watchful(lib.module_base.ModuleBase):
 
-    def __init__(self, monitor, debug = False):
-        ModuleBase.__init__(self,__name__, monitor, debug)
+    def __init__(self, monitor):
+        super().__init__(monitor, __name__)
 
     def check(self):
         lHost=[]
-        for (key, value) in self.read_conf('list').items():
-            self.debug("Ping: {0} - Enabled: {1}".format(key, value))
+        for (key, value) in self.get_conf('list', {}).items():
+            globales.GlobDebug.print("Ping: {0} - Enabled: {1}".format(key, value), lib.debug.DebugLevel.info)
             if value:
                 lHost.append(key)
 
         lReturn=[]
-        pool = ThreadPool(self.read_conf('threads',5))
+        pool = ThreadPool(self.get_conf('threads', self._default_threads))
         lReturn = pool.map(self.__ping_check, lHost)
         pool.close()
         pool.join()
 
-        self.debug(type(lReturn))
-        self.debug(lReturn)
+
+        msg_debug = '*'*60 + '\n'
+        msg_debug = msg_debug + "Debug [{0}] - Data Work:\n".format(self.NameModule)
+        msg_debug = msg_debug + "Type: {0}\n".format(type(lReturn))
+        msg_debug = msg_debug + str(lReturn) + '\n'
+        msg_debug = msg_debug + '*'*60 + '\n'
+        globales.GlobDebug.print(msg_debug, lib.debug.DebugLevel.debug)
         
 
         #Convertir list en dictionary
@@ -52,8 +60,12 @@ class Watchful(ModuleBase):
             dReturn = {**dReturn, **valueL1}
 
         
-        self.debug(type(dReturn))
-        self.debug(dReturn)
+        msg_debug = '*'*60 + '\n'
+        msg_debug = msg_debug + "Debug [{0}] - Data Return:\n".format(self.NameModule)
+        msg_debug = msg_debug + "Type: {0}\n".format(type(dReturn))
+        msg_debug = msg_debug + str(dReturn) + '\n'
+        msg_debug = msg_debug + '*'*60 + '\n'
+        globales.GlobDebug.print(msg_debug, lib.debug.DebugLevel.debug)
         return True, dReturn
     
     def __ping_check(self, host):
@@ -63,7 +75,7 @@ class Watchful(ModuleBase):
         rCheck[host] = {}
         rCheck[host]['status']=status_return
         rCheck[host]['message']=''
-        if self.monitor.chcek_status(status_return, self.NameModule, host):
+        if self.chcek_status(status_return, self.NameModule, host):
             self.send_message('Ping: {0} {1}'.format(host, 'UP ' + u'\U0001F53C' if status_return else 'DOWN ' + u'\U0001F53D'))
         return rCheck
 

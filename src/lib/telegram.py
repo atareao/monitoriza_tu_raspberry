@@ -20,8 +20,13 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 import requests
+import globales
+from lib.debug import *
+
+__all__ = ['Telegram']
 
 class Telegram():
+
     def __init__(self, token, chat_id):
         self.token = token
         self.chat_id = chat_id
@@ -30,6 +35,12 @@ class Telegram():
         if  message and self.token and self.chat_id:
             requests.post('https://api.telegram.org/bot{0}/sendMessage'.format(self.token), 
                           data={'chat_id': self.chat_id, 'text': message, 'parse_mode':'Markdown'})
+            return True
+        if not self.token:
+            globales.GlobDebug.print("Error: Telegram Token is Null", DebugLevel.error)
+        if not self.chat_id:
+            globales.GlobDebug.print("Error: Telegram Chat ID is Null", DebugLevel.error)
 
+        return False
 
 #https://apps.timwhitlock.info/emoji/tables/unicode

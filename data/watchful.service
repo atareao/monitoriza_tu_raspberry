@@ -3,4 +3,4 @@ Description=Run watchful service
 
 [Service]
 Type=oneshot
-ExecStart=/usr/bin/python3 /opt/watchful/monitor.py
+ExecStart=/usr/bin/python3 /opt/watchful/main.py

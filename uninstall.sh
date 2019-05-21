@@ -35,6 +35,7 @@ rm '/lib/systemd/system/watchful.service'
 rm '/lib/systemd/system/watchful.timer'
 systemctl daemon-reload
 rm -rf '/opt/watchful'
+rm -rf '/var/lib/watchful'
 
 if [[ "${CLEAR_ALL}" == "YES" ]]; then
   rm -rf '/etc/watchful'

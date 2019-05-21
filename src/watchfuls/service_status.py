@@ -21,22 +21,25 @@
 
 import concurrent.futures
 import lib.tools
-from lib.module_base import ModuleBase
+import globales
+import lib.debug
+import lib.module_base
+import lib.monitor
 
-class Watchful(ModuleBase):
+class Watchful(lib.module_base.ModuleBase):
 
-    def __init__(self, monitor, debug = False):
-        ModuleBase.__init__(self,__name__, monitor, debug)
+    def __init__(self, monitor):
+        super().__init__(monitor, __name__)
 
     def check(self):
         listservice = []
-        for (key, value) in self.read_conf('list').items():
-            self.debug("Service: {0} - Enabled: {1}".format(key, value))
+        for (key, value) in self.get_conf('list', {}).items():
+            globales.GlobDebug.print("Service: {0} - Enabled: {1}".format(key, value), lib.debug.DebugLevel.info)
             if value:
                 listservice.append(key)
 
         returnDict = {}
-        with concurrent.futures.ThreadPoolExecutor(max_workers=self.read_conf('threads',5)) as executor:
+        with concurrent.futures.ThreadPoolExecutor(max_workers=self.get_conf('threads', self._default_threads)) as executor:
             future_to_service = {executor.submit(self.__service_check, service): service for service in listservice}
             for future in concurrent.futures.as_completed(future_to_service):
                 service = future_to_service[future]
@@ -47,8 +50,12 @@ class Watchful(ModuleBase):
                     returnDict[service]['status']=False
                     returnDict[service]['message']='Service: {0} - Error: {1}'.format(service, exc)
         
-        self.debug(type(returnDict))
-        self.debug(returnDict)
+        msg_debug = '*'*60 + '\n'
+        msg_debug = msg_debug + "Debug [{0}] - Data Return:\n".format(self.NameModule)
+        msg_debug = msg_debug + "Type: {0}\n".format(type(returnDict))
+        msg_debug = msg_debug + str(returnDict) + '\n'
+        msg_debug = msg_debug + '*'*60 + '\n'
+        globales.GlobDebug.print(msg_debug, lib.debug.DebugLevel.debug)
         return True, returnDict
 
     def __service_check(self, service):
@@ -56,7 +63,7 @@ class Watchful(ModuleBase):
         rCheck = {}
         rCheck['status']=status
         rCheck['message']=''
-        if self.monitor.chcek_status(status, self.NameModule, service):
+        if self.chcek_status(status, self.NameModule, service):
             if status:
                 self.send_message('Service: {0} - Status: '.format(service) + u'\U00002705')
             else:

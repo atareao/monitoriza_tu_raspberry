@@ -21,21 +21,34 @@
 
 import re
 import lib.tools
-from lib.module_base import ModuleBase
+import globales
+import lib.debug
+import lib.monitor
+import lib.module_base
 
-class Watchful(ModuleBase):
+class Watchful(lib.module_base.ModuleBase):
 
-    def __init__(self, monitor, debug = False):
-        ModuleBase.__init__(self,__name__, monitor, debug)
+    #porcentaje de RAM que se usara si no se ha configurado el modulo, o se ha definido un valor que no esté entre 0 y 100.
+    __default_alert=60
+
+    def __init__(self, monitor):
+        super().__init__(monitor, __name__)
 
     def check(self):
+        usage_alert=self.get_conf("alert", self.__default_alert)
+        if isinstance(usage_alert, str):
+            usage_alert=usage_alert.strip()
+        if not usage_alert or usage_alert < 0 or usage_alert > 100:
+            usage_alert=self.__default_alert
+
         stdout, stderr = lib.tools.execute('free')
-        self.debug(stdout)
+        globales.GlobDebug.print(stdout, lib.debug.DebugLevel.debug)
+
         x = re.findall(r'Mem\w*:\s+(\d+)\s+(\d+)', stdout)
         per = float(x[0][1])/float(x[0][0]) * 100.0
-        if per < 50:
-            return True, 'Normal ram used {0:.1f}% '.format(per) + u'\U00002705'
-        return False, 'Excesive ram used {0:.1f}% '.format(per) + u'\U000026A0'
+        if per < float(usage_alert):
+            return True, 'Normal RAM used {0:.1f}% {1}'.format(per, u'\U00002705')
+        return False, 'Excesive RAM used {0:.1f}% {1}'.format(per, u'\U000026A0')
 
 if __name__ == '__main__':
     wf = Watchful()
