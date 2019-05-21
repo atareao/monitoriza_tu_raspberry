@@ -153,20 +153,21 @@ class Config(lib.configStore.ConfigStore):
         if data:
             if isinstance(findkey, list) or isinstance(findkey, tuple):
                 if isinstance(findkey, tuple):
-                    findkey = list(findkey)
-
-                i = findkey.pop(0)
+                    keys = list(findkey)
+                else:
+                    keys = findkey.copy()
+                i = keys.pop(0)
                 if i in data.keys():
 
                     if isinstance(data[i], list) or isinstance(data[i], tuple) or isinstance(data[i], dict):
                         # comprueba que no hay más niveles de búsqueda
-                        if len(findkey) == 0:
+                        if len(keys) == 0:
                             data_return = data[i]
                         else:
-                            data_return = self.__get_conf(data[i], findkey, def_val, r_type)
+                            data_return = self.__get_conf(data[i], keys, def_val, r_type)
                     else:
                         # comprueba que no hay más niveles de búsqueda
-                        if len(findkey) == 0:
+                        if len(keys) == 0:
                             data_return = data[i]
                 else:
                     return None
@@ -196,6 +197,21 @@ class Config(lib.configStore.ConfigStore):
 
         return def_val
 
+    def __convert_findkey_to_list(self, findkey, str_split):
+        lreturn = None
+        if isinstance(findkey, str):
+            if str_split is None:
+                lreturn = findkey.split()
+            else:
+                lreturn = findkey.split(str_split)
+        elif isinstance(findkey, list):
+            lreturn = findkey.copy()
+        elif isinstance(findkey, tuple):
+            lreturn = list(findkey)
+        else:
+            raise ValueError('findkey type [{0}] in not valid.'.format(type(findkey)))
+        return lreturn
+
     def is_exist_conf(self, findkey, str_split=None, data_dic=None):
         """ Return True if the given findkey is present within the structure of the source dictionary, False otherwise.
         
@@ -205,7 +221,7 @@ class Config(lib.configStore.ConfigStore):
         :param str_split (obj:`str`, optional): character that will be used to separate findkey if it is string type in the list conversion.
         :param data_dic (obj:`dict`, optional): the dictionary to be searched in.
         :returns Boolean: is the findkey structure present in data.
-        :raises ValueError: if subkey is not a string | tuple | list
+        :raises ValueError: if findkey is not a string | tuple | list
 
         Note:
             Parameter 'findkey' is not support type 'dict'.
@@ -239,18 +255,7 @@ class Config(lib.configStore.ConfigStore):
             data_dic = self.data
 
         if findkey and data_dic:
-            if isinstance(findkey, str):
-                if str_split is None:
-                    keys = findkey.split()
-                else:
-                    keys = findkey.split(str_split)
-            elif isinstance(findkey, list):
-                keys = findkey
-            elif isinstance(findkey, tuple):
-                keys = list(findkey)
-            else:
-                raise ValueError('key type [{0}] in not valid.'.format(type(findkey)))
-
+            keys = self.__convert_findkey_to_list(findkey, str_split)
             work_dict = data_dic
             while keys:
                 target = keys.pop(0)
@@ -264,8 +269,9 @@ class Config(lib.configStore.ConfigStore):
                         return False
                 else:
                     return False
-
         return False
+
+
 
     def __convert_list_to_dict(self, list_items, val):
         dreturn = {}
@@ -279,6 +285,7 @@ class Config(lib.configStore.ConfigStore):
             dreturn[list_items] = val
         return dreturn
 
+    # https://stackoverflow.com/questions/3232943/update-value-of-a-nested-dictionary-of-varying-depth
     def __update_value_findkey(self, source, overrides):
         for key, val in overrides.items():
             if isinstance(source, collections.Mapping):
@@ -291,19 +298,30 @@ class Config(lib.configStore.ConfigStore):
         return source
 
     def set_conf(self, findkey, val, str_split=None, data_dic=None):
-        if findkey:
-            if isinstance(findkey, str):
-                if str_split is None:
-                    keys = findkey.split()
-                else:
-                    keys = findkey.split(str_split)
-            elif isinstance(findkey, list):
-                keys = findkey.copy()
-            elif isinstance(findkey, tuple):
-                keys = list(findkey)
-            else:
-                raise ValueError('key type [{0}] in not valid.'.format(type(findkey)))
+        """ Return true if the process was successful, False otherwise.
 
+        The findkey format is list, taple, or string in which the str_split parameter is used as the deleting character.
+
+        :param findkey: the target keys structure, which should be present. Support type [string | tuple | list].
+        :param val: new value
+        :param str_split (obj:`str`, optional): character that will be used to separate findkey if it is string type in the list conversion.
+        :param data_dic (obj:`dict`, optional): the dictionary to be searched in. By default the self.data will be used.
+        :returns Boolean: if it has been processed correctly.
+        :raises ValueError: if findkey is not a string | tuple | list
+
+        Note:
+            Parameter 'findkey' is not support type 'dict'.
+            https://docs.python.org/3/library/collections.html#collections.OrderedDict
+
+            Ordered dictionaries are just like regular dictionaries but have some
+            extra capabilities relating to ordering operations. They have become less
+            important now that the built-in dict class gained the ability to remember
+            insertion order (this new behavior became guaranteed in Python 3.7).
+
+        """
+
+        if findkey:
+            keys = self.__convert_findkey_to_list(findkey, str_split)
             if data_dic is not None:
                 work_dict = data_dic
             elif self.data is not None:
@@ -319,5 +337,4 @@ class Config(lib.configStore.ConfigStore):
 
             self.data = work_dict
             return True
-            
         return False
