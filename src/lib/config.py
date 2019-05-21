@@ -22,6 +22,7 @@
 import globales
 import datetime
 import lib.configStore
+import collections
 
 __all__ = ['Config']
 
@@ -195,19 +196,18 @@ class Config(lib.configStore.ConfigStore):
 
         return def_val
 
-    def is_exist_conf(self, findkey):
-        """
-        Check if a key exists in the stored data, supporting search in different levels.
+    def is_exist_conf(self, findkey, str_split=None, data_dic=None):
+        """ Return True if the given findkey is present within the structure of the source dictionary, False otherwise.
+        
+        The findkey format is list, taple, or string in which the str_split parameter is used as the deleting character.
 
-        Parameters:
-            findkey: It is the key we want to know if it exists. This parameter accepts
-                     the following types [string | tuple | list].
+        :param findkey: the target keys structure, which should be present. Support type [string | tuple | list].
+        :param str_split (obj:`str`, optional): character that will be used to separate findkey if it is string type in the list conversion.
+        :param data_dic (obj:`dict`, optional): the dictionary to be searched in.
+        :returns Boolean: is the findkey structure present in data.
+        :raises ValueError: if subkey is not a string | tuple | list
 
-        Return:
-            True  = Yes exist.
-            False = Not exists.
-
-        Warnings:
+        Note:
             Parameter 'findkey' is not support type 'dict'.
             https://docs.python.org/3/library/collections.html#collections.OrderedDict
 
@@ -216,115 +216,108 @@ class Config(lib.configStore.ConfigStore):
             important now that the built-in dict class gained the ability to remember
             insertion order (this new behavior became guaranteed in Python 3.7).
 
-        Example:
-            Config Load:
-            {
-                'levle1': {
-                    'level2': 'OK'
-                }
-            }
-
-            Query:
-                y1 = x.isExist_conf(['level1', 'level2'])
-                y2 = x.isExist_conf(('level1', 'level2'))
-                y3 = x.isExist_conf(('level1', 'level2','level3'))
-                y4 = x.isExist_conf('level1')
-
-            Return:
-                y1 = True
-                y2 = True
-                y3 = False
-                y4 = True
-
         """
-        return self.__is_exist_conf(self.data, findkey)
+#        Example:
+#            Config Load:
+#            { 'levle1': { 'level2': 'OK' } }
+#            Query:
+#                y1 = x.isExist_conf(['level1', 'level2'])
+#                y2 = x.isExist_conf(('level1', 'level2'))
+#                y3 = x.isExist_conf(('level1', 'level2','level3'))
+#                y4 = x.isExist_conf('level1')
+#                y5 = x.isExist_conf('level1:level2', ':')
+#                y6 = x.isExist_conf('level2:level1', ':', { 'levle2': { 'level1': 'OK' } })
+#            Return:
+#                y1 = True
+#                y2 = True
+#                y3 = False
+#                y4 = True
+#                y5 = True
+#                y6 = True
 
-    def __is_exist_conf(self, data, findkey):
-        """Return Ture is findkey exist or False is not exist."""
-        if findkey and data:
-            if isinstance(findkey, list) or isinstance(findkey, tuple):
-                if isinstance(findkey, tuple):
-                    findkey = list(findkey)
-                i = findkey.pop(0)
-                if i in data.keys():
-                    if isinstance(data[i], list) or isinstance(data[i], tuple) or isinstance(data[i], dict):
-                        # comprueba que no hay más niveles de búsqueda
-                        if len(findkey) == 0:
-                            return True
-                        else:
-                            if self.__isExist_Conf(data[i], findkey):
-                                return True
-                    else:
-                        # comprueba que no hay más niveles de búsqueda
-                        if len(findkey) == 0:
-                            return True
+        if data_dic is None:
+            data_dic = self.data
 
-            elif isinstance(findkey, str):
-                if findkey in data.keys():
-                    return True
-
+        if findkey and data_dic:
+            if isinstance(findkey, str):
+                if str_split is None:
+                    keys = findkey.split()
+                else:
+                    keys = findkey.split(str_split)
+            elif isinstance(findkey, list):
+                keys = findkey
+            elif isinstance(findkey, tuple):
+                keys = list(findkey)
             else:
                 raise ValueError('key type [{0}] in not valid.'.format(type(findkey)))
 
+            work_dict = data_dic
+            while keys:
+                target = keys.pop(0)
+                if isinstance(work_dict, dict):
+                    if target in work_dict.keys():
+                        if not keys:    # this is the last element in the findkey, and it is in the data_dic
+                            return True
+                        else:   # not the last element of findkey, change the temp var
+                            work_dict = work_dict[target]
+                    else:
+                        return False
+                else:
+                    return False
+
         return False
 
-    def set_conf(self, findkey, val):
-        """
-        It allows us to modify the value of the key we want. AT THE MOMENT THE OPTION OF
-        MULTIPLE LEVELS IS NOT SUPPORTED. :(
-
-        Parameters:
-            findkey: It is the key that we want to look for to modify its value. At the moment
-                        the option of multiple levels is not supported. It only accepts String type.
-
-        Example:
-            Config Load:
-            { }
-
-            Function:
-                x.set_conf('level0', True)
-                x.set_conf('level1', {'opt1': 'OK'}")
-
-            Config after set:
-            {
-                'level0': True,
-                'level1': {
-                    'opt1': 'OK'
-                }
-            }
-
-        """
-        if not findkey:
-            return False
-        if self.data is None:
-                self.data = {}
-        if isinstance(findkey, list) or isinstance(findkey, tuple):
-            raise ValueError('key type [{0}] in not valid.'.format(type(findkey)))
-            #isExisteKey = self.isExist_Conf(findkey)
-            #if isinstance(findkey, tuple):
-            #    findkey = list(findkey)
-            #
-            #print (len(findkey))
-            #if isExisteKey:
-            #    pass
-            #else:
-            #    pass
-            #
-            ##i = findkey.pop(0)
-            ##if i in data.keys():
-            ##    if isinstance(data[i], list) or isinstance(data[i], tuple) or isinstance(data[i], dict):
-            ##        #comprueba que no hay más niveles de búsqueda
-            ##        if len(findkey) == 0:
-            ##            return True
-            ##        else:
-            ##            if self.__isExist_Conf(data[i], findkey):
-            ##                return True
-            ##    else:
-            ##        #comprueba que no hay más niveles de búsqueda
-            ##        if len(findkey) == 0:
-            ##            return True
-        elif isinstance(findkey, str):
-            self.data[findkey] = val
-            return True
+    def __convert_list_to_dict(self, list_items, val):
+        dreturn = {}
+        if isinstance(list_items, list):
+            target = list_items.pop(0)
+            if list_items:
+                dreturn[target] = self.__convert_list_to_dict(list_items, val)
+            else:
+                dreturn[target] = val
         else:
-            raise ValueError('key type [{0}] in not valid.'.format(type(findkey)))
+            dreturn[list_items] = val
+        return dreturn
+
+    def __update_value_findkey(self, source, overrides):
+        for key, val in overrides.items():
+            if isinstance(source, collections.Mapping):
+                if isinstance(val, collections.Mapping):
+                    source[key] = self.__update_value_findkey(source.get(key, {}), val)
+                else:
+                    source[key] = val
+            else:
+                source = {key: overrides[key]}
+        return source
+
+    def set_conf(self, findkey, val, str_split=None, data_dic=None):
+        if findkey:
+            if isinstance(findkey, str):
+                if str_split is None:
+                    keys = findkey.split()
+                else:
+                    keys = findkey.split(str_split)
+            elif isinstance(findkey, list):
+                keys = findkey.copy()
+            elif isinstance(findkey, tuple):
+                keys = list(findkey)
+            else:
+                raise ValueError('key type [{0}] in not valid.'.format(type(findkey)))
+
+            if data_dic is not None:
+                work_dict = data_dic
+            elif self.data is not None:
+                work_dict = self.data
+            else:
+                work_dict = {}
+
+            keyupdate = self.__convert_list_to_dict(keys, val)
+            work_dict = self.__update_value_findkey(work_dict, keyupdate)
+
+            if data_dic is not None:
+                return work_dict
+
+            self.data = work_dict
+            return True
+            
+        return False

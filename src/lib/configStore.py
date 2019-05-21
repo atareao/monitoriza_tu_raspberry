@@ -26,9 +26,10 @@ import codecs
 import json
 import os
 import globales
-from lib.debug import *
+import lib.debug
 
 __all__ = ['ConfigStore']
+
 
 class ConfigStore(object):
 
@@ -36,7 +37,7 @@ class ConfigStore(object):
         self.file = file
 
     @property
-    def isExist(self):
+    def is_exist(self):
         if self.file:
             if os.path.isfile(self.file):
                 return True
@@ -44,7 +45,7 @@ class ConfigStore(object):
 
     def read(self):
         data = {}
-        if self.isExist:
+        if self.is_exist:
             try:
                 f = codecs.open(self.file, 'r', 'utf-8')
                 data = json.loads(f.read())
@@ -52,7 +53,7 @@ class ConfigStore(object):
             except Exception as e:
                 globales.GlobDebug.Exception(e)
         else:
-            print("Warnging: File ({0}) not exist!!!".format(self.file))
+            globales.GlobDebug.print("Warnging: File ({0}) not exist!!!".format(self.file),  lib.debug.DebugLevel.warning)
         return data
 
     def save(self, data):
