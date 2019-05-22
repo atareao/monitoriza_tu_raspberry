@@ -22,25 +22,38 @@
 import globales
 import datetime
 import lib.configStore
+import collections
+from enum import Enum
 
-__all__ = ['Config']
+__all__ = ['Config', 'ConfigTypeReturn']
 
 """Configuration module"""
+
+
+class ConfigTypeReturn(Enum):
+    STR = 1
+    INT = 2
+    BOOL = 3
+    LIST = 4
+    DICT = 5
+    TUPLE = 6
 
 
 class Config(lib.configStore.ConfigStore):
     """Class to Storage and processing of configuration parameters."""
 
-    def __init__(self, file, init_data=None):
+    def __init__(self, file, init_data: dict = None):
         self.__load = None
         self.__update = None
         super().__init__(file)
         self.data = init_data
 
     @property
-    def data(self):
+    def data(self) -> dict:
         """Return Obtenemos los datos almacendados."""
-        return self.__data
+        if self.__data:
+            return self.__data
+        return {}
 
     @data.setter
     def data(self, val):
@@ -48,7 +61,7 @@ class Config(lib.configStore.ConfigStore):
         self.__data = val
 
     @property
-    def is_changed(self):
+    def is_changed(self) -> bool:
         if self.__update and not self.__load:
             # Se han insertado datos manulamente, no se ha leido ningun
             # archivo.
@@ -63,7 +76,7 @@ class Config(lib.configStore.ConfigStore):
         return False
 
     @property
-    def is_load(self):
+    def is_load(self) -> bool:
         if self.__load is not None:
             return True
         return False
@@ -83,7 +96,7 @@ class Config(lib.configStore.ConfigStore):
             return self.data
         return None
 
-    def save(self):
+    def save(self) -> bool:
         try:
             super().save(self.data)
             self.__load = datetime.datetime.now()
@@ -93,25 +106,62 @@ class Config(lib.configStore.ConfigStore):
             return False
         return True
 
-    def get_conf(self, findkey, def_val=None, r_type=None):
-        """Get the stored value of the key you specify, search supports different levels.
+    def __convert_findkey_to_list(self, findkey, str_split: str = None) -> list:
+        lreturn = []
+        if isinstance(findkey, str):
+            if str_split is None:
+                lreturn = findkey.split()
+            else:
+                lreturn = findkey.split(str_split)
+        elif isinstance(findkey, list):
+            lreturn = findkey.copy()
+        elif isinstance(findkey, tuple):
+            lreturn = list(findkey)
+        else:
+            raise TypeError('Invalid type: findkey must be a string, list or tuple, not {0}.'.format(type(findkey)))
+        return lreturn
 
-        Args:
-            findkey (:obj:`list`of :obj:`tuple` of :obj:`str`): It is the key that contains
-            the setting you want to read.
-            This parameter accepts the following types [string | tuple | list].
+    def __convert_list_to_dict(self, list_items, val):
+        dreturn = {}
+        if isinstance(list_items, list):
+            target = list_items.pop(0)
+            if list_items:
+                dreturn[target] = self.__convert_list_to_dict(list_items, val)
+            else:
+                dreturn[target] = val
+        else:
+            dreturn[list_items] = val
+        return dreturn
 
-            def_val(optional): It is the value that returns if the key we are looking for is not found.
+    # https://stackoverflow.com/questions/3232943/update-value-of-a-nested-dictionary-of-varying-depth
+    def __update_value_findkey(self, source, overrides):
+        for key, val in overrides.items():
+            if isinstance(source, collections.Mapping):
+                if isinstance(val, collections.Mapping):
+                    source[key] = self.__update_value_findkey(source.get(key, {}), val)
+                else:
+                    source[key] = val
+            else:
+                source = {key: overrides[key]}
+        return source
 
-            r_type (optional): It is the type of object (empty), which will return if def_val is not
-            defined or def_val is None and the key we are looking for was not found.
-            For example, if we specify r_type = list, it returns [].
+    def get_conf(self, findkey, def_val=None, str_split: str = None, data_dict: dict = None, r_type: ConfigTypeReturn = ConfigTypeReturn.STR):
+        """ Return value of the key that we are looking for and if this key does not exist, it
+        will return def_val. If def_val is None it will return an object (empty) of the type
+        that is defined in r_type.
 
-        Returns:
-            The return value of the key that we are looking for and if this key does not
-            exist, it will return def_val.
-            If def_val is None it will return an object (empty) of the type that is defined
-            in r_type.
+        :param findkey (:obj:`list`of :obj:`tuple` of :obj:`str`): the target keys structure, which
+        should be present. Support type [string | tuple | list].
+        :param def_val (optional): It is the value that returns if the key we are looking for is not found.
+        :param str_split (obj:`str`, optional): character that will be used to separate findkey if it is
+        string type in the list conversion.
+        :param data_dict (obj:`dict`, optional): the dictionary to be searched in. By default the self.data
+        will be used.
+        :param r_type (:obj:`list`of :obj:`tuple` of :obj:`str` of :obj:`int` of :obj:`bool`, optional): It is
+        the type of object (empty), which will return if def_val is not defined or def_val is None and the key
+        we are looking for was not found. For example, if we specify r_type = list, it returns [].
+        :raises TypeError: if findkey is not a string, tuple or list or if r_type is not a string, list, dict,
+        tuple, int or bool.
 
         Note:
             Parameter 'findkey' is not support type 'dict'.
@@ -122,92 +172,76 @@ class Config(lib.configStore.ConfigStore):
             important now that the built-in dict class gained the ability to remember
             insertion order (this new behavior became guaranteed in Python 3.7).
 
+        Example:
+            >>> x = Config(None)
+            >>> x.data = { 'level1': { 'level2': 'OK' } }
+            >>> x.get_conf(['level1', 'level2'], 'Not Exist!')
+            'OK'
+            >>> x.get_conf(('level1', 'level2'), 'Not Exist!')
+            'OK'
+            >>> x.get_conf(('level1', 'level2', 'level3'), 'Not Exist!')
+            'Not Exist!'
+            >>> x.get_conf('level1', 'Not Exist!')
+            {'level2': 'OK'}
+            >>> x.get_conf('level2', r_type=lib.config.ConfigTypeReturn.LIST)
+            []
+
         """
-#        Example:
-#            Config Load:
-#            {
-#                'levle1': {
-#                    'level2': 'OK'
-#                }
-#            }
-#
-#            Function:
-#                y1 = x.get_conf(['level1', 'level2'], 'Not Exist!')
-#                y2 = x.get_conf(('level1', 'level2'), 'Not Exist!')
-#                y3 = x.get_conf(('level1', 'level2', 'level3'), 'Not Exist!')
-#                y4 = x.get_conf('level1', 'Not Exist!')
-#                y5 = x.get_conf('level2', None, list)
-#
-#            Return:
-#                y1 = OK
-#                y2 = OK
-#                y3 = Not Exist!
-#                y4 = OK
-#                y5 = {}
 
-        return self.__get_conf(self.data, findkey, def_val, r_type)
+        if data_dict is None:
+            data_dict = self.data
 
-    def __get_conf(self, data, findkey, def_val=None, r_type=None):
         data_return = None
-        if data:
-            if isinstance(findkey, list) or isinstance(findkey, tuple):
-                if isinstance(findkey, tuple):
-                    findkey = list(findkey)
+        if data_dict:
+            keys = self.__convert_findkey_to_list(findkey, str_split)
 
-                i = findkey.pop(0)
-                if i in data.keys():
-
-                    if isinstance(data[i], list) or isinstance(data[i], tuple) or isinstance(data[i], dict):
-                        # comprueba que no hay más niveles de búsqueda
-                        if len(findkey) == 0:
-                            data_return = data[i]
-                        else:
-                            data_return = self.__get_conf(data[i], findkey, def_val, r_type)
+            work_dict = data_dict
+            while keys:
+                target = keys.pop(0)
+                if isinstance(work_dict, dict):
+                    if target in work_dict.keys():
+                        if not keys:    # this is the last element in the findkey, and it is in the data_dict
+                            data_return = work_dict[target]
+                            break
+                        else:   # not the last element of findkey, change the temp var
+                            work_dict = work_dict[target]
                     else:
-                        # comprueba que no hay más niveles de búsqueda
-                        if len(findkey) == 0:
-                            data_return = data[i]
+                        continue
                 else:
-                    return None
-
-            elif isinstance(findkey, str):
-                if findkey in data.keys():
-                    data_return = data[findkey]
-                else:
-                    data_return = None
-            else:
-                raise ValueError('findkey type [{0}] in not valid.'.format(type(findkey)))
+                    continue
 
         if data_return is not None:
             return data_return
 
-        if not def_val:
-            if isinstance(r_type, list):
+        if def_val is None:
+            if r_type == ConfigTypeReturn.LIST:
                 return []
-            elif isinstance(r_type, dict):
+            elif r_type == ConfigTypeReturn.DICT:
                 return {}
-            elif isinstance(r_type, tuple):
+            elif r_type == ConfigTypeReturn.TUPLE:
                 return ()
-            elif isinstance(r_type, int) or isinstance(r_type, bool):
-                return None
-            else:
+            elif r_type == ConfigTypeReturn.INT:
+                return 0
+            elif r_type == ConfigTypeReturn.BOOL:
+                return False
+            elif r_type == ConfigTypeReturn.STR:
                 return ''
-
+            else:
+                raise TypeError('Invalid type: r_type must be a string, list, dict, tuple, int or bool, not {0}.'.format(type(r_type)))
         return def_val
 
-    def is_exist_conf(self, findkey):
-        """
-        Check if a key exists in the stored data, supporting search in different levels.
+    def is_exist_conf(self, findkey, str_split: str = None, data_dict: dict = None):
+        """ Return True if the given findkey is present within the structure of the source dictionary, False otherwise.
 
-        Parameters:
-            findkey: It is the key we want to know if it exists. This parameter accepts
-                     the following types [string | tuple | list].
+        The findkey format is list, taple, or string in which the str_split parameter is used as the deleting character.
 
-        Return:
-            True  = Yes exist.
-            False = Not exists.
+        :param findkey: the target keys structure, which should be present. Support type [string | tuple | list].
+        :param str_split (obj:`str`, optional): character that will be used to separate findkey if it is string type in the list conversion.
+        :param data_dict (obj:`dict`, optional): the dictionary to be searched in.
+        :returns Boolean: is the findkey structure present in data.
+        :raises TypeError: if findkey is not a string, tuple or list
 
-        Warnings:
+        Note:
             Parameter 'findkey' is not support type 'dict'.
             https://docs.python.org/3/library/collections.html#collections.OrderedDict
 
@@ -217,114 +251,101 @@ class Config(lib.configStore.ConfigStore):
             insertion order (this new behavior became guaranteed in Python 3.7).
 
         Example:
-            Config Load:
-            {
-                'levle1': {
-                    'level2': 'OK'
-                }
-            }
-
-            Query:
-                y1 = x.isExist_conf(['level1', 'level2'])
-                y2 = x.isExist_conf(('level1', 'level2'))
-                y3 = x.isExist_conf(('level1', 'level2','level3'))
-                y4 = x.isExist_conf('level1')
-
-            Return:
-                y1 = True
-                y2 = True
-                y3 = False
-                y4 = True
+            >>> x = Config(None)
+            >>> x.data = { 'level1': { 'level2': 'OK' } }
+            >>> x.is_exist_conf(['level1', 'level2'])
+            True
+            >>> x.is_exist_conf(('level1', 'level2'))
+            True
+            >>> x.is_exist_conf(('level1', 'level2','level3'))
+            False
+            >>> x.is_exist_conf('level1')
+            True
+            >>> x.is_exist_conf('level1:level2', ':')
+            True
+            >>> x.is_exist_conf('level2:level1', ':', { 'level2': { 'level1': 'OK' } })
+            True
+            >>> x.is_exist_conf('level2:level1', ':', { 'level3': { 'level1': 'OK' } })
+            False
 
         """
-        return self.__is_exist_conf(self.data, findkey)
 
-    def __is_exist_conf(self, data, findkey):
-        """Return Ture is findkey exist or False is not exist."""
-        if findkey and data:
-            if isinstance(findkey, list) or isinstance(findkey, tuple):
-                if isinstance(findkey, tuple):
-                    findkey = list(findkey)
-                i = findkey.pop(0)
-                if i in data.keys():
-                    if isinstance(data[i], list) or isinstance(data[i], tuple) or isinstance(data[i], dict):
-                        # comprueba que no hay más niveles de búsqueda
-                        if len(findkey) == 0:
+        if data_dict is None:
+            data_dict = self.data
+
+        if findkey and data_dict:
+            keys = self.__convert_findkey_to_list(findkey, str_split)
+            work_dict = data_dict
+            while keys:
+                target = keys.pop(0)
+                if isinstance(work_dict, dict):
+                    if target in work_dict.keys():
+                        if not keys:    # this is the last element in the findkey, and it is in the data_dict
                             return True
-                        else:
-                            if self.__isExist_Conf(data[i], findkey):
-                                return True
+                        else:   # not the last element of findkey, change the temp var
+                            work_dict = work_dict[target]
                     else:
-                        # comprueba que no hay más niveles de búsqueda
-                        if len(findkey) == 0:
-                            return True
-
-            elif isinstance(findkey, str):
-                if findkey in data.keys():
-                    return True
-
-            else:
-                raise ValueError('key type [{0}] in not valid.'.format(type(findkey)))
-
+                        return False
+                else:
+                    return False
         return False
 
-    def set_conf(self, findkey, val):
-        """
-        It allows us to modify the value of the key we want. AT THE MOMENT THE OPTION OF
-        MULTIPLE LEVELS IS NOT SUPPORTED. :(
+    def set_conf(self, findkey, val, str_split: str = None, data_dict: dict = None):
+        """ Return true if the process was successful, False otherwise.
 
-        Parameters:
-            findkey: It is the key that we want to look for to modify its value. At the moment
-                        the option of multiple levels is not supported. It only accepts String type.
+        The findkey format is list, taple, or string in which the str_split parameter is used as the deleting character.
+
+        :param findkey: the target keys structure, which should be present. Support type [string | tuple | list].
+        :param val: new value
+        :param str_split (obj:`str`, optional): character that will be used to separate findkey if it is string type in the list conversion.
+        :param data_dict (obj:`dict`, optional): the dictionary to be searched in. By default the self.data will be used.
+        :returns Boolean: if it has been processed correctly.
+        :returns Dict: if it has been processed correctly and data_dict is a dict.
+        :raises TypeError: if findkey is not a string, tuple or list
+
+        Note:
+            Parameter 'findkey' is not support type 'dict'.
+            https://docs.python.org/3/library/collections.html#collections.OrderedDict
+
+            Ordered dictionaries are just like regular dictionaries but have some
+            extra capabilities relating to ordering operations. They have become less
+            important now that the built-in dict class gained the ability to remember
+            insertion order (this new behavior became guaranteed in Python 3.7).
 
         Example:
-            Config Load:
-            { }
-
-            Function:
-                x.set_conf('level0', True)
-                x.set_conf('level1', {'opt1': 'OK'}")
-
-            Config after set:
-            {
-                'level0': True,
-                'level1': {
-                    'opt1': 'OK'
-                }
-            }
+            >>> x = Config(None)
+            >>> x.set_conf('level1', 'OK')
+            True
+            >>> x.data
+            {'level1': 'OK'}
+            >>> x.set_conf(['level1','level2'], 'OK')
+            True
+            >>> x.data
+            {'level1': {'level2': 'OK'}}
+            >>> x.set_conf('level1:level2:level3', 'OK',':')
+            True
+            >>> x.data
+            {'level1': {'level2': {'level3': 'OK'}}}
+            >>> x.set_conf('level0', 'OK', data_dict = {'level1': 'OK'})
+            {'level1': 'OK', 'level0': 'OK'}
 
         """
-        if not findkey:
-            return False
-        if self.data is None:
-                self.data = {}
-        if isinstance(findkey, list) or isinstance(findkey, tuple):
-            raise ValueError('key type [{0}] in not valid.'.format(type(findkey)))
-            #isExisteKey = self.isExist_Conf(findkey)
-            #if isinstance(findkey, tuple):
-            #    findkey = list(findkey)
-            #
-            #print (len(findkey))
-            #if isExisteKey:
-            #    pass
-            #else:
-            #    pass
-            #
-            ##i = findkey.pop(0)
-            ##if i in data.keys():
-            ##    if isinstance(data[i], list) or isinstance(data[i], tuple) or isinstance(data[i], dict):
-            ##        #comprueba que no hay más niveles de búsqueda
-            ##        if len(findkey) == 0:
-            ##            return True
-            ##        else:
-            ##            if self.__isExist_Conf(data[i], findkey):
-            ##                return True
-            ##    else:
-            ##        #comprueba que no hay más niveles de búsqueda
-            ##        if len(findkey) == 0:
-            ##            return True
-        elif isinstance(findkey, str):
-            self.data[findkey] = val
+
+        if findkey:
+            keys = self.__convert_findkey_to_list(findkey, str_split)
+            if data_dict is not None:
+                work_dict = data_dict
+            elif self.data is not None:
+                work_dict = self.data
+            else:
+                work_dict = {}
+
+            keyupdate = self.__convert_list_to_dict(keys, val)
+            work_dict = self.__update_value_findkey(work_dict, keyupdate)
+
+            if data_dict is not None:
+                return work_dict
+
+            self.data = work_dict
             return True
-        else:
-            raise ValueError('key type [{0}] in not valid.'.format(type(findkey)))
+        return False
