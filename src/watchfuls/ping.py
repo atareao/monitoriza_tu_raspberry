@@ -27,24 +27,27 @@ import lib.debug
 import lib.module_base
 import lib.monitor
 
+
 class Watchful(lib.module_base.ModuleBase):
+
+    __default_attempt = 3
+    __default_timeout = 5
 
     def __init__(self, monitor):
         super().__init__(monitor, __name__)
 
     def check(self):
-        lHost=[]
+        lHost = []
         for (key, value) in self.get_conf('list', {}).items():
             globales.GlobDebug.print("Ping: {0} - Enabled: {1}".format(key, value), lib.debug.DebugLevel.info)
             if value:
                 lHost.append(key)
 
-        lReturn=[]
+        lReturn = []
         pool = ThreadPool(self.get_conf('threads', self._default_threads))
         lReturn = pool.map(self.__ping_check, lHost)
         pool.close()
         pool.join()
-
 
         msg_debug = '*'*60 + '\n'
         msg_debug = msg_debug + "Debug [{0}] - Data Work:\n".format(self.NameModule)
@@ -52,14 +55,12 @@ class Watchful(lib.module_base.ModuleBase):
         msg_debug = msg_debug + str(lReturn) + '\n'
         msg_debug = msg_debug + '*'*60 + '\n'
         globales.GlobDebug.print(msg_debug, lib.debug.DebugLevel.debug)
-        
 
-        #Convertir list en dictionary
+        # Convertir list en dictionary
         dReturn = {}
         for valueL1 in lReturn:
             dReturn = {**dReturn, **valueL1}
 
-        
         msg_debug = '*'*60 + '\n'
         msg_debug = msg_debug + "Debug [{0}] - Data Return:\n".format(self.NameModule)
         msg_debug = msg_debug + "Type: {0}\n".format(type(dReturn))
@@ -67,21 +68,27 @@ class Watchful(lib.module_base.ModuleBase):
         msg_debug = msg_debug + '*'*60 + '\n'
         globales.GlobDebug.print(msg_debug, lib.debug.DebugLevel.debug)
         return True, dReturn
-    
+
     def __ping_check(self, host):
-        status_return=self.__ping_return(host, 5)
+        # TODO: Pendiente poder configurar número de intentos y timeout para cada IP
+        status = self.__ping_return(host, self.get_conf('threads', self.__default_timeout), self.get_conf('attempt', self.__default_attempt))
 
         rCheck = {}
         rCheck[host] = {}
-        rCheck[host]['status']=status_return
-        rCheck[host]['message']=''
-        if self.chcek_status(status_return, self.NameModule, host):
-            self.send_message('Ping: {0} {1}'.format(host, 'UP ' + u'\U0001F53C' if status_return else 'DOWN ' + u'\U0001F53D'))
+        rCheck[host]['status'] = status
+        rCheck[host]['message'] = ''
+        if self.chcek_status(status, self.NameModule, host):
+            sMessage = 'Ping: {0}'.format(host)
+            if status:
+                sMessage = '{0} {1}'.format(sMessage, u'\U0001F53C')
+            else:
+                sMessage = '{0} {1}'.format(sMessage, u'\U0001F53D')
+            self.send_message(sMessage, status)
         return rCheck
 
-    def __ping_return(self, host, timeout):
+    def __ping_return(self, host, timeout, attempt):
         counter = 0
-        while counter < 3:
+        while counter < attempt:
             rCode = lib.tools.execute_call('ping -c 1 -W {0} {1}'.format(timeout, host))
             if rCode == 0:
                 return True
@@ -89,6 +96,8 @@ class Watchful(lib.module_base.ModuleBase):
             counter += 1
         return False
 
+
 if __name__ == '__main__':
-    wf = Watchful()
+
+    wf = Watchful(None)
     print(wf.check())

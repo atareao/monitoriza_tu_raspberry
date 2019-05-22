@@ -19,6 +19,8 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+"""Module Main."""
+
 import globales
 import os
 import sys
@@ -26,38 +28,74 @@ import lib.debug
 import lib.monitor
 import lib.config
 
+
 def _dir():
+    """Path run program.
+
+    Returns:
+    str: Returning value
+
+    """
     return os.path.dirname(os.path.abspath(__file__))
 
+
 def _modules_dir():
+    """Path modules.
+
+    Returns:
+    str: Returning value
+
+    """
     return os.path.join(_dir(), 'watchfuls')
 
+
 def _lib_dir():
+    """Path lib's.
+
+    Returns:
+    str: Returning value
+
+    """
     return os.path.join(_dir(), 'lib')
 
+
 def _config_dir():
+    """Path config files.
+
+    Returns:
+    str: Returning value
+
+    """
     if _dir().find('src') != -1:
         return os.path.normpath(os.path.join(_dir(), '../data/'))
     else:
         return '/etc/watchful/'
 
+
 def _var_dir():
+    """Path /var/lib...
+
+    Returns:
+    str: Returning value
+
+    """
     if _dir().find('src') != -1:
-        return '/var/lib/watchful/dev'
+        return '/var/lib/watchful/dev/'
     else:
         return '/var/lib/watchful/'
+
 
 if __name__ == "__main__":
     sys.path.append(_lib_dir())
     sys.path.append(_modules_dir())
 
-    globales.GlobDebug =  lib.debug.Debug(True)
+    globales.GlobDebug = lib.debug.Debug(True)
 
     Config = lib.config.Config(os.path.join(_config_dir(), 'config.json'))
     Config.read()
     if Config:
-        globales.GlobDebug.enabled = Config.get_conf(['global','debug'], globales.GlobDebug.enabled)
-    #globales.GlobDebug.enabled = True
+        globales.GlobDebug.enabled = Config.get_conf(['global', 'debug'], globales.GlobDebug.enabled)
+    # globales.GlobDebug.enabled = True
 
     globales.GlobMonitor = lib.monitor.Monitor(_dir(), _config_dir(), _modules_dir(), _var_dir())
     globales.GlobMonitor.check()

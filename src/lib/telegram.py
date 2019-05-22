@@ -25,6 +25,7 @@ from lib.debug import *
 
 __all__ = ['Telegram']
 
+
 class Telegram():
 
     def __init__(self, token, chat_id):
@@ -32,9 +33,9 @@ class Telegram():
         self.chat_id = chat_id
 
     def send_message(self, message):
-        if  message and self.token and self.chat_id:
-            requests.post('https://api.telegram.org/bot{0}/sendMessage'.format(self.token), 
-                          data={'chat_id': self.chat_id, 'text': message, 'parse_mode':'Markdown'})
+        if message and self.token and self.chat_id:
+            requests.post('https://api.telegram.org/bot{0}/sendMessage'.format(self.token),
+                          data={'chat_id': self.chat_id, 'text': message, 'parse_mode': 'Markdown'})
             return True
         if not self.token:
             globales.GlobDebug.print("Error: Telegram Token is Null", DebugLevel.error)
@@ -43,4 +44,4 @@ class Telegram():
 
         return False
 
-#https://apps.timwhitlock.info/emoji/tables/unicode
+# https://apps.timwhitlock.info/emoji/tables/unicode

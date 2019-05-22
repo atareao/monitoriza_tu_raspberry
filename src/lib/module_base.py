@@ -19,15 +19,15 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-import globales
 import lib.monitor
 import lib.debug
 
 __all__ = ['ModuleBase']
 
+
 class ModuleBase(object):
 
-    #Nº de hilos que se usaran en los módulos para procesamiento en paralelo como valor por defecto.
+    # Nº de hilos que se usaran en los módulos para procesamiento en paralelo como valor por defecto.
     _default_threads = 5
 
     def __init__(self, parent_monitor, name=None):
@@ -61,13 +61,13 @@ class ModuleBase(object):
         else:
             raise ValueError('Type not valid, only Monitor valid type.')
 
-    def send_message(self, message):
+    def send_message(self, message, status=None):
         if message:
             if self._monitor:
-                self._monitor.send_message(message)
+                self._monitor.send_message(message, status)
 
     def get_conf(self, findkey=None, default_val=None, select_module=None):
-        if default_val == None:
+        if default_val is None:
             default_val = {}
 
         if self.isMonitorExist:
@@ -75,12 +75,11 @@ class ModuleBase(object):
                 select_module = self.NameModule
 
             if select_module:
-                if findkey == None:
+                if findkey is None:
                     return self._monitor.config_modules.get_conf(select_module, default_val)
                 else:
                     return self._monitor.config_modules.get_conf([select_module, findkey], default_val)
 
-            
         #    if select_module:
         #        if select_module in self.monitor.config_modules.keys():
         #            if not findkey:

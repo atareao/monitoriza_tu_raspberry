@@ -26,20 +26,20 @@ import lib.debug
 import lib.module_base
 import lib.monitor
 
+
 class Watchful(lib.module_base.ModuleBase):
-    
-    #porcentaje de SWAP que se usara si no se ha configurado el modulo, o se ha definido un valor que no esté entre 0 y 100.
-    __default_alert=60
+    # porcentaje de SWAP que se usara si no se ha configurado el modulo, o se ha definido un valor que no esté entre 0 y 100.
+    __default_alert = 60
 
     def __init__(self, monitor):
         super().__init__(monitor, __name__)
 
     def check(self):
-        usage_alert= self.get_conf("alert", self.__default_alert)
+        usage_alert = self.get_conf("alert", self.__default_alert)
         if isinstance(usage_alert, str):
-            usage_alert=usage_alert.strip()
+            usage_alert = usage_alert.strip()
         if not usage_alert or usage_alert < 0 or usage_alert > 100:
-            usage_alert=self.__default_alert
+            usage_alert = self.__default_alert
 
         stdout, stderr = lib.tools.execute('free')
         globales.GlobDebug.print(stdout, lib.debug.DebugLevel.debug)
@@ -52,5 +52,6 @@ class Watchful(lib.module_base.ModuleBase):
 
 
 if __name__ == '__main__':
-    wf = Watchful()
+
+    wf = Watchful(None)
     print(wf.check())

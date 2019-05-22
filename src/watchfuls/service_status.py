@@ -26,6 +26,7 @@ import lib.debug
 import lib.module_base
 import lib.monitor
 
+
 class Watchful(lib.module_base.ModuleBase):
 
     def __init__(self, monitor):
@@ -44,12 +45,12 @@ class Watchful(lib.module_base.ModuleBase):
             for future in concurrent.futures.as_completed(future_to_service):
                 service = future_to_service[future]
                 try:
-                    returnDict[service]=future.result()
+                    returnDict[service] = future.result()
                 except Exception as exc:
-                    returnDict[service]={}
-                    returnDict[service]['status']=False
-                    returnDict[service]['message']='Service: {0} - Error: {1}'.format(service, exc)
-        
+                    returnDict[service] = {}
+                    returnDict[service]['status'] = False
+                    returnDict[service]['message'] = 'Service: {0} - *Error: {1}* {1}'.format(service, exc, u'\U0001F4A5')
+
         msg_debug = '*'*60 + '\n'
         msg_debug = msg_debug + "Debug [{0}] - Data Return:\n".format(self.NameModule)
         msg_debug = msg_debug + "Type: {0}\n".format(type(returnDict))
@@ -61,13 +62,15 @@ class Watchful(lib.module_base.ModuleBase):
     def __service_check(self, service):
         status, message = self.__service_return(service)
         rCheck = {}
-        rCheck['status']=status
-        rCheck['message']=''
+        rCheck['status'] = status
+        rCheck['message'] = ''
         if self.chcek_status(status, self.NameModule, service):
+            sMessage = 'Service: {0}'.format(service)
             if status:
-                self.send_message('Service: {0} - Status: '.format(service) + u'\U00002705')
+                sMessage = '{0} {1}'.format(sMessage, u'\U00002705')
             else:
-                self.send_message('Service: {0} - *Error: {1}* '.format(service, message) + u'\U0000274E')
+                sMessage = '{0} - *Error: {1}* {2}'.format(sMessage, message, u'\U000026A0')
+            self.send_message(sMessage, status)
         return rCheck
 
     def __service_return(self, service):
@@ -78,5 +81,6 @@ class Watchful(lib.module_base.ModuleBase):
 
 
 if __name__ == '__main__':
-    wf = Watchful()
+
+    wf = Watchful(None)
     print(wf.check())

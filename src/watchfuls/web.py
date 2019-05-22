@@ -29,6 +29,7 @@ import lib.debug
 import lib.module_base
 import lib.monitor
 
+
 class Watchful(lib.module_base.ModuleBase):
 
     def __init__(self, monitor):
@@ -47,12 +48,12 @@ class Watchful(lib.module_base.ModuleBase):
             for future in concurrent.futures.as_completed(future_to_url):
                 url = future_to_url[future]
                 try:
-                    returnDict[url]=future.result()
+                    returnDict[url] = future.result()
                 except Exception as exc:
-                    returnDict[url]={}
-                    returnDict[url]['status']=False
-                    returnDict[url]['message']='Web: {0} - Error: {1}'.format(url, exc)
-        
+                    returnDict[url] = {}
+                    returnDict[url]['status'] = False
+                    returnDict[url]['message'] = 'Web: {0} - Error: {1}'.format(url, exc)
+
         msg_debug = '*'*60 + '\n'
         msg_debug = msg_debug + "Debug [{0}] - Data Return:\n".format(self.NameModule)
         msg_debug = msg_debug + "Type: {0}\n".format(type(returnDict))
@@ -62,22 +63,30 @@ class Watchful(lib.module_base.ModuleBase):
         return True, returnDict
 
     def __web_check(self, url):
+        status = self.__web_return(url)
+
         rCheck = {}
-        rCheck['status']=self.__web_return(url)
-        rCheck['message']=''
-        if self.chcek_status(rCheck['status'], self.NameModule, url):
-            self.send_message('Web: {0} - Status: {1}'.format(url, 'UP ' + u'\U0001F53C' if rCheck['status'] else 'DOWN ' + u'\U0001F53D' ))
+        rCheck['status'] = status
+        rCheck['message'] = ''
+        if self.chcek_status(status, self.NameModule, url):
+            sMessage = 'Web: {0}'.format(url)
+            if status:
+                sMessage = '{0} {1}'.format(sMessage, u'\U0001F53C')
+            else:
+                sMessage = '{0} {1}'.format(sMessage, u'\U0001F53D')
+            self.send_message(sMessage, status)
         return rCheck
 
     def __web_return(self, url):
-        #TODO: Pendiente añadir soporte https.
+        # TODO: Pendiente añadir soporte https.
         cmd = 'curl -sL -w "%{http_code}\n" http://'+url+' -o /dev/null'
-        
-        stdout, stderr =  lib.tools.execute(cmd)
+        stdout, stderr = lib.tools.execute(cmd)
         if stdout.find('200') == -1:
-           return False
+            return False
         return True
-        
+
+
 if __name__ == '__main__':
-    wf = Watchful()
+
+    wf = Watchful(None)
     print(wf.check())

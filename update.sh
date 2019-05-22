@@ -30,13 +30,13 @@ done
 for f in data/*.json
 do
   NAMEFILE=${f#"data/"}
-  EXTTMP=`date +%Y%m%d%H%M%S`
+  EXTTMP=$(date +%Y%m%d%H%M%S)
   PATH_DEST="/etc/watchful/${NAMEFILE}"
   
   if [[ ! -f "$PATH_DEST" ]]; then
     cp $f ${PATH_DEST}
   else
-	if [[ `diff $f ${PATH_DEST}` ]]; then
+	if [[ $(diff $f ${PATH_DEST}) ]]; then
 		echo "Info: File (${NAMEFILE}) exists, the new configuration will be copied with the name(${NAMEFILE}.${EXTTMP})."
 		cp $f ${PATH_DEST}.${EXTTMP}
 	fi
