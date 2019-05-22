@@ -72,7 +72,7 @@ class Monitor(object):
         if self.dir_var:
             self.__checkDir(self.dir_var)
             self.status = lib.config.Config(os.path.join(self.dir_var, 'status.json'), {})
-            if not self.status.isExist:
+            if not self.status.is_exist:
                 self.status.save()
         else:
             self.status = lib.config.Config(None, {})
