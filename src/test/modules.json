@@ -1,0 +1,48 @@
+{
+  "service_status": {
+    "threads": 5,
+    "list": {
+      "bind9": true,
+      "mariabd": true,
+      "nginx": true,
+      "slapd": true,
+      "snmpd": true,
+      "webmin": true
+    }
+  },
+  "web": {
+    "threads": 5,
+    "list": {
+      "www.atareao.es": true,
+      "www.cerebelum.net": true,
+	  "www.dominio.com": false,
+      "www.dominio.net": true
+    }
+  },
+  "ping": {
+    "threads": 5,
+	"attempt": 3,
+	"timeout": 5,
+    "list": {
+      "192.168.1.1": true,
+      "192.168.1.200":  true,
+      "192.168.86.4": true
+    }
+  },
+  "temperature": {
+    "alert": 80
+  },
+  "ram": {
+    "alert": 60
+  },
+  "swap": {
+    "alert": 60
+  },
+  "filesystemusage": {
+    "alert": 85,
+    "list": {
+      "/": 80,
+      "/boot": 80
+    }
+  }
+}
