@@ -19,12 +19,12 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-#import sys
 import pprint
 import traceback
 from enum import Enum
 
 __all__ = ['DebugLevel', 'Debug']
+
 
 class DebugLevel(Enum):
     null = 0
@@ -34,9 +34,10 @@ class DebugLevel(Enum):
     error = 4
     emergency = 5
 
+
 class Debug(object):
 
-    def __init__(self, enable = False):
+    def __init__(self, enable=False):
         self.enabled = enable
 
     @property
@@ -47,24 +48,23 @@ class Debug(object):
     def enabled(self, val):
         self.__enabled = val
 
-    def print(self, message, level = DebugLevel.debug, force=False):
-        if self.enabled == True or force == True or level == DebugLevel.warning or level == DebugLevel.error or level == DebugLevel.emergency:
+    def print(self, message, level=DebugLevel.debug, force=False):
+        if self.enabled is True or force is True or level == DebugLevel.warning or level == DebugLevel.error or level == DebugLevel.emergency:
             if isinstance(message, str):
                 print(message)
             else:
                 pprint.pprint(message)
 
-    @classmethod
-    def Exception(self, ex = None):
+    def Exception(self, ex=None):
         msg_print = 'Exception in user code:\n'
         msg_print = msg_print + '-'*60+'\n'
         if ex:
-            msg_print = msg_print + 'Exception: ' +  str(ex) + '\n'
+            msg_print = msg_print + 'Exception: ' + str(ex) + '\n'
             msg_print = msg_print + '-'*60+'\n'
-        #traceback.print_exc(file=sys.stdout)
-        msg_print = msg_print + str(traceback.format_exc()) +'\n'
+        msg_print = msg_print + str(traceback.format_exc()) + '\n'
         msg_print = msg_print + '-'*60+'\n'
-        print (msg_print)
+        print(msg_print)
+
 
 if __name__ == '__main__':
     pass

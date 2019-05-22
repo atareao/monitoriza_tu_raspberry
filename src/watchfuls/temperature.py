@@ -26,22 +26,23 @@ import lib.debug
 import lib.module_base
 import lib.monitor
 
+
 class Watchful(lib.module_base.ModuleBase):
 
-    #temperatura en ºC que se usara si no se ha configurado el modulo, o se ha definido un valor igual o menor que 0.
-    __default_alert=80
+    # temperatura en ºC que se usara si no se ha configurado el modulo, o se ha definido un valor igual o menor que 0.
+    __default_alert = 80
 
     def __init__(self, monitor):
         super().__init__(monitor, __name__)
 
     def check(self):
-        temp_alert= self.get_conf("alert", self.__default_alert)
+        temp_alert = self.get_conf("alert", self.__default_alert)
         if isinstance(temp_alert, str):
-            temp_alert=temp_alert.strip()
+            temp_alert = temp_alert.strip()
         if not temp_alert or temp_alert <= 0:
-            temp_alert=self.__default_alert
+            temp_alert = self.__default_alert
 
-        #TODO: Pendiente controlar multiples "thermal_zone*"
+        # TODO: Pendiente controlar multiples "thermal_zone*"
         f = open('/sys/class/thermal/thermal_zone0/temp', 'r')
         temp = float(f.read().split('\n')[0])/1000.0
         f.close()
@@ -51,5 +52,6 @@ class Watchful(lib.module_base.ModuleBase):
 
 
 if __name__ == '__main__':
+
     wf = Watchful(None)
     print(wf.check())

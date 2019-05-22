@@ -133,8 +133,8 @@ class Config(lib.configStore.ConfigStore):
             dreturn[list_items] = val
         return dreturn
 
-    # https://stackoverflow.com/questions/3232943/update-value-of-a-nested-dictionary-of-varying-depth
     def __update_value_findkey(self, source, overrides):
+        # https://stackoverflow.com/questions/3232943/update-value-of-a-nested-dictionary-of-varying-depth
         for key, val in overrides.items():
             if isinstance(source, collections.Mapping):
                 if isinstance(val, collections.Mapping):

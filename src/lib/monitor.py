@@ -36,7 +36,11 @@ import lib.telegram
 
 __all__ = ['Monitor']
 
+
 class Monitor(object):
+
+    # Nº de hilos que se usaran para procesamiento en paralelo como valor por defecto.
+    __default_threads = 5
 
     def __init__(self, dir_base, dir_config, dir_modules, dir_var):
         self.dir_base = dir_base
@@ -46,11 +50,10 @@ class Monitor(object):
 
         self.readConfig()
         self.readStatus()
-        #self.status = None  #Descomentar para pruebas, omite el contenido status.json, dará error (self.status.save(self.__status_datos))
+        # self.status = None  #Descomentar para pruebas, omite el contenido status.json, dará error (self.status.save(self.__status_datos))
         self.initTelegram()
 
-    @classmethod
-    def __checkDir(salf, pathdir):
+    def __checkDir(self, pathdir):
         if pathdir:
             if not os.path.isdir(pathdir):
                 os.makedirs(pathdir, exist_ok=True)
@@ -79,14 +82,14 @@ class Monitor(object):
 
     def initTelegram(self):
         if self.config:
-            self.tg = lib.telegram.Telegram(self.config.get_conf(['telegram','token'],''), self.config.get_conf(['telegram','chat_id'],''))
+            self.tg = lib.telegram.Telegram(self.config.get_conf(['telegram', 'token'], ''), self.config.get_conf(['telegram', 'chat_id'], ''))
         else:
             self.tg = None
-
 
     @property
     def dir_base(self):
         return self.__dir_base
+
     @dir_base.setter
     def dir_base(self, val):
         self.__dir_base = val
@@ -94,6 +97,7 @@ class Monitor(object):
     @property
     def dir_config(self):
         return self.__dir_config
+
     @dir_config.setter
     def dir_config(self, val):
         self.__dir_config = val
@@ -101,6 +105,7 @@ class Monitor(object):
     @property
     def dir_modules(self):
         return self.__dir_modules
+
     @dir_modules.setter
     def dir_modules(self, val):
         self.__dir_modules = val
@@ -108,10 +113,10 @@ class Monitor(object):
     @property
     def dir_var(self):
         return self.__dir_var
+
     @dir_var.setter
     def dir_var(self, val):
         self.__dir_var = val
-
 
     def get_conf(self, findkey=None, default_val=None):
         if self.config_monitor:
@@ -121,24 +126,22 @@ class Monitor(object):
     def send_message(self, message, status=None):
         if message and self.tg:
             hostname = socket.gethostname()
-            #Hay que enviar "\[" ya que solo "[" se lo come Telegram en modo "Markdown".
-            message = "{0} \[{1}]: {2}".format(u'\U0001F4BB',hostname, message)
-            if status == True:
-                message = "{0} {1}".format(u'\U00002705' ,message)
-            elif status == False:
-                message = "{0} {1}".format(u'\U0000274E' ,message)
+            # Hay que enviar "\[" ya que solo "[" se lo come Telegram en modo "Markdown".
+            message = "{0} \[{1}]: {2}".format(u'\U0001F4BB', hostname, message)
+            if status is True:
+                message = "{0} {1}".format(u'\U00002705', message)
+            elif status is False:
+                message = "{0} {1}".format(u'\U0000274E', message)
             self.tg.send_message(message)
-
 
     def chcek_status(self, status, module, module_subkey=''):
         if module_subkey:
-            if module not in self.__status_datos.keys() or module_subkey not in self.__status_datos[module].keys() or (module_subkey in self.__status_datos[module].keys() and  self.__status_datos[module][module_subkey] != status):
+            if module not in self.__status_datos.keys() or module_subkey not in self.__status_datos[module].keys() or (module_subkey in self.__status_datos[module].keys() and self.__status_datos[module][module_subkey] != status):
                 return True
         else:
-            if module not in self.__status_datos.keys() or (module in self.__status_datos.keys() and  self.__status_datos[module] != status):
+            if module not in self.__status_datos.keys() or (module in self.__status_datos.keys() and self.__status_datos[module] != status):
                 return True
         return False
-
 
     def check_module(self, module_name):
         try:
@@ -187,20 +190,20 @@ class Monitor(object):
 
         changed = False
 
-        #TODO: Mantener self.__status_datos hasta crear función de modificar la configuración en Config.
+        # TODO: Mantener self.__status_datos hasta crear función de modificar la configuración en Config.
         self.__status_datos = {}
         if self.status:
             self.__status_datos = self.status.read(True)
 
-        max_threads = self.get_conf('threads',5)
+        max_threads = self.get_conf('threads', self.__default_threads)
         globales.GlobDebug.print("Monitor Max Threads: {0}".format(max_threads), lib.debug.DebugLevel.debug)
-        with concurrent.futures.ThreadPoolExecutor(max_workers= max_threads) as executor:
+        with concurrent.futures.ThreadPoolExecutor(max_workers=max_threads) as executor:
             future_to_run_module = {executor.submit(self.check_module, module): module for module in list_modules}
             for future in concurrent.futures.as_completed(future_to_run_module):
                 module = future_to_run_module[future]
                 try:
                     if future.result():
-                        changed=True
+                        changed = True
                 except Exception as exc:
                     globales.GlobDebug.Exception(exc)
 

@@ -26,15 +26,15 @@ import os
 import shlex
 import subprocess
 
+
 def execute(command, parser=None):
     command_with_args = shlex.split(command)
-    execution = subprocess.Popen(command_with_args, stdout=subprocess.PIPE,
-                                    stderr=subprocess.PIPE)
+    execution = subprocess.Popen(command_with_args, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
     stdout, stderr = execution.communicate()
     return stdout.decode(), stderr.decode()
 
+
 def execute_call(command, parser=None):
     command_with_args = shlex.split(command)
-    return_code = subprocess.call(command_with_args, stdout=open(os.devnull, 'w'),
-                                 stderr=open(os.devnull, 'w'))
+    return_code = subprocess.call(command_with_args, stdout=open(os.devnull, 'w'), stderr=open(os.devnull, 'w'))
     return return_code
