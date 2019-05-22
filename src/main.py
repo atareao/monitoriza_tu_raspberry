@@ -80,7 +80,7 @@ def _var_dir():
 
     """
     if _dir().find('src') != -1:
-        return '/var/lib/watchful/dev'
+        return '/var/lib/watchful/dev/'
     else:
         return '/var/lib/watchful/'
 

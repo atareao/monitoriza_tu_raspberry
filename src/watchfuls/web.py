@@ -52,7 +52,7 @@ class Watchful(lib.module_base.ModuleBase):
                     returnDict[url]={}
                     returnDict[url]['status']=False
                     returnDict[url]['message']='Web: {0} - Error: {1}'.format(url, exc)
-        
+
         msg_debug = '*'*60 + '\n'
         msg_debug = msg_debug + "Debug [{0}] - Data Return:\n".format(self.NameModule)
         msg_debug = msg_debug + "Type: {0}\n".format(type(returnDict))
