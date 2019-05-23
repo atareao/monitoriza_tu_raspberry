@@ -27,6 +27,7 @@ import glob
 import os
 import importlib
 import socket
+import time
 import pprint
 import concurrent.futures
 import lib.debug
@@ -79,6 +80,12 @@ class Monitor(object):
                 self.status.save()
         else:
             self.status = lib.config.Config(None, {})
+
+    def clearStatus(self):
+        globales.GlobDebug.print("Clear Status", lib.debug.DebugLevel.info)
+        self.readStatus()
+        self.status.data = {}
+        self.status.save()
 
     def initTelegram(self):
         if self.config:
@@ -182,6 +189,7 @@ class Monitor(object):
         return False
 
     def check(self):
+        globales.GlobDebug.print("Check Init: " + time.strftime("%c"), lib.debug.DebugLevel.debug)
         list_modules = []
         for module_def in glob.glob(os.path.join(self.dir_modules, '*.py')):
             module_def = os.path.splitext(os.path.basename(module_def))[0]
@@ -212,3 +220,4 @@ class Monitor(object):
         if changed is True:
             self.status.data = self.__status_datos
             self.status.save()
+        globales.GlobDebug.print("Check End: " + time.strftime("%c"), lib.debug.DebugLevel.debug)
