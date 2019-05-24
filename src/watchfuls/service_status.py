@@ -64,7 +64,7 @@ class Watchful(lib.module_base.ModuleBase):
         rCheck = {}
         rCheck['status'] = status
         rCheck['message'] = ''
-        if self.chcek_status(status, self.NameModule, service):
+        if self.check_status(status, self.NameModule, service):
             sMessage = 'Service: {0}'.format(service)
             if status:
                 sMessage = '{0} {1}'.format(sMessage, u'\U00002705')

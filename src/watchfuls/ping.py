@@ -76,7 +76,7 @@ class Watchful(lib.module_base.ModuleBase):
         rCheck[host] = {}
         rCheck[host]['status'] = status
         rCheck[host]['message'] = ''
-        if self.chcek_status(status, self.NameModule, host):
+        if self.check_status(status, self.NameModule, host):
             sMessage = 'Ping: {0}'.format(host)
             if status:
                 sMessage = '{0} {1}'.format(sMessage, u'\U0001F53C')

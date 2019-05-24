@@ -66,7 +66,7 @@ class Watchful(lib.module_base.ModuleBase):
         rCheck = {}
         rCheck['status'] = status
         rCheck['message'] = ''
-        if self.chcek_status(status, self.NameModule, url):
+        if self.check_status(status, self.NameModule, url):
             sMessage = 'Web: {0}'.format(url)
             if status:
                 sMessage = '{0} {1}'.format(sMessage, u'\U0001F53C')

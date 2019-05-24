@@ -98,17 +98,19 @@ class ModuleBase(object):
             return default_val
         return []
 
-    def chcek_status(self, status, module, module_subkey):
+    def check_status(self, status, module, module_subkey):
         if self._monitor:
-            return self._monitor.chcek_status(status, module, module_subkey)
+            return self._monitor.check_status(status, module, module_subkey)
         return None
 
-    def _run_cmd(self, cmd, return_sterr=False):
+    @staticmethod
+    def _run_cmd(cmd, return_sterr=False):
         stdout, stderr = lib.tools.execute(cmd)
         if return_sterr:
             return stdout, stderr
         return stdout
 
-    def _run_cmd_call(self, cmd):
+    @staticmethod
+    def _run_cmd_call(cmd):
         return_code = lib.tools.execute_call(cmd)
         return return_code

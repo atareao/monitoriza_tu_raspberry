@@ -150,7 +150,7 @@ class Monitor(object):
                 message = "{0} {1}".format(u'\U0000274E', message)
             self.tg.send_message(message)
 
-    def chcek_status(self, status, module, module_subkey=''):
+    def check_status(self, status, module, module_subkey=''):
         if module_subkey:
             if module not in self.__status_datos.keys() or module_subkey not in self.__status_datos[module].keys() or (module_subkey in self.__status_datos[module].keys() and self.__status_datos[module][module_subkey] != status):
                 return True
@@ -172,13 +172,13 @@ class Monitor(object):
 
                 for (key, value) in message.items():
                     self.debug.print("Module: {0} - Key: {1} - Val: {2}".format(module_name, key, value), lib.debug.DebugLevel.debug)
-                    if self.chcek_status(value['status'], module_name, key):
+                    if self.check_status(value['status'], module_name, key):
                         self.__status_datos[module_name][key] = value['status']
                         self.send_message(value['message'], value['status'])
                         self.debug.print('Module: {0}/{1} - New Status: {2}'.format(module_name, key, value['status']), lib.debug.DebugLevel.debug)
                 return True
             elif isinstance(message, str):
-                if self.chcek_status(status, module_name):
+                if self.check_status(status, module_name):
                     self.__status_datos[module_name] = status
                     self.send_message(message, status)
                     self.debug.print("Module: {0} - New Status: {1}".format(module_name, status), lib.debug.DebugLevel.debug)
