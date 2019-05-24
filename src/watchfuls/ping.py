@@ -22,7 +22,6 @@
 import lib.tools
 import time
 from multiprocessing.dummy import Pool as ThreadPool
-import globales
 import lib.debug
 import lib.module_base
 import lib.monitor
@@ -39,7 +38,7 @@ class Watchful(lib.module_base.ModuleBase):
     def check(self):
         lHost = []
         for (key, value) in self.get_conf('list', {}).items():
-            globales.GlobDebug.print("Ping: {0} - Enabled: {1}".format(key, value), lib.debug.DebugLevel.info)
+            self._debug.print("Ping: {0} - Enabled: {1}".format(key, value), lib.debug.DebugLevel.info)
             if value:
                 lHost.append(key)
 
@@ -54,7 +53,7 @@ class Watchful(lib.module_base.ModuleBase):
         msg_debug = msg_debug + "Type: {0}\n".format(type(lReturn))
         msg_debug = msg_debug + str(lReturn) + '\n'
         msg_debug = msg_debug + '*'*60 + '\n'
-        globales.GlobDebug.print(msg_debug, lib.debug.DebugLevel.debug)
+        self._debug.print(msg_debug, lib.debug.DebugLevel.debug)
 
         # Convertir list en dictionary
         dReturn = {}
@@ -66,7 +65,7 @@ class Watchful(lib.module_base.ModuleBase):
         msg_debug = msg_debug + "Type: {0}\n".format(type(dReturn))
         msg_debug = msg_debug + str(dReturn) + '\n'
         msg_debug = msg_debug + '*'*60 + '\n'
-        globales.GlobDebug.print(msg_debug, lib.debug.DebugLevel.debug)
+        self._debug.print(msg_debug, lib.debug.DebugLevel.debug)
         return True, dReturn
 
     def __ping_check(self, host):
@@ -89,7 +88,8 @@ class Watchful(lib.module_base.ModuleBase):
     def __ping_return(self, host, timeout, attempt):
         counter = 0
         while counter < attempt:
-            rCode = lib.tools.execute_call('ping -c 1 -W {0} {1}'.format(timeout, host))
+            cmd = 'ping -c 1 -W {0} {1}'.format(timeout, host)
+            rCode = self._run_cmd_call(cmd)
             if rCode == 0:
                 return True
             time.sleep(1)

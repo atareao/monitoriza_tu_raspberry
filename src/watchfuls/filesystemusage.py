@@ -20,8 +20,6 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 import re
-import lib.tools
-import globales
 import lib.debug
 import lib.module_base
 import lib.monitor
@@ -45,7 +43,8 @@ class Watchful(lib.module_base.ModuleBase):
         if not usage_alert or usage_alert < 0 or usage_alert > 100:
             usage_alert = self.__default_alert
 
-        stdout, stderr = lib.tools.execute('df -x squashfs -x tmpfs  -x devtmpfs')
+        cmd = 'df -x squashfs -x tmpfs  -x devtmpfs'
+        stdout = self._run_cmd(cmd)
         reg = r'\/dev\/([^\s]*)\s+\d+\s+\d+\s+\d+\s+(\d+)\%\s+([^\n]*)'
 
         returnDict = {}
@@ -71,7 +70,7 @@ class Watchful(lib.module_base.ModuleBase):
         msg_debug = msg_debug + "Type: {0}\n".format(type(returnDict))
         msg_debug = msg_debug + str(returnDict) + '\n'
         msg_debug = msg_debug + '*'*60 + '\n'
-        globales.GlobDebug.print(msg_debug, lib.debug.DebugLevel.debug)
+        self._debug.print(msg_debug, lib.debug.DebugLevel.debug)
         return True, returnDict
 
 

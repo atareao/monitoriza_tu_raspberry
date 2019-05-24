@@ -42,15 +42,15 @@ bb = aa.get_conf(["ping", "list"], "No Encontrado en Lista")
 print("List Resultado:", bb)
 print('-'*60)
 
-#bb = aa.get_conf({"ram":1, "alert":1}, "No Encontrado en Dict")
-#print("Dict Resultado:", bb)
-#print('-'*60)
+# bb = aa.get_conf({"ram":1, "alert":1}, "No Encontrado en Dict")
+# print("Dict Resultado:", bb)
+# print('-'*60)
 
 bb = aa.get_conf(("filesystemusage", "list"), "No Encontrado en Tuple")
 print("Tuple Resultado:", bb)
 print('-'*60)
 
-bb = aa.get_conf(("filesystemusage", "list","123"), "No Encontrado en Tuple")
+bb = aa.get_conf(("filesystemusage", "list", "123"), "No Encontrado en Tuple")
 print("Tuple Resultado:", bb)
 print('-'*60)
 

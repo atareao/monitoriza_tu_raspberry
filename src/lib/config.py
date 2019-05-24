@@ -19,7 +19,6 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-import globales
 import datetime
 import lib.configStore
 import collections
@@ -42,10 +41,10 @@ class ConfigTypeReturn(Enum):
 class Config(lib.configStore.ConfigStore):
     """Class to Storage and processing of configuration parameters."""
 
-    def __init__(self, file, init_data: dict = None):
+    def __init__(self, file, init_data: dict = None, obj_debug=None):
         self.__load = None
         self.__update = None
-        super().__init__(file)
+        super().__init__(file, obj_debug)
         self.data = init_data
 
     @property
@@ -88,7 +87,7 @@ class Config(lib.configStore.ConfigStore):
             self.__update = self.__load
 
         except Exception as e:
-            globales.GlobDebug.Exception(e)
+            self.debug.Exception(e)
             self.__load = None
             self.__update = None
 
@@ -102,7 +101,7 @@ class Config(lib.configStore.ConfigStore):
             self.__load = datetime.datetime.now()
             self.__update = self.__load
         except Exception as e:
-            globales.GlobDebug.Exception(e)
+            self.debug.Exception(e)
             return False
         return True
 

@@ -23,8 +23,6 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 import concurrent.futures
-import lib.tools
-import globales
 import lib.debug
 import lib.module_base
 import lib.monitor
@@ -38,7 +36,7 @@ class Watchful(lib.module_base.ModuleBase):
     def check(self):
         listurl = []
         for (key, value) in self.get_conf('list', {}).items():
-            globales.GlobDebug.print("Web: {0} - Enabled: {1}".format(key, value), lib.debug.DebugLevel.info)
+            self._debug.print("Web: {0} - Enabled: {1}".format(key, value), lib.debug.DebugLevel.info)
             if value:
                 listurl.append(key)
 
@@ -59,7 +57,7 @@ class Watchful(lib.module_base.ModuleBase):
         msg_debug = msg_debug + "Type: {0}\n".format(type(returnDict))
         msg_debug = msg_debug + str(returnDict) + '\n'
         msg_debug = msg_debug + '*'*60 + '\n'
-        globales.GlobDebug.print(msg_debug, lib.debug.DebugLevel.debug)
+        self._debug.print(msg_debug, lib.debug.DebugLevel.debug)
         return True, returnDict
 
     def __web_check(self, url):
@@ -80,7 +78,7 @@ class Watchful(lib.module_base.ModuleBase):
     def __web_return(self, url):
         # TODO: Pendiente añadir soporte https.
         cmd = 'curl -sL -w "%{http_code}\n" http://'+url+' -o /dev/null'
-        stdout, stderr = lib.tools.execute(cmd)
+        stdout = self._run_cmd(cmd)
         if stdout.find('200') == -1:
             return False
         return True

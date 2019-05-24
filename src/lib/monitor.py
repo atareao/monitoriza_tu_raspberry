@@ -22,7 +22,6 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-import globales
 import glob
 import os
 import importlib
@@ -42,8 +41,12 @@ class Monitor(object):
 
     # Nº de hilos que se usaran para procesamiento en paralelo como valor por defecto.
     __default_threads = 5
+    debug = None
 
-    def __init__(self, dir_base, dir_config, dir_modules, dir_var):
+    def __init__(self, dir_base, dir_config, dir_modules, dir_var, obj_debug=None):
+        self.debug = obj_debug
+        if not self.debug:
+            self.debug = lib.debug.Debug(True)
         self.dir_base = dir_base
         self.dir_config = dir_config
         self.dir_modules = dir_modules
@@ -53,6 +56,7 @@ class Monitor(object):
         self.readStatus()
         # self.status = None  #Descomentar para pruebas, omite el contenido status.json, dará error (self.status.save(self.__status_datos))
         self.initTelegram()
+        self.debug.print("Monitor Init OK", lib.debug.DebugLevel.debug)
 
     def __checkDir(self, pathdir):
         if pathdir:
@@ -82,14 +86,19 @@ class Monitor(object):
             self.status = lib.config.Config(None, {})
 
     def clearStatus(self):
-        globales.GlobDebug.print("Clear Status", lib.debug.DebugLevel.info)
+        # TODO: Pendiente crear funcion clear en el objeto config
+        self.debug.print("Clear Status", lib.debug.DebugLevel.info)
         self.readStatus()
         self.status.data = {}
         self.status.save()
 
     def initTelegram(self):
         if self.config:
-            self.tg = lib.telegram.Telegram(self.config.get_conf(['telegram', 'token'], ''), self.config.get_conf(['telegram', 'chat_id'], ''))
+            self.tg = lib.telegram.Telegram(
+                self.config.get_conf(['telegram', 'token'], ''),
+                self.config.get_conf(['telegram', 'chat_id'], ''),
+                self.debug
+            )
         else:
             self.tg = None
 
@@ -152,7 +161,7 @@ class Monitor(object):
 
     def check_module(self, module_name):
         try:
-            globales.GlobDebug.print("Module: {0}".format(module_name), lib.debug.DebugLevel.info)
+            self.debug.print("Module: {0}".format(module_name), lib.debug.DebugLevel.info)
             module_import = importlib.import_module(module_name)
             module = module_import.Watchful(self)
             status, message = module.check()
@@ -162,17 +171,17 @@ class Monitor(object):
                     self.__status_datos[module_name] = {}
 
                 for (key, value) in message.items():
-                    globales.GlobDebug.print("Module: {0} - Key: {1} - Val: {2}".format(module_name, key, value), lib.debug.DebugLevel.debug)
+                    self.debug.print("Module: {0} - Key: {1} - Val: {2}".format(module_name, key, value), lib.debug.DebugLevel.debug)
                     if self.chcek_status(value['status'], module_name, key):
                         self.__status_datos[module_name][key] = value['status']
                         self.send_message(value['message'], value['status'])
-                        globales.GlobDebug.print('Module: {0}/{1} - New Status: {2}'.format(module_name, key, value['status']), lib.debug.DebugLevel.debug)
+                        self.debug.print('Module: {0}/{1} - New Status: {2}'.format(module_name, key, value['status']), lib.debug.DebugLevel.debug)
                 return True
             elif isinstance(message, str):
                 if self.chcek_status(status, module_name):
                     self.__status_datos[module_name] = status
                     self.send_message(message, status)
-                    globales.GlobDebug.print("Module: {0} - New Status: {1}".format(module_name, status), lib.debug.DebugLevel.debug)
+                    self.debug.print("Module: {0} - New Status: {1}".format(module_name, status), lib.debug.DebugLevel.debug)
                 return True
             else:
                 msg_debug = '\n\n'+'*'*60 + '\n'
@@ -182,14 +191,14 @@ class Monitor(object):
                 msg_debug = msg_debug + 'Data Message: {0}\n'.format(pprint.pprint(message))
                 msg_debug = msg_debug + '*'*60 + '\n'
                 msg_debug = msg_debug + '*'*60 + '\n\n'
-                globales.GlobDebug.print(msg_debug, lib.debug.DebugLevel.warning)
+                self.debug.print(msg_debug, lib.debug.DebugLevel.warning)
 
         except Exception as e:
-            globales.GlobDebug.Exception(e)
+            self.debug.Exception(e)
         return False
 
     def check(self):
-        globales.GlobDebug.print("Check Init: " + time.strftime("%c"), lib.debug.DebugLevel.debug)
+        self.debug.print("Check Init: " + time.strftime("%c"), lib.debug.DebugLevel.debug)
         list_modules = []
         for module_def in glob.glob(os.path.join(self.dir_modules, '*.py')):
             module_def = os.path.splitext(os.path.basename(module_def))[0]
@@ -204,7 +213,7 @@ class Monitor(object):
             self.__status_datos = self.status.read(True)
 
         max_threads = self.get_conf('threads', self.__default_threads)
-        globales.GlobDebug.print("Monitor Max Threads: {0}".format(max_threads), lib.debug.DebugLevel.debug)
+        self.debug.print("Monitor Max Threads: {0}".format(max_threads), lib.debug.DebugLevel.debug)
         with concurrent.futures.ThreadPoolExecutor(max_workers=max_threads) as executor:
             future_to_run_module = {executor.submit(self.check_module, module): module for module in list_modules}
             for future in concurrent.futures.as_completed(future_to_run_module):
@@ -213,11 +222,11 @@ class Monitor(object):
                     if future.result():
                         changed = True
                 except Exception as exc:
-                    globales.GlobDebug.Exception(exc)
+                    self.debug.Exception(exc)
 
-        globales.GlobDebug.print("Debug Status Save:", lib.debug.DebugLevel.debug)
-        globales.GlobDebug.print(self.__status_datos, lib.debug.DebugLevel.debug)
+        self.debug.print("Debug Status Save:", lib.debug.DebugLevel.debug)
+        self.debug.print(self.__status_datos, lib.debug.DebugLevel.debug)
         if changed is True:
             self.status.data = self.__status_datos
             self.status.save()
-        globales.GlobDebug.print("Check End: " + time.strftime("%c"), lib.debug.DebugLevel.debug)
+        self.debug.print("Check End: " + time.strftime("%c"), lib.debug.DebugLevel.debug)

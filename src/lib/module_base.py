@@ -21,6 +21,7 @@
 
 import lib.monitor
 import lib.debug
+import lib.tools
 
 __all__ = ['ModuleBase']
 
@@ -30,8 +31,8 @@ class ModuleBase(object):
     # Nº de hilos que se usaran en los módulos para procesamiento en paralelo como valor por defecto.
     _default_threads = 5
 
-    def __init__(self, parent_monitor, name=None):
-        self._monitor = parent_monitor
+    def __init__(self, obj_monitor, name=None):
+        self._monitor = obj_monitor
         if name:
             self.__nameModule = name
         else:
@@ -49,6 +50,10 @@ class ModuleBase(object):
         if self._monitor and isinstance(self._monitor, lib.monitor.Monitor):
             return True
         return False
+
+    @property
+    def _debug(self):
+        return self.__monitor.debug
 
     @property
     def _monitor(self):
@@ -97,3 +102,13 @@ class ModuleBase(object):
         if self._monitor:
             return self._monitor.chcek_status(status, module, module_subkey)
         return None
+
+    def _run_cmd(self, cmd, return_sterr=False):
+        stdout, stderr = lib.tools.execute(cmd)
+        if return_sterr:
+            return stdout, stderr
+        return stdout
+
+    def _run_cmd_call(self, cmd):
+        return_code = lib.tools.execute_call(cmd)
+        return return_code

@@ -21,7 +21,6 @@
 
 import re
 import lib.tools
-import globales
 import lib.debug
 import lib.module_base
 import lib.monitor
@@ -41,8 +40,9 @@ class Watchful(lib.module_base.ModuleBase):
         if not usage_alert or usage_alert < 0 or usage_alert > 100:
             usage_alert = self.__default_alert
 
-        stdout, stderr = lib.tools.execute('free')
-        globales.GlobDebug.print(stdout, lib.debug.DebugLevel.debug)
+        cmd = 'free'
+        stdout = self._run_cmd(cmd)
+        self._debug.print(stdout, lib.debug.DebugLevel.debug)
 
         x = re.findall(r'Swap:\s+(\d+)\s+(\d+)', stdout)
         per = float(x[0][1])/float(x[0][0]) * 100.0

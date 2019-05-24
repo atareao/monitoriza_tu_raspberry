@@ -26,66 +26,223 @@ import os
 import sys
 import time
 import argparse
-import globales
 import lib.debug
 import lib.monitor
 import lib.config
 
 
-def _dir():
-    """Path run program.
+class Main(object):
 
-    Returns:
-    str: Returning value
+    debug = None
+    monitor = None
+    cfg_general = None
+    cfg_monitor = None
+    cfg_modules = None
+    __cfg_file_config = 'config.json'
+    __cfg_file_monitor = 'monitor.json'
+    __cfg_file_modules = 'modules.json'
 
-    """
-    return os.path.dirname(os.path.abspath(__file__))
+    def __init__(self, args_get):
+        self._daemon_mode = False
+        self._timer_check = 0
+        self.__sys_path_append([self._lib_dir, self._modules_dir])
+        self.__args_set(args_get)
+        self.__init_debug()
+        self.__init_config()
+        self.__init_monitor()
+        self.__args_cmd(args_get)
 
+    def __init_debug(self):
+        self.debug = lib.debug.Debug(True)
 
-def _modules_dir():
-    """Path modules.
+    def __init_config(self):
+        self.cfg_general = lib.config.Config(os.path.join(self._config_dir, self.__cfg_file_config),
+                                             obj_debug=self.debug)
+        self.cfg_general.read()
+        if self.__check_config():
+            self.__default_conf()
+            self.__read_config()
+        else:
+            raise Exception("Error load config.")
 
-    Returns:
-    str: Returning value
+    def __check_config(self):
+        if self.cfg_general:
+            return True
+        return False
 
-    """
-    return os.path.join(_dir(), 'watchfuls')
+    def __default_conf(self):
+        if self.__check_config:
+            if not self.cfg_general.is_exist_conf(['daemon', 'timer_check']):
+                self.cfg_general.set_conf(['daemon', 'timer_check'], 300)
 
+            if not self.cfg_general.is_exist_conf(['global', 'debug']):
+                self.cfg_general.set_conf(['global', 'debug'], False)
 
-def _lib_dir():
-    """Path lib's.
+            return True
+        return False
 
-    Returns:
-    str: Returning value
+    def __read_config(self):
+        if self.__verbose:
+            self.debug.enabled = True
+        else:
+            self.debug.enabled = self.cfg_general.get_conf(['global', 'debug'], self.debug.enabled)
 
-    """
-    return os.path.join(_dir(), 'lib')
+        if self.__timer_check_forze:
+            self._timer_check = self.__timer_check_forze
+        else:
+            self._timer_check = self.cfg_general.get_conf(['daemon', 'timer_check'], self._timer_check)
 
+    @staticmethod
+    def __sys_path_append(list_dir):
+        for f in list_dir:
+            if os.path.isdir(f):
+                if f not in sys.path:
+                    sys.path.append(f)
 
-def _config_dir():
-    """Path config files.
+    def __init_monitor(self):
+        self.monitor = lib.monitor.Monitor(self._dir, self._config_dir, self._modules_dir, self._var_dir, self.debug)
 
-    Returns:
-    str: Returning value
+    @property
+    def _is_mode_dev(self):
+        if self._dir.find('src') != -1:
+            return True
+        return False
 
-    """
-    if _dir().find('src') != -1:
-        return os.path.normpath(os.path.join(_dir(), '../data/'))
-    else:
-        return '/etc/watchful/'
+    @property
+    def _dir(self):
+        """Path run program.
 
+        Returns:
+        str: Returning value
 
-def _var_dir():
-    """Path /var/lib...
+        """
+        return os.path.dirname(os.path.abspath(__file__))
 
-    Returns:
-    str: Returning value
+    @property
+    def _modules_dir(self):
+        """Path modules.
 
-    """
-    if _dir().find('src') != -1:
-        return '/var/lib/watchful/dev/'
-    else:
-        return '/var/lib/watchful/'
+        Returns:
+        str: Returning value
+
+        """
+        return os.path.join(self._dir, 'watchfuls')
+
+    @property
+    def _lib_dir(self):
+        """Path lib's.
+
+        Returns:
+        str: Returning value
+
+        """
+        return os.path.join(self._dir, 'lib')
+
+    @property
+    def _config_dir(self):
+        """Path config files.
+
+        Returns:
+        str: Returning value
+
+        """
+        if self.__path_config:
+            return self.__path_config
+        elif self._is_mode_dev:
+            return os.path.normpath(os.path.join(self._dir, '../data/'))
+        else:
+            return '/etc/watchful/'
+
+    @property
+    def _var_dir(self):
+        """Path /var/lib...
+
+        Returns:
+        str: Returning value
+
+        """
+        if self._is_mode_dev:
+            return '/var/lib/watchful/dev/'
+        else:
+            return '/var/lib/watchful/'
+
+    def __args_set(self, args_get):
+        if args_get:
+            for key, value in args_get.items():
+                if key == 'path':
+                    self.__path_config = value
+
+                elif key == 'verbose':
+                    self.__verbose = value
+
+                elif key == 'timer_check':
+                    self.__timer_check_forze = value
+
+                elif key == 'daemon_mode':
+                    self.__daemon_mode = value
+
+    def __args_cmd(self, args_get):
+        if args_get:
+            for key, value in args_get.items():
+                if key == 'clear_status':
+                    if value:
+                        if self.monitor:
+                            self.monitor.clearStatus()
+
+    @property
+    def _daemon_mode(self):
+        return self.__daemon_mode
+
+    @_daemon_mode.setter
+    def _daemon_mode(self, val):
+        self.__daemon_mode = val
+
+    @property
+    def _timer_check(self):
+        if self.__timer_check:
+            return self.__timer_check
+        return 0
+
+    @_timer_check.setter
+    def _timer_check(self, val):
+        if not val:
+            val = 0
+        elif isinstance(val, str):
+            if not val.isnumeric():
+                val = 0
+            else:
+                val = int(val)
+        elif isinstance(val, float):
+            val = int(val)
+        elif not isinstance(val, int):
+            val = 0
+
+        if int(val) < 0:
+            val = 0
+
+        self.__timer_check = int(val)
+
+    def start(self):
+        if not self._daemon_mode:
+            self.debug.print("Run Mode Single Process", lib.debug.DebugLevel.debug)
+            self.monitor.check()
+        else:
+            self.debug.print("Run Mode Daemon", lib.debug.DebugLevel.debug)
+            while True:
+                self.monitor.check()
+                if self._timer_check == 0:
+                    break
+                self.debug.print("Waiting {0} seconds...".format(args['timer_check']), lib.debug.DebugLevel.debug)
+                try:
+                    time.sleep(self._timer_check)
+                except KeyboardInterrupt:
+                    self.debug.print("Process cancel  by the user!!", lib.debug.DebugLevel.info)
+                    try:
+                        sys.exit(0)
+                    except SystemExit:
+                        os._exit(0)
+                except Exception as e:
+                    self.debug.Exception(e)
 
 
 def arg_check_dir_path(path):
@@ -108,60 +265,42 @@ if __name__ == "__main__":
 
     # allow_abbrev modo estricto en la detección de argumento, de lo contrario --pat lo reconocería como --path
     ap = argparse.ArgumentParser(allow_abbrev=False)
-    ap.add_argument('-c', '--clear', default=False, action="store_true", dest="clear_status", help="clear status.json")
-    ap.add_argument('-d', '--daemon', default=False, action="store_true", dest="daemon_mode", help="start mode daemon")
-    ap.add_argument('-t', '--timer', default=None, type=arg_check_timer, dest="timer_check", help="timer interval of the check in daemon mode")
-    ap.add_argument('-v', '--verbose', default=None, action="store_true", dest="verbose", help="verbose mode true")
-    ap.add_argument('-p', '--path', default=None, type=arg_check_dir_path, dest="path", help="path config files")
+    ap.add_argument(
+        '-c', '--clear',
+        default=False,
+        action="store_true",
+        dest="clear_status",
+        help="clear status.json"
+    )
+    ap.add_argument(
+        '-d', '--daemon',
+        default=False,
+        action="store_true",
+        dest="daemon_mode",
+        help="start mode daemon"
+    )
+    ap.add_argument(
+        '-t', '--timer',
+        default=None,
+        type=arg_check_timer,
+        dest="timer_check",
+        help="timer interval of the check in daemon mode"
+    )
+    ap.add_argument(
+        '-v', '--verbose',
+        default=False,
+        action="store_true",
+        dest="verbose",
+        help="verbose mode true"
+    )
+    ap.add_argument(
+        '-p', '--path',
+        default=None,
+        type=arg_check_dir_path,
+        dest="path",
+        help="path config files"
+    )
     args = vars(ap.parse_args())
 
-    if args['path'] is None:
-        args['path'] = _config_dir()
-
-    sys.path.append(_lib_dir())
-    sys.path.append(_modules_dir())
-
-    globales.GlobDebug = lib.debug.Debug(True)
-
-    Config = lib.config.Config(os.path.join(args['path'], 'config.json'))
-    Config.read()
-    if Config:
-        if not Config.is_exist_conf(['daemon', 'timer_check']):
-            Config.set_conf(['daemon', 'timer_check'], 300)
-
-        if not Config.is_exist_conf(['global', 'debug']):
-            Config.set_conf(['global', 'debug'], False)
-    else:
-        raise Exception("Error load config gloabl.")
-
-    if args['verbose'] is None:
-        globales.GlobDebug.enabled = Config.get_conf(['global', 'debug'], globales.GlobDebug.enabled)
-
-    if args['timer_check'] is None:
-        args['timer_check'] = Config.get_conf(['daemon', 'timer_check'], 0)
-
-    globales.GlobMonitor = lib.monitor.Monitor(_dir(), args['path'], _modules_dir(), _var_dir())
-
-    if args['clear_status'] is True:
-        globales.GlobMonitor.clearStatus()
-
-    if args['daemon_mode'] is False:
-        globales.GlobDebug.print("Run Mode Single Process", lib.debug.DebugLevel.debug)
-        globales.GlobMonitor.check()
-    else:
-        globales.GlobDebug.print("Run Mode Daemon", lib.debug.DebugLevel.debug)
-        while True:
-            globales.GlobMonitor.check()
-            if int(args['timer_check']) == 0:
-                break
-            globales.GlobDebug.print("Waiting {0} seconds...".format(args['timer_check']), lib.debug.DebugLevel.debug)
-            try:
-                time.sleep(int(args['timer_check']))
-            except KeyboardInterrupt:
-                globales.GlobDebug.print("Process cancel  by the user!!", lib.debug.DebugLevel.debug)
-                try:
-                    sys.exit(0)
-                except SystemExit:
-                    os._exit(0)
-            except Exception as e:
-                globales.GlobDebug.Exception(e)
+    main = Main(args)
+    main.start()

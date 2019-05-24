@@ -21,7 +21,6 @@
 
 import concurrent.futures
 import lib.tools
-import globales
 import lib.debug
 import lib.module_base
 import lib.monitor
@@ -35,7 +34,7 @@ class Watchful(lib.module_base.ModuleBase):
     def check(self):
         listservice = []
         for (key, value) in self.get_conf('list', {}).items():
-            globales.GlobDebug.print("Service: {0} - Enabled: {1}".format(key, value), lib.debug.DebugLevel.info)
+            self._debug.print("Service: {0} - Enabled: {1}".format(key, value), lib.debug.DebugLevel.info)
             if value:
                 listservice.append(key)
 
@@ -49,6 +48,7 @@ class Watchful(lib.module_base.ModuleBase):
                 except Exception as exc:
                     returnDict[service] = {}
                     returnDict[service]['status'] = False
+                    # TODO: Pendiente revisar exc
                     returnDict[service]['message'] = 'Service: {0} - *Error: {1}* {1}'.format(service, exc, u'\U0001F4A5')
 
         msg_debug = '*'*60 + '\n'
@@ -56,7 +56,7 @@ class Watchful(lib.module_base.ModuleBase):
         msg_debug = msg_debug + "Type: {0}\n".format(type(returnDict))
         msg_debug = msg_debug + str(returnDict) + '\n'
         msg_debug = msg_debug + '*'*60 + '\n'
-        globales.GlobDebug.print(msg_debug, lib.debug.DebugLevel.debug)
+        self._debug.print(msg_debug, lib.debug.DebugLevel.debug)
         return True, returnDict
 
     def __service_check(self, service):
@@ -74,7 +74,8 @@ class Watchful(lib.module_base.ModuleBase):
         return rCheck
 
     def __service_return(self, service):
-        stdout, stderr = lib.tools.execute('systemctl status '+service)
+        cmd = 'systemctl status {0}'.format(service)
+        stdout, stderr = self._run_cmd(cmd, True)
         if stdout == '':
             return False, stderr[:-1]
         return True, ''
