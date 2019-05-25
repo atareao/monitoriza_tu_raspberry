@@ -105,7 +105,8 @@ class ConfigControl(ConfigStore):
             return False
         return True
 
-    def __convert_findkey_to_list(self, findkey, str_split: str = None) -> list:
+    @staticmethod
+    def __convert_findkey_to_list(findkey, str_split: str = None) -> list:
         lreturn = []
         if isinstance(findkey, str):
             if str_split is None:
