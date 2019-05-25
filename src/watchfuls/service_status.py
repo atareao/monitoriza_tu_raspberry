@@ -21,10 +21,10 @@
 
 import concurrent.futures
 import lib.debug
-import lib.module_base
+import lib.modules.module_base
 
 
-class Watchful(lib.module_base.ModuleBase):
+class Watchful(lib.modules.module_base.ModuleBase):
 
     def __init__(self, monitor):
         super().__init__(monitor, __name__)

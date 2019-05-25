@@ -22,10 +22,10 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-import lib.module_base
+import lib.modules.module_base
 
 
-class Watchful(lib.module_base.ModuleBase):
+class Watchful(lib.modules.module_base.ModuleBase):
 
     # temperatura en ºC que se usara si no se ha configurado el modulo, o se ha definido un valor igual o menor que 0.
     __default_alert = 80

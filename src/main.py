@@ -45,7 +45,7 @@ class Main(object):
     def __init__(self, args_get):
         self._daemon_mode = False
         self._timer_check = 0
-        self.__sys_path_append([self._lib_dir, self._modules_dir])
+        self.__sys_path_append([self._modules_dir])
         self.__args_set(args_get)
         self.__init_debug()
         self.__init_config()

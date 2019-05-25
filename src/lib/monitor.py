@@ -31,7 +31,7 @@ import pprint
 import concurrent.futures
 import lib.debug
 import lib.config
-import lib.module_base
+import lib.modules.module_base
 import lib.telegram
 import lib.modules.dict_return_check
 

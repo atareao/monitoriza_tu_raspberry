@@ -24,10 +24,10 @@
 
 import re
 import lib.debug
-import lib.module_base
+import lib.modules.module_base
 
 
-class Watchful(lib.module_base.ModuleBase):
+class Watchful(lib.modules.module_base.ModuleBase):
 
     # porcentaje de RAM/SWAP que se usara si no se ha configurado el modulo, o se ha definido un
     # valor que no esté entre 0 y 100.

@@ -21,11 +21,11 @@
 
 import time
 import lib.debug
-import lib.module_base
+import lib.modules.module_base
 import concurrent.futures
 
 
-class Watchful(lib.module_base.ModuleBase):
+class Watchful(lib.modules.module_base.ModuleBase):
 
     __default_attempt = 3
     __default_timeout = 5
