@@ -47,9 +47,8 @@ class Watchful(lib.module_base.ModuleBase):
                 except Exception as exc:
                     dict_return[service] = {}
                     dict_return[service]['status'] = False
-                    # TODO: Pendiente revisar exc
                     dict_return[service]['message'] = 'Service: {0} - *Error: {1}* {1}'.format(service,
-                                                                                               exc,
+                                                                                               str(exc),
                                                                                                u'\U0001F4A5')
 
         self._debug.debug_obj(self.NameModule, dict_return, "Data Return")
