@@ -49,7 +49,7 @@ class Watchful(lib.module_base.ModuleBase):
                 try:
                     future.result()
                 except Exception as exc:
-                    message = 'Ping: {0} - *Error: {1}* {1}'.format(host, str(exc), u'\U0001F4A5')
+                    message = 'Ping: {0} - *Error: {1}* {2}'.format(host, exc, u'\U0001F4A5')
                     self.dict_return.set(host, False, message)
 
         super().check()

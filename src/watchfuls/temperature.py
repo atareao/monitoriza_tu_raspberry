@@ -56,7 +56,8 @@ class Watchful(lib.module_base.ModuleBase):
         super().check()
         return self.dict_return
 
-    def __cpu_temp(self):
+    @staticmethod
+    def __cpu_temp():
         # TODO: Pendiente controlar multiples "thermal_zone*"
         f = open('/sys/class/thermal/thermal_zone0/temp', 'r')
         temp = float(f.read().split('\n')[0]) / 1000.0

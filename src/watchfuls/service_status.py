@@ -45,7 +45,7 @@ class Watchful(lib.module_base.ModuleBase):
                 try:
                     future.result()
                 except Exception as exc:
-                    message = 'Service: {0} - *Error: {1}* {1}'.format(service, str(exc), u'\U0001F4A5')
+                    message = 'Service: {0} - *Error: {1}* {2}'.format(service, exc, u'\U0001F4A5')
                     self.dict_return.set(service, False, message)
 
         super().check()

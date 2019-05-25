@@ -199,7 +199,7 @@ class Monitor(object):
         return False
 
     def check(self):
-        cont_break = 0  #Debug - Count
+        # cont_break = 0  # Debug - Count
         self.debug.print("Check Init: " + time.strftime("%c"), lib.debug.DebugLevel.debug)
         list_modules = []
         for module_def in glob.glob(os.path.join(self.dir_modules, '*.py')):
