@@ -33,6 +33,7 @@ import lib.debug
 import lib.config
 import lib.module_base
 import lib.telegram
+import lib.modules.dict_return_check
 
 __all__ = ['Monitor']
 
@@ -54,7 +55,6 @@ class Monitor(object):
 
         self.readConfig()
         self.readStatus()
-        # self.status = None  #Descomentar para pruebas, omite el contenido status.json, dará error (self.status.save(self.__status_datos))
         self.initTelegram()
         self.debug.print("Monitor Init OK", lib.debug.DebugLevel.debug)
 
@@ -164,33 +164,34 @@ class Monitor(object):
             self.debug.print("Module: {0}".format(module_name), lib.debug.DebugLevel.info)
             module_import = importlib.import_module(module_name)
             module = module_import.Watchful(self)
-            status, message = module.check()
+            r_mod_check = module.check()
 
-            if isinstance(message, dict):
+            if isinstance(r_mod_check, lib.modules.dict_return_check.ReturnModuleCheck):
                 if module_name not in self.__status_datos.keys():
                     self.__status_datos[module_name] = {}
 
-                for (key, value) in message.items():
-                    self.debug.print("Module: {0} - Key: {1} - Val: {2}".format(module_name, key, value), lib.debug.DebugLevel.debug)
-                    if self.check_status(value['status'], module_name, key):
-                        self.__status_datos[module_name][key] = value['status']
-                        self.send_message(value['message'], value['status'])
-                        self.debug.print('Module: {0}/{1} - New Status: {2}'.format(module_name, key, value['status']), lib.debug.DebugLevel.debug)
+                for (key, value) in r_mod_check.items():
+                    self.debug.print("Module: {0} - Key: {1} - Val: {2}".format(module_name, key, value),
+                                     lib.debug.DebugLevel.debug)
+                    tmp_status = r_mod_check.get_status(key)
+                    tmp_message = r_mod_check.get_message(key)
+                    tmp_send = r_mod_check.get_send(key)
+
+                    if self.check_status(tmp_status, module_name, key):
+                        self.__status_datos[module_name][key] = tmp_status
+                        if tmp_send:
+                            self.send_message(tmp_message, tmp_status)
+                        self.debug.print('Module: {0}/{1} - New Status: {2}'.format(module_name, key, tmp_status),
+                                         lib.debug.DebugLevel.debug)
                 return True
-            elif isinstance(message, str):
-                if self.check_status(status, module_name):
-                    self.__status_datos[module_name] = status
-                    self.send_message(message, status)
-                    self.debug.print("Module: {0} - New Status: {1}".format(module_name, status), lib.debug.DebugLevel.debug)
-                return True
+
             else:
                 msg_debug = '\n\n'+'*'*60 + '\n'
-                msg_debug = msg_debug + "WARNING: check_module({0}) - Format not implement: {1}\n".format(module_name, type(message))
-                msg_debug = msg_debug + 'Data Status: {0}\n'.format(pprint.pprint(status))
-                msg_debug = msg_debug + '*'*40 + '\n'
-                msg_debug = msg_debug + 'Data Message: {0}\n'.format(pprint.pprint(message))
-                msg_debug = msg_debug + '*'*60 + '\n'
-                msg_debug = msg_debug + '*'*60 + '\n\n'
+                msg_debug += "WARNING: check_module({0}) - Format not implement: {1}\n".format(module_name,
+                                                                                               type(r_mod_check))
+                msg_debug += 'Data Return: {0}\n'.format(pprint.pprint(r_mod_check))
+                msg_debug += '*'*60 + '\n'
+                msg_debug += '*'*60 + '\n\n'
                 self.debug.print(msg_debug, lib.debug.DebugLevel.warning)
 
         except Exception as e:
@@ -198,11 +199,18 @@ class Monitor(object):
         return False
 
     def check(self):
+        cont_break = 0  #Debug - Count
         self.debug.print("Check Init: " + time.strftime("%c"), lib.debug.DebugLevel.debug)
         list_modules = []
         for module_def in glob.glob(os.path.join(self.dir_modules, '*.py')):
             module_def = os.path.splitext(os.path.basename(module_def))[0]
             if module_def.find('__') == -1:
+                # Debug Control Run Modules
+                # if cont_break < 1:
+                #     list_modules.append(module_def)
+                # cont_break = cont_break + 1
+                # continue
+                # Debug - End
                 list_modules.append(module_def)
 
         changed = False
@@ -224,8 +232,7 @@ class Monitor(object):
                 except Exception as exc:
                     self.debug.Exception(exc)
 
-        self.debug.print("Debug Status Save:", lib.debug.DebugLevel.debug)
-        self.debug.print(self.__status_datos, lib.debug.DebugLevel.debug)
+        self.debug.debug_obj(__name__, self.__status_datos, "Debug Status Save")
         if changed is True:
             self.status.data = self.__status_datos
             self.status.save()

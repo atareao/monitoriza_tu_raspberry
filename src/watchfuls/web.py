@@ -25,7 +25,6 @@
 import concurrent.futures
 import lib.debug
 import lib.module_base
-import lib.monitor
 
 
 class Watchful(lib.module_base.ModuleBase):
@@ -41,27 +40,22 @@ class Watchful(lib.module_base.ModuleBase):
             if value:
                 list_url.append(key)
 
-        dict_return = {}
-        with concurrent.futures.ThreadPoolExecutor(max_workers=self.get_conf('threads', self._default_threads)) as executor:
+        with concurrent.futures.ThreadPoolExecutor(
+                max_workers=self.get_conf('threads', self._default_threads)) as executor:
             future_to_url = {executor.submit(self.__web_check, url): url for url in list_url}
             for future in concurrent.futures.as_completed(future_to_url):
                 url = future_to_url[future]
                 try:
-                    dict_return[url] = future.result()
+                    future.result()
                 except Exception as exc:
-                    dict_return[url] = {}
-                    dict_return[url]['status'] = False
-                    dict_return[url]['message'] = 'Web: {0} - Error: {1}'.format(url, exc)
+                    message = 'Web: {0} - Error: {1}'.format(url, exc)
+                    self.dict_return.set(url, False, message)
 
-        self._debug.debug_obj(self.NameModule, dict_return, "Data Return")
-        return True, dict_return
+        super().check()
+        return self.dict_return
 
     def __web_check(self, url):
         status = self.__web_return(url)
-
-        r_check = {}
-        r_check['status'] = status
-        r_check['message'] = ''
         if self.check_status(status, self.NameModule, url):
             s_message = 'Web: {0}'.format(url)
             if status:
@@ -69,12 +63,12 @@ class Watchful(lib.module_base.ModuleBase):
             else:
                 s_message = '{0} {1}'.format(s_message, u'\U0001F53D')
             self.send_message(s_message, status)
-        return r_check
+        self.dict_return.set(url, status, s_message, False)
 
     def __web_return(self, url):
         # TODO: Pendiente añadir soporte https.
         cmd = self.path_file.find('curl')
-        cmd = cmd + ' -sL -w "%{http_code}\n" http://' + url + ' -o /dev/null'
+        cmd += ' -sL -w "%{http_code}\n" http://' + url + ' -o /dev/null'
         stdout = self._run_cmd(cmd)
         if stdout.find('200') == -1:
             return False

@@ -56,21 +56,23 @@ class Debug(object):
                 pprint.pprint(message)
 
     def Exception(self, ex=None):
+        # str_obj = pprint.pformat(ex)
         msg_print = 'Exception in user code:\n'
-        msg_print = msg_print + '-'*60+'\n'
+        msg_print += '-'*60+'\n'
         if ex:
-            msg_print = msg_print + 'Exception: ' + str(ex) + '\n'
-            msg_print = msg_print + '-'*60+'\n'
-        msg_print = msg_print + str(traceback.format_exc()) + '\n'
-        msg_print = msg_print + '-'*60+'\n'
+            msg_print += 'Exception: ' + str(ex) + '\n'
+            msg_print += '-'*60+'\n'
+        msg_print += str(traceback.format_exc()) + '\n'
+        msg_print += '-'*60+'\n'
         print(msg_print)
 
     def debug_obj(self, name_module, obj_debug, obj_info="Data Object"):
+        str_obj = pprint.pformat(obj_debug)
         msg_debug = '*' * 60 + '\n'
-        msg_debug = msg_debug + "Debug [{0}] - {1}:\n".format(name_module, obj_info)
-        msg_debug = msg_debug + "Type: {0}\n".format(type(obj_debug))
-        msg_debug = msg_debug + str(obj_debug) + '\n'
-        msg_debug = msg_debug + '*' * 60 + '\n'
+        msg_debug += "Debug [{0}] - {1}:\n".format(name_module, obj_info)
+        msg_debug += "Type: {0}\n".format(type(obj_debug))
+        msg_debug += str_obj + '\n'
+        msg_debug += '*' * 60 + '\n'
         self.print(msg_debug, DebugLevel.debug)
 
 

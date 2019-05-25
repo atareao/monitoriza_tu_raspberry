@@ -6,6 +6,9 @@
 # Copyright © 2019  Lorenzo Carbonell (aka atareao)
 # <lorenzo.carbonell.cerezo at gmail dot com>
 #
+# Copyright © 2019  Javier Pastor (aka vsc55)
+# <jpastor at cerebelum dot net>
+#
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
 # the Free Software Foundation, either version 3 of the License, or
@@ -33,7 +36,6 @@ class Watchful(lib.module_base.ModuleBase):
         self.path_file.set('df', '/bin/df')
 
     def check(self):
-
         list_partition = self.get_conf('list', {})
 
         usage_alert = self.get_conf("alert", self.__default_alert)
@@ -46,11 +48,9 @@ class Watchful(lib.module_base.ModuleBase):
         stdout = self._run_cmd(cmd)
         reg = r'\/dev\/([^\s]*)\s+\d+\s+\d+\s+\d+\s+(\d+)\%\s+([^\n]*)'
 
-        dict_return = {}
         for fs in re.findall(reg, stdout):
             # fs = ('mmcblk0p6', '32', '/boot')
             mount_point = fs[2]
-            dict_return[mount_point] = {}
             if mount_point in list_partition.keys():
                 for_usage_alert = list_partition[mount_point]
             else:
@@ -63,11 +63,10 @@ class Watchful(lib.module_base.ModuleBase):
                 tmp_status = True
                 tmp_message = 'Filesystem partition {0} ({1}) used {2}% {3}'.format(fs[0], fs[2], fs[1], u'\U00002705')
 
-            dict_return[mount_point]['status'] = tmp_status
-            dict_return[mount_point]['message'] = tmp_message
+            self.dict_return.set(fs[0], tmp_status, tmp_message)
 
-        self._debug.debug_obj(self.NameModule, dict_return, "Data Return")
-        return True, dict_return
+        super().check()
+        return self.dict_return
 
 
 if __name__ == '__main__':

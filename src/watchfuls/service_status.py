@@ -37,28 +37,22 @@ class Watchful(lib.module_base.ModuleBase):
             if value:
                 list_service.append(key)
 
-        dict_return = {}
-        with concurrent.futures.ThreadPoolExecutor(max_workers=self.get_conf('threads', self._default_threads)) as executor:
+        with concurrent.futures.ThreadPoolExecutor(
+                max_workers=self.get_conf('threads', self._default_threads)) as executor:
             future_to_service = {executor.submit(self.__service_check, service): service for service in list_service}
             for future in concurrent.futures.as_completed(future_to_service):
                 service = future_to_service[future]
                 try:
-                    dict_return[service] = future.result()
+                    future.result()
                 except Exception as exc:
-                    dict_return[service] = {}
-                    dict_return[service]['status'] = False
-                    dict_return[service]['message'] = 'Service: {0} - *Error: {1}* {1}'.format(service,
-                                                                                               str(exc),
-                                                                                               u'\U0001F4A5')
+                    message = 'Service: {0} - *Error: {1}* {1}'.format(service, str(exc), u'\U0001F4A5')
+                    self.dict_return.set(service, False, message)
 
-        self._debug.debug_obj(self.NameModule, dict_return, "Data Return")
-        return True, dict_return
+        super().check()
+        return self.dict_return
 
     def __service_check(self, service):
         status, message = self.__service_return(service)
-        r_check = {}
-        r_check['status'] = status
-        r_check['message'] = ''
         if self.check_status(status, self.NameModule, service):
             s_message = 'Service: {0}'.format(service)
             if status:
@@ -66,7 +60,7 @@ class Watchful(lib.module_base.ModuleBase):
             else:
                 s_message = '{0} - *Error: {1}* {2}'.format(s_message, message, u'\U000026A0')
             self.send_message(s_message, status)
-        return r_check
+        self.dict_return.set(service, status, s_message, False)
 
     def __service_return(self, service):
         cmd = '{0} status {1}'.format(self.path_file.find('systemctl'), service)

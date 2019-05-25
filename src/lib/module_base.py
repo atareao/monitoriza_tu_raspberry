@@ -23,6 +23,7 @@ import lib.monitor
 import lib.debug
 import lib.tools
 import lib.dict_files_path
+import lib.modules.dict_return_check
 
 __all__ = ['ModuleBase']
 
@@ -31,7 +32,8 @@ class ModuleBase(object):
 
     # Nº de hilos que se usaran en los módulos para procesamiento en paralelo como valor por defecto.
     _default_threads = 5
-    path_file = lib.dict_files_path.DictFilesPath()
+    path_file = None
+    dict_return = None
 
     def __init__(self, obj_monitor, name=None):
         self._monitor = obj_monitor
@@ -39,13 +41,15 @@ class ModuleBase(object):
             self.__nameModule = name
         else:
             self.__nameModule = __name__
+        self.path_file = lib.dict_files_path.DictFilesPath()
+        self.dict_return = lib.modules.dict_return_check.ReturnModuleCheck()
 
     @property
     def NameModule(self):
         return self.__nameModule
 
     def check(self):
-        pass
+        self._debug.debug_obj(self.NameModule, self.dict_return.list, "Data Return")
 
     @property
     def isMonitorExist(self):

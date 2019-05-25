@@ -22,7 +22,7 @@
 import time
 import lib.debug
 import lib.module_base
-from multiprocessing.dummy import Pool as ThreadPool
+import concurrent.futures
 
 
 class Watchful(lib.module_base.ModuleBase):
@@ -41,21 +41,19 @@ class Watchful(lib.module_base.ModuleBase):
             if value:
                 list_host.append(key)
 
-        list_return = []
-        pool = ThreadPool(self.get_conf('threads', self._default_threads))
-        list_return = pool.map(self.__ping_check, list_host)
-        pool.close()
-        pool.join()
+        with concurrent.futures.ThreadPoolExecutor(
+                max_workers=self.get_conf('threads', self._default_threads)) as executor:
+            future_to_ping = {executor.submit(self.__ping_check, host): host for host in list_host}
+            for future in concurrent.futures.as_completed(future_to_ping):
+                host = future_to_ping[future]
+                try:
+                    future.result()
+                except Exception as exc:
+                    message = 'Ping: {0} - *Error: {1}* {1}'.format(host, str(exc), u'\U0001F4A5')
+                    self.dict_return.set(host, False, message)
 
-        self._debug.debug_obj(self.NameModule, list_return, "Data Work")
-
-        # Convertir list en dictionary
-        dict_return = {}
-        for valueL1 in list_return:
-            dict_return = {**dict_return, **valueL1}
-
-        self._debug.debug_obj(self.NameModule, dict_return, "Data Return")
-        return True, dict_return
+        super().check()
+        return self.dict_return
 
     def __ping_check(self, host):
         # TODO: Pendiente poder configurar número de intentos y timeout para cada IP
@@ -64,10 +62,6 @@ class Watchful(lib.module_base.ModuleBase):
                                     self.get_conf('attempt', self.__default_attempt)
                                     )
 
-        r_check = {}
-        r_check[host] = {}
-        r_check[host]['status'] = status
-        r_check[host]['message'] = ''
         if self.check_status(status, self.NameModule, host):
             s_message = 'Ping: {0}'.format(host)
             if status:
@@ -75,7 +69,7 @@ class Watchful(lib.module_base.ModuleBase):
             else:
                 s_message = '{0} {1}'.format(s_message, u'\U0001F53D')
             self.send_message(s_message, status)
-        return r_check
+        self.dict_return.set(host, status, s_message, False)
 
     def __ping_return(self, host, timeout, attempt):
         counter = 0
