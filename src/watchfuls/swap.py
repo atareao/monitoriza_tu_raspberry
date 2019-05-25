@@ -20,10 +20,8 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 import re
-import lib.tools
 import lib.debug
 import lib.module_base
-import lib.monitor
 
 
 class Watchful(lib.module_base.ModuleBase):
@@ -32,6 +30,7 @@ class Watchful(lib.module_base.ModuleBase):
 
     def __init__(self, monitor):
         super().__init__(monitor, __name__)
+        self.path_file.set('free', '/usr/bin/free')
 
     def check(self):
         usage_alert = self.get_conf("alert", self.__default_alert)
@@ -40,8 +39,7 @@ class Watchful(lib.module_base.ModuleBase):
         if not usage_alert or usage_alert < 0 or usage_alert > 100:
             usage_alert = self.__default_alert
 
-        cmd = 'free'
-        stdout = self._run_cmd(cmd)
+        stdout = self._run_cmd(self.path_file.find('free'))
         self._debug.print(stdout, lib.debug.DebugLevel.debug)
 
         x = re.findall(r'Swap:\s+(\d+)\s+(\d+)', stdout)

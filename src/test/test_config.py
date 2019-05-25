@@ -68,7 +68,6 @@ print("")
 print("")
 
 
-
 print("TEST IS EXIST CONFIG")
 print('-'*60)
 print('-'*60)
@@ -81,7 +80,7 @@ bb = aa.is_exist_conf(("filesystemusage", "list"))
 print("Exist Tuple Resultado:", bb)
 print('-'*60)
 
-bb = aa.is_exist_conf(("filesystemusage", "list","123"))
+bb = aa.is_exist_conf(("filesystemusage", "list", "123"))
 print("NoExist Tuple Resultado:", bb)
 print('-'*60)
 
@@ -94,49 +93,48 @@ print("Exist String stplit Resultado:", bb)
 print('-'*60)
 
 
-#bb = aa.isExist_Conf({"ram":1, "alert":1})
-#print("Exist Dict Resultado:", bb)
-#print('-'*60)
+# bb = aa.isExist_Conf({"ram":1, "alert":1})
+# print("Exist Dict Resultado:", bb)
+# print('-'*60)
 
 print('-'*60)
 print('-'*60)
 print('-'*60)
 print("")
 print("")
-
 
 
 print("TEST SET CONFIG")
 print('-'*60)
 print('-'*60)
 
-print ("MODO MONO HILO")
+print("MODO MONO HILO")
 print('-'*60)
 print("")
 aa = lib.config.Config(None)
-print("Datos Init:",aa.data)
+print("Datos Init:", aa.data)
 
-aa.set_conf("123","ok")
-aa.set_conf("456",{"1": "OK"})
+aa.set_conf("123", "ok")
+aa.set_conf("456", {"1": "OK"})
 
-print("Datos 1:",aa.data)
+print("Datos 1:", aa.data)
 print('-'*60)
 
-aa.set_conf(["456","1","2"], "ok")
+aa.set_conf(["456", "1", "2"], "ok")
 aa.data.update({"123": "OK1"})
-print("Datos 2:",aa.data)
+print("Datos 2:", aa.data)
 print('-'*60)
 print("")
 
-print ("MODO MULTI HILO")
+print("MODO MULTI HILO")
 print('-'*60)
 print("")
 aa = lib.config.Config(None)
-print("Datos Init:",aa.data)
+print("Datos Init:", aa.data)
 
 
-ltmp_num_loop=4
-ltmp_num_range=200
+ltmp_num_loop = 4
+ltmp_num_range = 200
 
 print("Loop:", ltmp_num_loop)
 print("Nº Reg en cada Loop:", ltmp_num_range)
@@ -157,7 +155,7 @@ for y in range(ltmp_num_loop):
 
 
 def set_cfg(num):
-    #print(num)
+    # print(num)
     findkey = [str(num)]
     ltmpC = 0
 
@@ -173,30 +171,28 @@ def set_cfg(num):
             msg = '{0} NOExisteB: {1}\n'.format(msg, num)
     else:
         msg = '{0} NOExisteA: {1}\n'.format(msg, num)
-
     
     ltmpB = ltmpC + 1
     aa.set_conf(findkey, ltmpB)
-
 
     ltmpC = aa.get_conf(findkey, 0)
     msg = '{0} Read Despues ({1}): {2}\n'.format(msg, num, ltmpC)
 
     msg = msg + '-'*20
-    #print(msg)
-         
+    # print(msg)
 
-lReturn=[]
+
+lReturn = []
 pool = ThreadPool(200)
 lReturn = pool.map(set_cfg, ltmp)
 pool.close()
 pool.join()
 
 
-print("Len:", len(aa.data), " - datos:",aa.data)
+print("Len:", len(aa.data), " - datos:", aa.data)
 print('*'*90)
 print('LIST (NO TIENE QUE APARECER NADA EN ESTA LISTA):')
 for key, val in aa.data.items():
     if val != ltmp_num_loop and (key == 999 and val != ltmp_num_loop*ltmp_num_range):
-        print("key:", key, " - Val:" ,val)
+        print("key:", key, " - Val:", val)
 print('-'*60)

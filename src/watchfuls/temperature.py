@@ -22,9 +22,7 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-import lib.debug
 import lib.module_base
-import lib.monitor
 
 
 class Watchful(lib.module_base.ModuleBase):

@@ -32,52 +32,49 @@ class Watchful(lib.module_base.ModuleBase):
 
     def __init__(self, monitor):
         super().__init__(monitor, __name__)
+        self.path_file.set('curl', '/usr/bin/curl')
 
     def check(self):
-        listurl = []
+        list_url = []
         for (key, value) in self.get_conf('list', {}).items():
             self._debug.print("Web: {0} - Enabled: {1}".format(key, value), lib.debug.DebugLevel.info)
             if value:
-                listurl.append(key)
+                list_url.append(key)
 
-        returnDict = {}
+        dict_return = {}
         with concurrent.futures.ThreadPoolExecutor(max_workers=self.get_conf('threads', self._default_threads)) as executor:
-            future_to_url = {executor.submit(self.__web_check, url): url for url in listurl}
+            future_to_url = {executor.submit(self.__web_check, url): url for url in list_url}
             for future in concurrent.futures.as_completed(future_to_url):
                 url = future_to_url[future]
                 try:
-                    returnDict[url] = future.result()
+                    dict_return[url] = future.result()
                 except Exception as exc:
-                    returnDict[url] = {}
-                    returnDict[url]['status'] = False
-                    returnDict[url]['message'] = 'Web: {0} - Error: {1}'.format(url, exc)
+                    dict_return[url] = {}
+                    dict_return[url]['status'] = False
+                    dict_return[url]['message'] = 'Web: {0} - Error: {1}'.format(url, exc)
 
-        msg_debug = '*'*60 + '\n'
-        msg_debug = msg_debug + "Debug [{0}] - Data Return:\n".format(self.NameModule)
-        msg_debug = msg_debug + "Type: {0}\n".format(type(returnDict))
-        msg_debug = msg_debug + str(returnDict) + '\n'
-        msg_debug = msg_debug + '*'*60 + '\n'
-        self._debug.print(msg_debug, lib.debug.DebugLevel.debug)
-        return True, returnDict
+        self._debug.debug_obj(self.NameModule, dict_return, "Data Return")
+        return True, dict_return
 
     def __web_check(self, url):
         status = self.__web_return(url)
 
-        rCheck = {}
-        rCheck['status'] = status
-        rCheck['message'] = ''
+        r_check = {}
+        r_check['status'] = status
+        r_check['message'] = ''
         if self.check_status(status, self.NameModule, url):
-            sMessage = 'Web: {0}'.format(url)
+            s_message = 'Web: {0}'.format(url)
             if status:
-                sMessage = '{0} {1}'.format(sMessage, u'\U0001F53C')
+                s_message = '{0} {1}'.format(s_message, u'\U0001F53C')
             else:
-                sMessage = '{0} {1}'.format(sMessage, u'\U0001F53D')
-            self.send_message(sMessage, status)
-        return rCheck
+                s_message = '{0} {1}'.format(s_message, u'\U0001F53D')
+            self.send_message(s_message, status)
+        return r_check
 
     def __web_return(self, url):
         # TODO: Pendiente añadir soporte https.
-        cmd = 'curl -sL -w "%{http_code}\n" http://'+url+' -o /dev/null'
+        cmd = self.path_file.find('curl')
+        cmd = cmd + ' -sL -w "%{http_code}\n" http://' + url + ' -o /dev/null'
         stdout = self._run_cmd(cmd)
         if stdout.find('200') == -1:
             return False

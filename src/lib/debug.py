@@ -65,6 +65,14 @@ class Debug(object):
         msg_print = msg_print + '-'*60+'\n'
         print(msg_print)
 
+    def debug_obj(self, name_module, obj_debug, obj_info="Data Object"):
+        msg_debug = '*' * 60 + '\n'
+        msg_debug = msg_debug + "Debug [{0}] - {1}:\n".format(name_module, obj_info)
+        msg_debug = msg_debug + "Type: {0}\n".format(type(obj_debug))
+        msg_debug = msg_debug + str(obj_debug) + '\n'
+        msg_debug = msg_debug + '*' * 60 + '\n'
+        self.print(msg_debug, DebugLevel.debug)
+
 
 if __name__ == '__main__':
     pass

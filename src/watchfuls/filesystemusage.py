@@ -20,9 +20,7 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 import re
-import lib.debug
 import lib.module_base
-import lib.monitor
 
 
 class Watchful(lib.module_base.ModuleBase):
@@ -32,6 +30,7 @@ class Watchful(lib.module_base.ModuleBase):
 
     def __init__(self, monitor):
         super().__init__(monitor, __name__)
+        self.path_file.set('df', '/bin/df')
 
     def check(self):
 
@@ -43,35 +42,32 @@ class Watchful(lib.module_base.ModuleBase):
         if not usage_alert or usage_alert < 0 or usage_alert > 100:
             usage_alert = self.__default_alert
 
-        cmd = 'df -x squashfs -x tmpfs  -x devtmpfs'
+        cmd = '{0} -x squashfs -x tmpfs  -x devtmpfs'.format(self.path_file.find('df'))
         stdout = self._run_cmd(cmd)
         reg = r'\/dev\/([^\s]*)\s+\d+\s+\d+\s+\d+\s+(\d+)\%\s+([^\n]*)'
 
-        returnDict = {}
+        dict_return = {}
         for fs in re.findall(reg, stdout):
-            # fs = ('root', '12', '/')
             # fs = ('mmcblk0p6', '32', '/boot')
             mount_point = fs[2]
-            returnDict[mount_point] = {}
+            dict_return[mount_point] = {}
             if mount_point in list_partition.keys():
                 for_usage_alert = list_partition[mount_point]
             else:
                 for_usage_alert = usage_alert
 
             if float(fs[1]) > float(for_usage_alert):
-                returnDict[mount_point]['status'] = False
-                returnDict[mount_point]['message'] = 'Warning partition {0} ({1}) used {2}% {3}'.format(fs[0], fs[2], fs[1], u'\U000026A0')
+                tmp_status = False
+                tmp_message = 'Warning partition {0} ({1}) used {2}% {3}'.format(fs[0], fs[2], fs[1], u'\U000026A0')
             else:
-                returnDict[mount_point]['status'] = True
-                returnDict[mount_point]['message'] = 'Filesystem partition {0} ({1}) used {2}% {3}'.format(fs[0], fs[2], fs[1], u'\U00002705')
+                tmp_status = True
+                tmp_message = 'Filesystem partition {0} ({1}) used {2}% {3}'.format(fs[0], fs[2], fs[1], u'\U00002705')
 
-        msg_debug = '*'*60 + '\n'
-        msg_debug = msg_debug + "Debug [{0}] - Data Return:\n".format(self.NameModule)
-        msg_debug = msg_debug + "Type: {0}\n".format(type(returnDict))
-        msg_debug = msg_debug + str(returnDict) + '\n'
-        msg_debug = msg_debug + '*'*60 + '\n'
-        self._debug.print(msg_debug, lib.debug.DebugLevel.debug)
-        return True, returnDict
+            dict_return[mount_point]['status'] = tmp_status
+            dict_return[mount_point]['message'] = tmp_message
+
+        self._debug.debug_obj(self.NameModule, dict_return, "Data Return")
+        return True, dict_return
 
 
 if __name__ == '__main__':

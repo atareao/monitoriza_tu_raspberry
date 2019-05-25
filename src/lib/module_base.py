@@ -22,6 +22,7 @@
 import lib.monitor
 import lib.debug
 import lib.tools
+import lib.dict_files_path
 
 __all__ = ['ModuleBase']
 
@@ -30,6 +31,7 @@ class ModuleBase(object):
 
     # Nº de hilos que se usaran en los módulos para procesamiento en paralelo como valor por defecto.
     _default_threads = 5
+    path_file = lib.dict_files_path.DictFilesPath()
 
     def __init__(self, obj_monitor, name=None):
         self._monitor = obj_monitor
@@ -53,7 +55,9 @@ class ModuleBase(object):
 
     @property
     def _debug(self):
-        return self.__monitor.debug
+        if self.isMonitorExist:
+            return self.__monitor.debug
+        return None
 
     @property
     def _monitor(self):
@@ -84,15 +88,6 @@ class ModuleBase(object):
                     return self._monitor.config_modules.get_conf(select_module, default_val)
                 else:
                     return self._monitor.config_modules.get_conf([select_module, findkey], default_val)
-
-        #    if select_module:
-        #        if select_module in self.monitor.config_modules.keys():
-        #            if not findkey:
-        #                return self.monitor.config_modules[select_module]
-        #            if findkey in self.monitor.config_modules[select_module].keys():
-        #                return self.monitor.config_modules[select_module][findkey]
-        #            else:
-        #                return default_val
 
         if findkey or default_val:
             return default_val
