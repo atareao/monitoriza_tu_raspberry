@@ -20,11 +20,11 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 import datetime
-import lib.configStore
 import collections
+from lib.config.configStore import *
 from enum import Enum
 
-__all__ = ['Config', 'ConfigTypeReturn']
+__all__ = ['ConfigControl', 'ConfigTypeReturn']
 
 """Configuration module"""
 
@@ -38,7 +38,7 @@ class ConfigTypeReturn(Enum):
     TUPLE = 6
 
 
-class Config(lib.configStore.ConfigStore):
+class ConfigControl(ConfigStore):
     """Class to Storage and processing of configuration parameters."""
 
     def __init__(self, file, init_data: dict = None, obj_debug=None):
@@ -172,7 +172,7 @@ class Config(lib.configStore.ConfigStore):
             insertion order (this new behavior became guaranteed in Python 3.7).
 
         Example:
-            >>> x = Config(None)
+            >>> x = ConfigControl(None)
             >>> x.data = { 'level1': { 'level2': 'OK' } }
             >>> x.get_conf(['level1', 'level2'], 'Not Exist!')
             'OK'
@@ -250,7 +250,7 @@ class Config(lib.configStore.ConfigStore):
             insertion order (this new behavior became guaranteed in Python 3.7).
 
         Example:
-            >>> x = Config(None)
+            >>> x = ConfigControl(None)
             >>> x.data = { 'level1': { 'level2': 'OK' } }
             >>> x.is_exist_conf(['level1', 'level2'])
             True
@@ -312,7 +312,7 @@ class Config(lib.configStore.ConfigStore):
             insertion order (this new behavior became guaranteed in Python 3.7).
 
         Example:
-            >>> x = Config(None)
+            >>> x = ConfigControl(None)
             >>> x.set_conf('level1', 'OK')
             True
             >>> x.data

@@ -28,7 +28,7 @@ import time
 import argparse
 import lib.debug
 import lib.monitor
-import lib.config
+from lib.config.configControl import *
 
 
 class Main(object):
@@ -56,8 +56,8 @@ class Main(object):
         self.debug = lib.debug.Debug(True)
 
     def __init_config(self):
-        self.cfg_general = lib.config.Config(os.path.join(self._config_dir, self.__cfg_file_config),
-                                             obj_debug=self.debug)
+        self.cfg_general = ConfigControl(os.path.join(self._config_dir, self.__cfg_file_config),
+                                                                  obj_debug=self.debug)
         self.cfg_general.read()
         if self.__check_config():
             self.__default_conf()

@@ -30,10 +30,10 @@ import time
 import pprint
 import concurrent.futures
 import lib.debug
-import lib.config
 import lib.modules.module_base
 import lib.telegram
 import lib.modules.dict_return_check
+from lib.config.configControl import *
 
 __all__ = ['Monitor']
 
@@ -65,25 +65,25 @@ class Monitor(object):
 
     def readConfig(self):
         if self.dir_config:
-            self.config = lib.config.Config(os.path.join(self.dir_config, 'config.json'))
+            self.config = ConfigControl(os.path.join(self.dir_config, 'config.json'))
             self.config.read()
-            self.config_monitor = lib.config.Config(os.path.join(self.dir_config, 'monitor.json'))
+            self.config_monitor = ConfigControl(os.path.join(self.dir_config, 'monitor.json'))
             self.config_monitor.read()
-            self.config_modules = lib.config.Config(os.path.join(self.dir_config, 'modules.json'))
+            self.config_modules = ConfigControl(os.path.join(self.dir_config, 'modules.json'))
             self.config_modules.read()
         else:
-            self.config = lib.config.Config(None, {})
-            self.config_monitor = lib.config.Config(None, {})
-            self.config_modules = lib.config.Config(None, {})
+            self.config = ConfigControl(None, {})
+            self.config_monitor = ConfigControl(None, {})
+            self.config_modules = ConfigControl(None, {})
 
     def readStatus(self):
         if self.dir_var:
             self.__checkDir(self.dir_var)
-            self.status = lib.config.Config(os.path.join(self.dir_var, 'status.json'), {})
+            self.status = ConfigControl(os.path.join(self.dir_var, 'status.json'), {})
             if not self.status.is_exist:
                 self.status.save()
         else:
-            self.status = lib.config.Config(None, {})
+            self.status = ConfigControl(None, {})
 
     def clearStatus(self):
         # TODO: Pendiente crear funcion clear en el objeto config

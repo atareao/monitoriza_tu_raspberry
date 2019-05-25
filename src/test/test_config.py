@@ -21,16 +21,15 @@
 
 import sys
 import os
+from multiprocessing.dummy import Pool as ThreadPool
 
 sys.path.append("..")
 sys.path.append(os.path.join('..', 'lib'))
 
-
-import lib.config
-from multiprocessing.dummy import Pool as ThreadPool
+from lib.config.configControl import *
 
 
-aa = lib.config.Config("modules.json")
+aa = ConfigControl("modules.json")
 aa.read()
 
 
@@ -58,7 +57,7 @@ bb = aa.get_conf("service_status", "No Encontrado en String")
 print("String Resultado:", bb)
 print('-'*60)
 
-bb = aa.get_conf('PruebaEstoNoExisteEnLosDatos', r_type=lib.config.ConfigTypeReturn.LIST)
+bb = aa.get_conf('PruebaEstoNoExisteEnLosDatos', r_type=ConfigTypeReturn.LIST)
 print("Resultado No Existe y se r_type list:", bb)
 print('-'*60)
 
@@ -111,7 +110,7 @@ print('-'*60)
 print("MODO MONO HILO")
 print('-'*60)
 print("")
-aa = lib.config.Config(None)
+aa = ConfigControl(None)
 print("Datos Init:", aa.data)
 
 aa.set_conf("123", "ok")
@@ -129,7 +128,7 @@ print("")
 print("MODO MULTI HILO")
 print('-'*60)
 print("")
-aa = lib.config.Config(None)
+aa = ConfigControl(None)
 print("Datos Init:", aa.data)
 
 
