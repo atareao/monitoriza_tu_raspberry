@@ -102,6 +102,6 @@ if __name__ == '__main__':
         x.print("Msg Test 3 - Force = True and Level Debug - Yes Show", DebugLevel.debug, True)
         x.level = DebugLevel.debug
         x.print("Msg Test 4 - Level = debug - Yes Show")
-        10 * (1/0)
+        val = 10 * (1/0)
     except Exception as e:
         x.exception(e)
