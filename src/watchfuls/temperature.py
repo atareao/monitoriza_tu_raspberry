@@ -22,12 +22,10 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-import lib.debug
-import lib.module_base
-import lib.monitor
+import lib.modules.module_base
 
 
-class Watchful(lib.module_base.ModuleBase):
+class Watchful(lib.modules.module_base.ModuleBase):
 
     # temperatura en ºC que se usara si no se ha configurado el modulo, o se ha definido un valor igual o menor que 0.
     __default_alert = 80
@@ -36,19 +34,35 @@ class Watchful(lib.module_base.ModuleBase):
         super().__init__(monitor, __name__)
 
     def check(self):
+        # TODO: Pendiente controlar multiples "thermal_zone*" o sensores.
+
         temp_alert = self.get_conf("alert", self.__default_alert)
         if isinstance(temp_alert, str):
             temp_alert = temp_alert.strip()
         if not temp_alert or temp_alert <= 0:
             temp_alert = self.__default_alert
 
+        temp = self.__cpu_temp()
+        if temp <= float(temp_alert):   # Función OK :)
+            is_warning = False
+        else:                           # Esta echando fuego!!!
+            is_warning = True
+
+        if is_warning:
+            message = 'Over temperature Warning {0} ºC {1}'.format(temp, u'\U0001F525')
+        else:
+            message = 'Temperature Ok {0} ºC {1}'.format(temp, u'\U00002705')
+        self.dict_return.set("cpu", not is_warning, message)
+        super().check()
+        return self.dict_return
+
+    @staticmethod
+    def __cpu_temp():
         # TODO: Pendiente controlar multiples "thermal_zone*"
         f = open('/sys/class/thermal/thermal_zone0/temp', 'r')
-        temp = float(f.read().split('\n')[0])/1000.0
+        temp = float(f.read().split('\n')[0]) / 1000.0
         f.close()
-        if temp <= float(temp_alert):
-            return True, 'Temperature Ok {0} ºC {1}'.format(temp, u'\U00002705')
-        return False, 'Over temperature Warning {0} ºC {1}'.format(temp, u'\U0001F525')
+        return temp
 
 
 if __name__ == '__main__':

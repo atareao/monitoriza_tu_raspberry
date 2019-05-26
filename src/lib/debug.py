@@ -37,8 +37,9 @@ class DebugLevel(Enum):
 
 class Debug(object):
 
-    def __init__(self, enable=False):
+    def __init__(self, enable: bool = True, level: DebugLevel = DebugLevel.info):
         self.enabled = enable
+        self.level = level
 
     @property
     def enabled(self):
@@ -48,22 +49,47 @@ class Debug(object):
     def enabled(self, val):
         self.__enabled = val
 
-    def print(self, message, level=DebugLevel.debug, force=False):
-        if self.enabled is True or force is True or level == DebugLevel.warning or level == DebugLevel.error or level == DebugLevel.emergency:
+    @property
+    def level(self) -> DebugLevel:
+        return self.__level
+
+    @level.setter
+    def level(self, val: DebugLevel = DebugLevel.null):
+        self.__level = val
+
+    def print(self, message, msg_level: DebugLevel = DebugLevel.debug, force: bool = False):
+        show_msg = True
+        if self.enabled is False:
+            show_msg = False
+        elif force is False:
+            if self.level.value > msg_level.value:
+                show_msg = False
+
+        if show_msg:
             if isinstance(message, str):
                 print(message)
             else:
                 pprint.pprint(message)
 
     def Exception(self, ex=None):
+        # str_obj = pprint.pformat(ex)
         msg_print = 'Exception in user code:\n'
-        msg_print = msg_print + '-'*60+'\n'
+        msg_print += '-'*60+'\n'
         if ex:
-            msg_print = msg_print + 'Exception: ' + str(ex) + '\n'
-            msg_print = msg_print + '-'*60+'\n'
-        msg_print = msg_print + str(traceback.format_exc()) + '\n'
-        msg_print = msg_print + '-'*60+'\n'
+            msg_print += 'Exception: ' + str(ex) + '\n'
+            msg_print += '-'*60+'\n'
+        msg_print += str(traceback.format_exc()) + '\n'
+        msg_print += '-'*60+'\n'
         print(msg_print)
+
+    def debug_obj(self, name_module, obj_debug, obj_info="Data Object"):
+        str_obj = pprint.pformat(obj_debug)
+        msg_debug = '*' * 60 + '\n'
+        msg_debug += "Debug [{0}] - {1}:\n".format(name_module, obj_info)
+        msg_debug += "Type: {0}\n".format(type(obj_debug))
+        msg_debug += str_obj + '\n'
+        msg_debug += '*' * 60 + '\n'
+        self.print(msg_debug, DebugLevel.debug)
 
 
 if __name__ == '__main__':

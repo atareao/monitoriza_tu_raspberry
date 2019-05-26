@@ -19,78 +19,65 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-import lib.tools
 import time
-from multiprocessing.dummy import Pool as ThreadPool
-import globales
 import lib.debug
-import lib.module_base
-import lib.monitor
+import lib.modules.module_base
+import concurrent.futures
 
 
-class Watchful(lib.module_base.ModuleBase):
+class Watchful(lib.modules.module_base.ModuleBase):
 
     __default_attempt = 3
     __default_timeout = 5
 
     def __init__(self, monitor):
         super().__init__(monitor, __name__)
+        self.path_file.set('ping', '/bin/ping')
 
     def check(self):
-        lHost = []
+        list_host = []
         for (key, value) in self.get_conf('list', {}).items():
-            globales.GlobDebug.print("Ping: {0} - Enabled: {1}".format(key, value), lib.debug.DebugLevel.info)
+            self.debug.print("Ping: {0} - Enabled: {1}".format(key, value), lib.debug.DebugLevel.info)
             if value:
-                lHost.append(key)
+                list_host.append(key)
 
-        lReturn = []
-        pool = ThreadPool(self.get_conf('threads', self._default_threads))
-        lReturn = pool.map(self.__ping_check, lHost)
-        pool.close()
-        pool.join()
+        with concurrent.futures.ThreadPoolExecutor(
+                max_workers=self.get_conf('threads', self._default_threads)) as executor:
+            future_to_ping = {executor.submit(self.__ping_check, host): host for host in list_host}
+            for future in concurrent.futures.as_completed(future_to_ping):
+                host = future_to_ping[future]
+                try:
+                    future.result()
+                except Exception as exc:
+                    message = 'Ping: {0} - *Error: {1}* {2}'.format(host, exc, u'\U0001F4A5')
+                    self.dict_return.set(host, False, message)
 
-        msg_debug = '*'*60 + '\n'
-        msg_debug = msg_debug + "Debug [{0}] - Data Work:\n".format(self.NameModule)
-        msg_debug = msg_debug + "Type: {0}\n".format(type(lReturn))
-        msg_debug = msg_debug + str(lReturn) + '\n'
-        msg_debug = msg_debug + '*'*60 + '\n'
-        globales.GlobDebug.print(msg_debug, lib.debug.DebugLevel.debug)
-
-        # Convertir list en dictionary
-        dReturn = {}
-        for valueL1 in lReturn:
-            dReturn = {**dReturn, **valueL1}
-
-        msg_debug = '*'*60 + '\n'
-        msg_debug = msg_debug + "Debug [{0}] - Data Return:\n".format(self.NameModule)
-        msg_debug = msg_debug + "Type: {0}\n".format(type(dReturn))
-        msg_debug = msg_debug + str(dReturn) + '\n'
-        msg_debug = msg_debug + '*'*60 + '\n'
-        globales.GlobDebug.print(msg_debug, lib.debug.DebugLevel.debug)
-        return True, dReturn
+        super().check()
+        return self.dict_return
 
     def __ping_check(self, host):
         # TODO: Pendiente poder configurar número de intentos y timeout para cada IP
-        status = self.__ping_return(host, self.get_conf('threads', self.__default_timeout), self.get_conf('attempt', self.__default_attempt))
+        status = self.__ping_return(host,
+                                    self.get_conf('threads', self.__default_timeout),
+                                    self.get_conf('attempt', self.__default_attempt)
+                                    )
 
-        rCheck = {}
-        rCheck[host] = {}
-        rCheck[host]['status'] = status
-        rCheck[host]['message'] = ''
-        if self.chcek_status(status, self.NameModule, host):
-            sMessage = 'Ping: {0}'.format(host)
-            if status:
-                sMessage = '{0} {1}'.format(sMessage, u'\U0001F53C')
-            else:
-                sMessage = '{0} {1}'.format(sMessage, u'\U0001F53D')
-            self.send_message(sMessage, status)
-        return rCheck
+        s_message = 'Ping: {0} '.format(host)
+        if status:
+            s_message += u'\U0001F53C'
+        else:
+            s_message += u'\U0001F53D'
+
+        self.dict_return.set(host, status, s_message, False)
+        if self.check_status(status, self.NameModule, host):
+            self.send_message(s_message, status)
 
     def __ping_return(self, host, timeout, attempt):
         counter = 0
         while counter < attempt:
-            rCode = lib.tools.execute_call('ping -c 1 -W {0} {1}'.format(timeout, host))
-            if rCode == 0:
+            cmd = '{0} -c 1 -W {1} {2}'.format(self.path_file.find('ping'), timeout, host)
+            r_code = self._run_cmd_call(cmd)
+            if r_code == 0:
                 return True
             time.sleep(1)
             counter += 1

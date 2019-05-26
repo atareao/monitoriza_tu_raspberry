@@ -20,61 +20,53 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 import concurrent.futures
-import lib.tools
-import globales
 import lib.debug
-import lib.module_base
-import lib.monitor
+import lib.modules.module_base
 
 
-class Watchful(lib.module_base.ModuleBase):
+class Watchful(lib.modules.module_base.ModuleBase):
 
     def __init__(self, monitor):
         super().__init__(monitor, __name__)
+        self.path_file.set('systemctl', '/bin/systemctl')
 
     def check(self):
-        listservice = []
+        list_service = []
         for (key, value) in self.get_conf('list', {}).items():
-            globales.GlobDebug.print("Service: {0} - Enabled: {1}".format(key, value), lib.debug.DebugLevel.info)
+            self.debug.print("Service: {0} - Enabled: {1}".format(key, value), lib.debug.DebugLevel.info)
             if value:
-                listservice.append(key)
+                list_service.append(key)
 
-        returnDict = {}
-        with concurrent.futures.ThreadPoolExecutor(max_workers=self.get_conf('threads', self._default_threads)) as executor:
-            future_to_service = {executor.submit(self.__service_check, service): service for service in listservice}
+        with concurrent.futures.ThreadPoolExecutor(
+                max_workers=self.get_conf('threads', self._default_threads)) as executor:
+            future_to_service = {executor.submit(self.__service_check, service): service for service in list_service}
             for future in concurrent.futures.as_completed(future_to_service):
                 service = future_to_service[future]
                 try:
-                    returnDict[service] = future.result()
+                    future.result()
                 except Exception as exc:
-                    returnDict[service] = {}
-                    returnDict[service]['status'] = False
-                    returnDict[service]['message'] = 'Service: {0} - *Error: {1}* {1}'.format(service, exc, u'\U0001F4A5')
+                    message = 'Service: {0} - *Error: {1}* {2}'.format(service, exc, u'\U0001F4A5')
+                    self.dict_return.set(service, False, message)
 
-        msg_debug = '*'*60 + '\n'
-        msg_debug = msg_debug + "Debug [{0}] - Data Return:\n".format(self.NameModule)
-        msg_debug = msg_debug + "Type: {0}\n".format(type(returnDict))
-        msg_debug = msg_debug + str(returnDict) + '\n'
-        msg_debug = msg_debug + '*'*60 + '\n'
-        globales.GlobDebug.print(msg_debug, lib.debug.DebugLevel.debug)
-        return True, returnDict
+        super().check()
+        return self.dict_return
 
     def __service_check(self, service):
         status, message = self.__service_return(service)
-        rCheck = {}
-        rCheck['status'] = status
-        rCheck['message'] = ''
-        if self.chcek_status(status, self.NameModule, service):
-            sMessage = 'Service: {0}'.format(service)
-            if status:
-                sMessage = '{0} {1}'.format(sMessage, u'\U00002705')
-            else:
-                sMessage = '{0} - *Error: {1}* {2}'.format(sMessage, message, u'\U000026A0')
-            self.send_message(sMessage, status)
-        return rCheck
+
+        s_message = 'Service: {0} '.format(service)
+        if status:
+            s_message += u'\U00002705'
+        else:
+            s_message += '- *Error: {0}* {1}'.format(message, u'\U000026A0')
+
+        self.dict_return.set(service, status, s_message, False)
+        if self.check_status(status, self.NameModule, service):
+            self.send_message(s_message, status)
 
     def __service_return(self, service):
-        stdout, stderr = lib.tools.execute('systemctl status '+service)
+        cmd = '{0} status {1}'.format(self.path_file.find('systemctl'), service)
+        stdout, stderr = self._run_cmd(cmd, True)
         if stdout == '':
             return False, stderr[:-1]
         return True, ''

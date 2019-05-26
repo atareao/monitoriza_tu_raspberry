@@ -22,22 +22,24 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-import globales
 import glob
 import os
 import importlib
 import socket
+import time
 import pprint
 import concurrent.futures
 import lib.debug
-import lib.config
-import lib.module_base
+import lib.modules.module_base
 import lib.telegram
+import lib.modules.dict_return_check
+from lib.config.configControl import *
+from lib.object_base import ObjectBase
 
 __all__ = ['Monitor']
 
 
-class Monitor(object):
+class Monitor(ObjectBase):
 
     # Nº de hilos que se usaran para procesamiento en paralelo como valor por defecto.
     __default_threads = 5
@@ -50,8 +52,8 @@ class Monitor(object):
 
         self.readConfig()
         self.readStatus()
-        # self.status = None  #Descomentar para pruebas, omite el contenido status.json, dará error (self.status.save(self.__status_datos))
         self.initTelegram()
+        self.debug.print("Monitor Init OK", lib.debug.DebugLevel.debug)
 
     def __checkDir(self, pathdir):
         if pathdir:
@@ -60,29 +62,39 @@ class Monitor(object):
 
     def readConfig(self):
         if self.dir_config:
-            self.config = lib.config.Config(os.path.join(self.dir_config, 'config.json'))
+            self.config = ConfigControl(os.path.join(self.dir_config, 'config.json'))
             self.config.read()
-            self.config_monitor = lib.config.Config(os.path.join(self.dir_config, 'monitor.json'))
+            self.config_monitor = ConfigControl(os.path.join(self.dir_config, 'monitor.json'))
             self.config_monitor.read()
-            self.config_modules = lib.config.Config(os.path.join(self.dir_config, 'modules.json'))
+            self.config_modules = ConfigControl(os.path.join(self.dir_config, 'modules.json'))
             self.config_modules.read()
         else:
-            self.config = lib.config.Config(None, {})
-            self.config_monitor = lib.config.Config(None, {})
-            self.config_modules = lib.config.Config(None, {})
+            self.config = ConfigControl(None, {})
+            self.config_monitor = ConfigControl(None, {})
+            self.config_modules = ConfigControl(None, {})
 
     def readStatus(self):
         if self.dir_var:
             self.__checkDir(self.dir_var)
-            self.status = lib.config.Config(os.path.join(self.dir_var, 'status.json'), {})
+            self.status = ConfigControl(os.path.join(self.dir_var, 'status.json'), {})
             if not self.status.is_exist:
                 self.status.save()
         else:
-            self.status = lib.config.Config(None, {})
+            self.status = ConfigControl(None, {})
+
+    def clearStatus(self):
+        # TODO: Pendiente crear funcion clear en el objeto config
+        self.debug.print("Clear Status", lib.debug.DebugLevel.info)
+        self.readStatus()
+        self.status.data = {}
+        self.status.save()
 
     def initTelegram(self):
         if self.config:
-            self.tg = lib.telegram.Telegram(self.config.get_conf(['telegram', 'token'], ''), self.config.get_conf(['telegram', 'chat_id'], ''))
+            self.tg = lib.telegram.Telegram(
+                self.config.get_conf(['telegram', 'token'], ''),
+                self.config.get_conf(['telegram', 'chat_id'], '')
+            )
         else:
             self.tg = None
 
@@ -134,7 +146,7 @@ class Monitor(object):
                 message = "{0} {1}".format(u'\U0000274E', message)
             self.tg.send_message(message)
 
-    def chcek_status(self, status, module, module_subkey=''):
+    def check_status(self, status, module, module_subkey=''):
         if module_subkey:
             if module not in self.__status_datos.keys() or module_subkey not in self.__status_datos[module].keys() or (module_subkey in self.__status_datos[module].keys() and self.__status_datos[module][module_subkey] != status):
                 return True
@@ -145,47 +157,56 @@ class Monitor(object):
 
     def check_module(self, module_name):
         try:
-            globales.GlobDebug.print("Module: {0}".format(module_name), lib.debug.DebugLevel.info)
+            self.debug.print("Module: {0}".format(module_name), lib.debug.DebugLevel.info)
             module_import = importlib.import_module(module_name)
             module = module_import.Watchful(self)
-            status, message = module.check()
+            r_mod_check = module.check()
 
-            if isinstance(message, dict):
+            if isinstance(r_mod_check, lib.modules.dict_return_check.ReturnModuleCheck):
                 if module_name not in self.__status_datos.keys():
                     self.__status_datos[module_name] = {}
 
-                for (key, value) in message.items():
-                    globales.GlobDebug.print("Module: {0} - Key: {1} - Val: {2}".format(module_name, key, value), lib.debug.DebugLevel.debug)
-                    if self.chcek_status(value['status'], module_name, key):
-                        self.__status_datos[module_name][key] = value['status']
-                        self.send_message(value['message'], value['status'])
-                        globales.GlobDebug.print('Module: {0}/{1} - New Status: {2}'.format(module_name, key, value['status']), lib.debug.DebugLevel.debug)
+                for (key, value) in r_mod_check.items():
+                    self.debug.print("Module: {0} - Key: {1} - Val: {2}".format(module_name, key, value),
+                                     lib.debug.DebugLevel.debug)
+                    tmp_status = r_mod_check.get_status(key)
+                    tmp_message = r_mod_check.get_message(key)
+                    tmp_send = r_mod_check.get_send(key)
+
+                    if self.check_status(tmp_status, module_name, key):
+                        self.__status_datos[module_name][key] = tmp_status
+                        if tmp_send:
+                            self.send_message(tmp_message, tmp_status)
+                        self.debug.print('Module: {0}/{1} - New Status: {2}'.format(module_name, key, tmp_status),
+                                         lib.debug.DebugLevel.debug)
                 return True
-            elif isinstance(message, str):
-                if self.chcek_status(status, module_name):
-                    self.__status_datos[module_name] = status
-                    self.send_message(message, status)
-                    globales.GlobDebug.print("Module: {0} - New Status: {1}".format(module_name, status), lib.debug.DebugLevel.debug)
-                return True
+
             else:
                 msg_debug = '\n\n'+'*'*60 + '\n'
-                msg_debug = msg_debug + "WARNING: check_module({0}) - Format not implement: {1}\n".format(module_name, type(message))
-                msg_debug = msg_debug + 'Data Status: {0}\n'.format(pprint.pprint(status))
-                msg_debug = msg_debug + '*'*40 + '\n'
-                msg_debug = msg_debug + 'Data Message: {0}\n'.format(pprint.pprint(message))
-                msg_debug = msg_debug + '*'*60 + '\n'
-                msg_debug = msg_debug + '*'*60 + '\n\n'
-                globales.GlobDebug.print(msg_debug, lib.debug.DebugLevel.warning)
+                msg_debug += "WARNING: check_module({0}) - Format not implement: {1}\n".format(module_name,
+                                                                                               type(r_mod_check))
+                msg_debug += 'Data Return: {0}\n'.format(pprint.pprint(r_mod_check))
+                msg_debug += '*'*60 + '\n'
+                msg_debug += '*'*60 + '\n\n'
+                self.debug.print(msg_debug, lib.debug.DebugLevel.warning)
 
         except Exception as e:
-            globales.GlobDebug.Exception(e)
+            self.debug.Exception(e)
         return False
 
     def check(self):
+        # cont_break = 0  # Debug - Count
+        self.debug.print("Check Init: " + time.strftime("%c"), lib.debug.DebugLevel.info)
         list_modules = []
         for module_def in glob.glob(os.path.join(self.dir_modules, '*.py')):
             module_def = os.path.splitext(os.path.basename(module_def))[0]
             if module_def.find('__') == -1:
+                # Debug Control Run Modules
+                # if cont_break < 1:
+                #     list_modules.append(module_def)
+                # cont_break = cont_break + 1
+                # continue
+                # Debug - End
                 list_modules.append(module_def)
 
         changed = False
@@ -196,7 +217,7 @@ class Monitor(object):
             self.__status_datos = self.status.read(True)
 
         max_threads = self.get_conf('threads', self.__default_threads)
-        globales.GlobDebug.print("Monitor Max Threads: {0}".format(max_threads), lib.debug.DebugLevel.debug)
+        self.debug.print("Monitor Max Threads: {0}".format(max_threads), lib.debug.DebugLevel.debug)
         with concurrent.futures.ThreadPoolExecutor(max_workers=max_threads) as executor:
             future_to_run_module = {executor.submit(self.check_module, module): module for module in list_modules}
             for future in concurrent.futures.as_completed(future_to_run_module):
@@ -205,10 +226,10 @@ class Monitor(object):
                     if future.result():
                         changed = True
                 except Exception as exc:
-                    globales.GlobDebug.Exception(exc)
+                    self.debug.Exception(exc)
 
-        globales.GlobDebug.print("Debug Status Save:", lib.debug.DebugLevel.debug)
-        globales.GlobDebug.print(self.__status_datos, lib.debug.DebugLevel.debug)
+        self.debug.debug_obj(__name__, self.__status_datos, "Debug Status Save")
         if changed is True:
             self.status.data = self.__status_datos
             self.status.save()
+        self.debug.print("Check End: " + time.strftime("%c"), lib.debug.DebugLevel.info)

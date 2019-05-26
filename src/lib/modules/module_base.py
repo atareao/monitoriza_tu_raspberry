@@ -21,28 +21,36 @@
 
 import lib.monitor
 import lib.debug
+import lib.tools
+import lib.dict_files_path
+import lib.modules.dict_return_check
+from lib.object_base import ObjectBase
 
 __all__ = ['ModuleBase']
 
 
-class ModuleBase(object):
+class ModuleBase(ObjectBase):
 
     # Nº de hilos que se usaran en los módulos para procesamiento en paralelo como valor por defecto.
     _default_threads = 5
+    path_file = None
+    dict_return = None
 
-    def __init__(self, parent_monitor, name=None):
-        self._monitor = parent_monitor
+    def __init__(self, obj_monitor, name=None):
+        self._monitor = obj_monitor
         if name:
             self.__nameModule = name
         else:
             self.__nameModule = __name__
+        self.path_file = lib.dict_files_path.DictFilesPath()
+        self.dict_return = lib.modules.dict_return_check.ReturnModuleCheck()
 
     @property
     def NameModule(self):
         return self.__nameModule
 
     def check(self):
-        pass
+        self.debug.debug_obj(self.NameModule, self.dict_return.list, "Data Return")
 
     @property
     def isMonitorExist(self):
@@ -80,20 +88,23 @@ class ModuleBase(object):
                 else:
                     return self._monitor.config_modules.get_conf([select_module, findkey], default_val)
 
-        #    if select_module:
-        #        if select_module in self.monitor.config_modules.keys():
-        #            if not findkey:
-        #                return self.monitor.config_modules[select_module]
-        #            if findkey in self.monitor.config_modules[select_module].keys():
-        #                return self.monitor.config_modules[select_module][findkey]
-        #            else:
-        #                return default_val
-
         if findkey or default_val:
             return default_val
         return []
 
-    def chcek_status(self, status, module, module_subkey):
+    def check_status(self, status, module, module_subkey):
         if self._monitor:
-            return self._monitor.chcek_status(status, module, module_subkey)
+            return self._monitor.check_status(status, module, module_subkey)
         return None
+
+    @staticmethod
+    def _run_cmd(cmd, return_sterr=False):
+        stdout, stderr = lib.tools.execute(cmd)
+        if return_sterr:
+            return stdout, stderr
+        return stdout
+
+    @staticmethod
+    def _run_cmd_call(cmd):
+        return_code = lib.tools.execute_call(cmd)
+        return return_code

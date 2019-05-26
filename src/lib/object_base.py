@@ -1,4 +1,4 @@
-﻿#!/usr/bin/env python3
+#!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 #
 # Monitorize your Raspberry Pi
@@ -19,7 +19,14 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-__all__ = ['GlobDebug', 'GlobMonitor']
+import lib.debug
 
-GlobDebug = None
-GlobMonitor = None
+__all__ = ['ObjectBase']
+
+
+class ObjectBase(object):
+
+    debug = lib.debug.Debug(True, lib.debug.DebugLevel.info)
+
+    def __init__(self):
+        pass

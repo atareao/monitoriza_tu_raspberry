@@ -20,13 +20,13 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 import requests
-import globales
-from lib.debug import *
+import lib.debug
+from lib.object_base import ObjectBase
 
 __all__ = ['Telegram']
 
 
-class Telegram():
+class Telegram(ObjectBase):
 
     def __init__(self, token, chat_id):
         self.token = token
@@ -38,9 +38,9 @@ class Telegram():
                           data={'chat_id': self.chat_id, 'text': message, 'parse_mode': 'Markdown'})
             return True
         if not self.token:
-            globales.GlobDebug.print("Error: Telegram Token is Null", DebugLevel.error)
+            self.debug.print("Error: Telegram Token is Null", lib.debug.DebugLevel.error)
         if not self.chat_id:
-            globales.GlobDebug.print("Error: Telegram Chat ID is Null", DebugLevel.error)
+            self.debug.print("Error: Telegram Chat ID is Null", lib.debug.DebugLevel.error)
 
         return False
 
