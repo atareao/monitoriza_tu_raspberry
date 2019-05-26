@@ -26,18 +26,14 @@ import codecs
 import json
 import os
 import lib.debug
+from lib.object_base import ObjectBase
 
 __all__ = ['ConfigStore']
 
 
-class ConfigStore(object):
+class ConfigStore(ObjectBase):
 
-    debug = None
-
-    def __init__(self, file, obj_debug=None):
-        self.debug = obj_debug
-        if not self.debug:
-            self.debug = lib.debug.Debug(True)
+    def __init__(self, file):
         self.file = file
 
     @property
@@ -65,7 +61,7 @@ class ConfigStore(object):
             except Exception as e:
                 self.debug.Exception(e)
         else:
-            self.debug.print("Warnging: File ({0}) not exist!!!".format(self.file),  lib.debug.DebugLevel.warning)
+            self.debug.print("Warning: File ({0}) not exist!!!".format(self.file),  lib.debug.DebugLevel.warning)
         return data
 
     def save(self, data):

@@ -37,7 +37,7 @@ class Watchful(lib.modules.module_base.ModuleBase):
     def check(self):
         list_host = []
         for (key, value) in self.get_conf('list', {}).items():
-            self._debug.print("Ping: {0} - Enabled: {1}".format(key, value), lib.debug.DebugLevel.info)
+            self.debug.print("Ping: {0} - Enabled: {1}".format(key, value), lib.debug.DebugLevel.info)
             if value:
                 list_host.append(key)
 
@@ -63,13 +63,13 @@ class Watchful(lib.modules.module_base.ModuleBase):
                                     )
 
         if self.check_status(status, self.NameModule, host):
-            s_message = 'Ping: {0}'.format(host)
+            s_message = 'Ping: {0} '.format(host)
             if status:
-                s_message = '{0} {1}'.format(s_message, u'\U0001F53C')
+                s_message += u'\U0001F53C'
             else:
-                s_message = '{0} {1}'.format(s_message, u'\U0001F53D')
+                s_message += u'\U0001F53D'
             self.send_message(s_message, status)
-        self.dict_return.set(host, status, s_message, False)
+        self.dict_return.set(host, status, '', False)
 
     def __ping_return(self, host, timeout, attempt):
         counter = 0

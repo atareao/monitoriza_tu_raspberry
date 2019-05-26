@@ -41,10 +41,10 @@ class ConfigTypeReturn(Enum):
 class ConfigControl(ConfigStore):
     """Class to Storage and processing of configuration parameters."""
 
-    def __init__(self, file, init_data: dict = None, obj_debug=None):
+    def __init__(self, file, init_data: dict = None):
         self.__load = None
         self.__update = None
-        super().__init__(file, obj_debug)
+        super().__init__(file)
         self.data = init_data
 
     @property

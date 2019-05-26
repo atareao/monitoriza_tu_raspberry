@@ -37,8 +37,9 @@ class DebugLevel(Enum):
 
 class Debug(object):
 
-    def __init__(self, enable=False):
+    def __init__(self, enable: bool = True, level: DebugLevel = DebugLevel.info):
         self.enabled = enable
+        self.level = level
 
     @property
     def enabled(self):
@@ -48,8 +49,23 @@ class Debug(object):
     def enabled(self, val):
         self.__enabled = val
 
-    def print(self, message, level=DebugLevel.debug, force=False):
-        if self.enabled is True or force is True or level == DebugLevel.warning or level == DebugLevel.error or level == DebugLevel.emergency:
+    @property
+    def level(self) -> DebugLevel:
+        return self.__level
+
+    @level.setter
+    def level(self, val: DebugLevel = DebugLevel.null):
+        self.__level = val
+
+    def print(self, message, msg_level: DebugLevel = DebugLevel.debug, force: bool = False):
+        show_msg = True
+        if self.enabled is False:
+            show_msg = False
+        elif force is False:
+            if self.level.value > msg_level.value:
+                show_msg = False
+
+        if show_msg:
             if isinstance(message, str):
                 print(message)
             else:

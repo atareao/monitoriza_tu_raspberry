@@ -21,18 +21,14 @@
 
 import requests
 import lib.debug
+from lib.object_base import ObjectBase
 
 __all__ = ['Telegram']
 
 
-class Telegram(object):
+class Telegram(ObjectBase):
 
-    debug = None
-
-    def __init__(self, token, chat_id, obj_debug=None):
-        self.debug = obj_debug
-        if not self.debug:
-            self.debug = lib.debug.Debug(True)
+    def __init__(self, token, chat_id):
         self.token = token
         self.chat_id = chat_id
 

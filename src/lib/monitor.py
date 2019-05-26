@@ -34,20 +34,17 @@ import lib.modules.module_base
 import lib.telegram
 import lib.modules.dict_return_check
 from lib.config.configControl import *
+from lib.object_base import ObjectBase
 
 __all__ = ['Monitor']
 
 
-class Monitor(object):
+class Monitor(ObjectBase):
 
     # Nº de hilos que se usaran para procesamiento en paralelo como valor por defecto.
     __default_threads = 5
-    debug = None
 
-    def __init__(self, dir_base, dir_config, dir_modules, dir_var, obj_debug=None):
-        self.debug = obj_debug
-        if not self.debug:
-            self.debug = lib.debug.Debug(True)
+    def __init__(self, dir_base, dir_config, dir_modules, dir_var):
         self.dir_base = dir_base
         self.dir_config = dir_config
         self.dir_modules = dir_modules
@@ -96,8 +93,7 @@ class Monitor(object):
         if self.config:
             self.tg = lib.telegram.Telegram(
                 self.config.get_conf(['telegram', 'token'], ''),
-                self.config.get_conf(['telegram', 'chat_id'], ''),
-                self.debug
+                self.config.get_conf(['telegram', 'chat_id'], '')
             )
         else:
             self.tg = None
@@ -200,7 +196,7 @@ class Monitor(object):
 
     def check(self):
         # cont_break = 0  # Debug - Count
-        self.debug.print("Check Init: " + time.strftime("%c"), lib.debug.DebugLevel.debug)
+        self.debug.print("Check Init: " + time.strftime("%c"), lib.debug.DebugLevel.info)
         list_modules = []
         for module_def in glob.glob(os.path.join(self.dir_modules, '*.py')):
             module_def = os.path.splitext(os.path.basename(module_def))[0]
@@ -236,4 +232,4 @@ class Monitor(object):
         if changed is True:
             self.status.data = self.__status_datos
             self.status.save()
-        self.debug.print("Check End: " + time.strftime("%c"), lib.debug.DebugLevel.debug)
+        self.debug.print("Check End: " + time.strftime("%c"), lib.debug.DebugLevel.info)

@@ -45,21 +45,21 @@ class Watchful(lib.modules.module_base.ModuleBase):
             val_conf = val_conf.strip()
             if not val_conf.isnumeric():
                 val_conf = default_val
-                self._debug("Warning in module {0}, config {1} type incorrect!".format(self.NameModule, key_conf),
+                self.debug("Warning in module {0}, config {1} type incorrect!".format(self.NameModule, key_conf),
                             lib.debug.DebugLevel.warning)
             else:
                 val_conf = int(val_conf)
 
         if not val_conf or val_conf < 0 or val_conf > 100:
             val_conf = default_val
-            self._debug("Warning in module {0}, config {1} value not valid!".format(self.NameModule, key_conf),
+            self.debug("Warning in module {0}, config {1} value not valid!".format(self.NameModule, key_conf),
                         lib.debug.DebugLevel.warning)
 
         return val_conf
 
     def check(self):
         stdout = self._run_cmd(self.path_file.find('free'))
-        self._debug.print(stdout, lib.debug.DebugLevel.debug)
+        self.debug.print(stdout, lib.debug.DebugLevel.debug)
 
         x = {
             'ram': {

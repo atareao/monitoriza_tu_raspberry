@@ -28,12 +28,12 @@ import time
 import argparse
 import lib.debug
 import lib.monitor
+from lib.object_base import ObjectBase
 from lib.config.configControl import *
 
 
-class Main(object):
+class Main(ObjectBase):
 
-    debug = None
     monitor = None
     cfg_general = None
     cfg_monitor = None
@@ -47,17 +47,12 @@ class Main(object):
         self._timer_check = 0
         self.__sys_path_append([self._modules_dir])
         self.__args_set(args_get)
-        self.__init_debug()
         self.__init_config()
         self.__init_monitor()
         self.__args_cmd(args_get)
 
-    def __init_debug(self):
-        self.debug = lib.debug.Debug(True)
-
     def __init_config(self):
-        self.cfg_general = ConfigControl(os.path.join(self._config_dir, self.__cfg_file_config),
-                                                                  obj_debug=self.debug)
+        self.cfg_general = ConfigControl(self._config_file)
         self.cfg_general.read()
         if self.__check_config():
             self.__default_conf()
@@ -82,10 +77,15 @@ class Main(object):
         return False
 
     def __read_config(self):
+
         if self.__verbose:
             self.debug.enabled = True
+            self.debug.level = lib.debug.DebugLevel.null
         else:
-            self.debug.enabled = self.cfg_general.get_conf(['global', 'debug'], self.debug.enabled)
+            self.debug.level = lib.debug.DebugLevel.info
+            # TODO: Actualizar configuracin para que use level
+            self.debug.enabled = True
+            # self.debug.enabled = self.cfg_general.get_conf(['global', 'debug'], self.debug.enabled)
 
         if self.__timer_check_forze:
             self._timer_check = self.__timer_check_forze
@@ -100,7 +100,7 @@ class Main(object):
                     sys.path.append(f)
 
     def __init_monitor(self):
-        self.monitor = lib.monitor.Monitor(self._dir, self._config_dir, self._modules_dir, self._var_dir, self.debug)
+        self.monitor = lib.monitor.Monitor(self._dir, self._config_dir, self._modules_dir, self._var_dir)
 
     @property
     def _is_mode_dev(self):
@@ -165,6 +165,10 @@ class Main(object):
             return '/var/lib/watchful/dev/'
         else:
             return '/var/lib/watchful/'
+
+    @property
+    def _config_file(self):
+        return os.path.join(self._config_dir, self.__cfg_file_config)
 
     def __args_set(self, args_get):
         if args_get:

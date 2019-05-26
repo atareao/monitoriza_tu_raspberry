@@ -33,7 +33,7 @@ class Watchful(lib.modules.module_base.ModuleBase):
     def check(self):
         list_service = []
         for (key, value) in self.get_conf('list', {}).items():
-            self._debug.print("Service: {0} - Enabled: {1}".format(key, value), lib.debug.DebugLevel.info)
+            self.debug.print("Service: {0} - Enabled: {1}".format(key, value), lib.debug.DebugLevel.info)
             if value:
                 list_service.append(key)
 
@@ -54,13 +54,13 @@ class Watchful(lib.modules.module_base.ModuleBase):
     def __service_check(self, service):
         status, message = self.__service_return(service)
         if self.check_status(status, self.NameModule, service):
-            s_message = 'Service: {0}'.format(service)
+            s_message = 'Service: {0} '.format(service)
             if status:
-                s_message = '{0} {1}'.format(s_message, u'\U00002705')
+                s_message += u'\U00002705'
             else:
-                s_message = '{0} - *Error: {1}* {2}'.format(s_message, message, u'\U000026A0')
+                s_message += '- *Error: {0}* {1}'.format(message, u'\U000026A0')
             self.send_message(s_message, status)
-        self.dict_return.set(service, status, s_message, False)
+        self.dict_return.set(service, status, '', False)
 
     def __service_return(self, service):
         cmd = '{0} status {1}'.format(self.path_file.find('systemctl'), service)
