@@ -59,7 +59,7 @@ class ConfigStore(ObjectBase):
                 data = json.loads(f.read())
                 f.close()
             except Exception as e:
-                self.debug.Exception(e)
+                self.debug.exception(e)
         else:
             self.debug.print("Warning: File ({0}) not exist!!!".format(self.file),  lib.debug.DebugLevel.warning)
         return data
@@ -70,6 +70,6 @@ class ConfigStore(ObjectBase):
             f.write(json.dumps(data))
             f.close()
         except Exception as e:
-            self.debug.Exception(e)
+            self.debug.exception(e)
             return False
         return True

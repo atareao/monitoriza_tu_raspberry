@@ -50,17 +50,18 @@ class Monitor(ObjectBase):
         self.dir_modules = dir_modules
         self.dir_var = dir_var
 
-        self.readConfig()
-        self.readStatus()
-        self.initTelegram()
+        self.__read_config()
+        self.__read_status()
+        self.__init_telegram()
         self.debug.print("Monitor Init OK", lib.debug.DebugLevel.debug)
 
-    def __checkDir(self, pathdir):
-        if pathdir:
-            if not os.path.isdir(pathdir):
-                os.makedirs(pathdir, exist_ok=True)
+    @staticmethod
+    def __check_dir(path_dir):
+        if path_dir:
+            if not os.path.isdir(path_dir):
+                os.makedirs(path_dir, exist_ok=True)
 
-    def readConfig(self):
+    def __read_config(self):
         if self.dir_config:
             self.config = ConfigControl(os.path.join(self.dir_config, 'config.json'))
             self.config.read()
@@ -73,23 +74,23 @@ class Monitor(ObjectBase):
             self.config_monitor = ConfigControl(None, {})
             self.config_modules = ConfigControl(None, {})
 
-    def readStatus(self):
+    def __read_status(self):
         if self.dir_var:
-            self.__checkDir(self.dir_var)
+            self.__check_dir(self.dir_var)
             self.status = ConfigControl(os.path.join(self.dir_var, 'status.json'), {})
             if not self.status.is_exist:
                 self.status.save()
         else:
             self.status = ConfigControl(None, {})
 
-    def clearStatus(self):
+    def clear_status(self):
         # TODO: Pendiente crear funcion clear en el objeto config
         self.debug.print("Clear Status", lib.debug.DebugLevel.info)
-        self.readStatus()
+        self.__read_status()
         self.status.data = {}
         self.status.save()
 
-    def initTelegram(self):
+    def __init_telegram(self):
         if self.config:
             self.tg = lib.telegram.Telegram(
                 self.config.get_conf(['telegram', 'token'], ''),
@@ -130,9 +131,9 @@ class Monitor(ObjectBase):
     def dir_var(self, val):
         self.__dir_var = val
 
-    def get_conf(self, findkey=None, default_val=None):
+    def get_conf(self, find_key=None, default_val=None):
         if self.config_monitor:
-            return self.config_monitor.get_conf(findkey, default_val)
+            return self.config_monitor.get_conf(find_key, default_val)
         return default_val
 
     def send_message(self, message, status=None):
@@ -146,9 +147,9 @@ class Monitor(ObjectBase):
                 message = "{0} {1}".format(u'\U0000274E', message)
             self.tg.send_message(message)
 
-    def check_status(self, status, module, module_subkey=''):
-        if module_subkey:
-            if module not in self.__status_datos.keys() or module_subkey not in self.__status_datos[module].keys() or (module_subkey in self.__status_datos[module].keys() and self.__status_datos[module][module_subkey] != status):
+    def check_status(self, status, module, module_sub_key=''):
+        if module_sub_key:
+            if module not in self.__status_datos.keys() or module_sub_key not in self.__status_datos[module].keys() or (module_sub_key in self.__status_datos[module].keys() and self.__status_datos[module][module_sub_key] != status):
                 return True
         else:
             if module not in self.__status_datos.keys() or (module in self.__status_datos.keys() and self.__status_datos[module] != status):
@@ -191,7 +192,7 @@ class Monitor(ObjectBase):
                 self.debug.print(msg_debug, lib.debug.DebugLevel.warning)
 
         except Exception as e:
-            self.debug.Exception(e)
+            self.debug.exception(e)
         return False
 
     def check(self):
@@ -226,7 +227,7 @@ class Monitor(ObjectBase):
                     if future.result():
                         changed = True
                 except Exception as exc:
-                    self.debug.Exception(exc)
+                    self.debug.exception(exc)
 
         self.debug.debug_obj(__name__, self.__status_datos, "Debug Status Save")
         if changed is True:

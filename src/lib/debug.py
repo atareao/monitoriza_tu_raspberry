@@ -71,7 +71,8 @@ class Debug(object):
             else:
                 pprint.pprint(message)
 
-    def Exception(self, ex=None):
+    @staticmethod
+    def exception(ex=None):
         # str_obj = pprint.pformat(ex)
         msg_print = 'Exception in user code:\n'
         msg_print += '-'*60+'\n'
@@ -93,14 +94,14 @@ class Debug(object):
 
 
 if __name__ == '__main__':
-    pass
-#    debug = Debug(False)
-#    try:
-#        debug.print("Msg Test 1 - Enabled = False and Level Debug - No Show")
-#        debug.print("Msg Test 2 - Level Error - Yes Show", DebugLevel.error)
-#        debug.print("Msg Test 3 - Force = True and Level Debug - Yes Show", DebugLevel.debug, True)
-#        debug.enabled = True
-#        debug.print("Msg Test 4 - Enabled = True and Level Debug - Yes Show")
-#        test = 1 + A
-#    except Exception as exc:
-#        debug.Exception()
+
+    x = Debug()
+    try:
+        x.print("Msg Test 1 - Enabled = False and Level Debug - No Show")
+        x.print("Msg Test 2 - Level Error - Yes Show", DebugLevel.error)
+        x.print("Msg Test 3 - Force = True and Level Debug - Yes Show", DebugLevel.debug, True)
+        x.level = DebugLevel.debug
+        x.print("Msg Test 4 - Level = debug - Yes Show")
+        10 * (1/0)
+    except Exception as e:
+        x.exception(e)

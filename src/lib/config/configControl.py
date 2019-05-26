@@ -87,7 +87,7 @@ class ConfigControl(ConfigStore):
             self.__update = self.__load
 
         except Exception as e:
-            self.debug.Exception(e)
+            self.debug.exception(e)
             self.__load = None
             self.__update = None
 
@@ -101,7 +101,7 @@ class ConfigControl(ConfigStore):
             self.__load = datetime.datetime.now()
             self.__update = self.__load
         except Exception as e:
-            self.debug.Exception(e)
+            self.debug.exception(e)
             return False
         return True
 
