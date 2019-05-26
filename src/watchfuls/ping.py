@@ -62,14 +62,15 @@ class Watchful(lib.modules.module_base.ModuleBase):
                                     self.get_conf('attempt', self.__default_attempt)
                                     )
 
+        s_message = 'Ping: {0} '.format(host)
+        if status:
+            s_message += u'\U0001F53C'
+        else:
+            s_message += u'\U0001F53D'
+
+        self.dict_return.set(host, status, s_message, False)
         if self.check_status(status, self.NameModule, host):
-            s_message = 'Ping: {0} '.format(host)
-            if status:
-                s_message += u'\U0001F53C'
-            else:
-                s_message += u'\U0001F53D'
             self.send_message(s_message, status)
-        self.dict_return.set(host, status, '', False)
 
     def __ping_return(self, host, timeout, attempt):
         counter = 0

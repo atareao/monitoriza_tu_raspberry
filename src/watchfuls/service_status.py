@@ -53,14 +53,16 @@ class Watchful(lib.modules.module_base.ModuleBase):
 
     def __service_check(self, service):
         status, message = self.__service_return(service)
+
+        s_message = 'Service: {0} '.format(service)
+        if status:
+            s_message += u'\U00002705'
+        else:
+            s_message += '- *Error: {0}* {1}'.format(message, u'\U000026A0')
+
+        self.dict_return.set(service, status, s_message, False)
         if self.check_status(status, self.NameModule, service):
-            s_message = 'Service: {0} '.format(service)
-            if status:
-                s_message += u'\U00002705'
-            else:
-                s_message += '- *Error: {0}* {1}'.format(message, u'\U000026A0')
             self.send_message(s_message, status)
-        self.dict_return.set(service, status, '', False)
 
     def __service_return(self, service):
         cmd = '{0} status {1}'.format(self.path_file.find('systemctl'), service)

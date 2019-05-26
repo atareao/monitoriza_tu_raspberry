@@ -56,14 +56,16 @@ class Watchful(lib.modules.module_base.ModuleBase):
 
     def __web_check(self, url):
         status = self.__web_return(url)
+
+        s_message = 'Web: {0} '.format(url)
+        if status:
+            s_message += u'\U0001F53C'
+        else:
+            s_message += u'\U0001F53D'
+
+        self.dict_return.set(url, status, s_message, False)
         if self.check_status(status, self.NameModule, url):
-            s_message = 'Web: {0} '.format(url)
-            if status:
-                s_message += u'\U0001F53C'
-            else:
-                s_message += u'\U0001F53D'
             self.send_message(s_message, status)
-        self.dict_return.set(url, status, '', False)
 
     def __web_return(self, url):
         # TODO: Pendiente añadir soporte https.
