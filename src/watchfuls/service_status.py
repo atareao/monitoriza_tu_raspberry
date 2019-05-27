@@ -56,9 +56,13 @@ class Watchful(lib.modules.module_base.ModuleBase):
 
         s_message = 'Service: {0} '.format(service)
         if status:
-            s_message += u'\U00002705'
+            s_message += ' - Running ' + u'\U00002705'
         else:
-            s_message += '- *Error: {0}* {1}'.format(message, u'\U000026A0')
+            if message:
+                s_message += '- *Error: {0}* '.format(message)
+            else:
+                s_message += '- *Stop* '
+            s_message += u'\U000026A0'
 
         self.dict_return.set(service, status, s_message, False)
         if self.check_status(status, self.NameModule, service):
@@ -69,7 +73,20 @@ class Watchful(lib.modules.module_base.ModuleBase):
         stdout, stderr = self._run_cmd(cmd, True)
         if stdout == '':
             return False, stderr[:-1]
-        return True, ''
+
+        for line in  stdout.split('\n'):
+            s_line = line.split()
+            if str(s_line[0]) == 'Active:':
+                if str(s_line[1]) == "active":
+                    #    Active: active (running) since Mon 2019-05-27 11:28:46 CEST; 1min 48s ago
+                    return True, ''
+                elif str(s_line[1]) == "inactive":
+                    #    Active: inactive (dead) since Mon 2019-05-27 11:30:51 CEST; 1s ago
+                    return False, ''
+                else:
+                    return False, line
+
+        return False, 'Not detect status in the data!!!'
 
 
 if __name__ == '__main__':
