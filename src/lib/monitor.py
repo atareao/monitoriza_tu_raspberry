@@ -148,12 +148,12 @@ class Monitor(ObjectBase):
             self.tg.send_message(message)
 
     def check_status(self, status, module, module_sub_key=''):
+        l_find = [module]
         if module_sub_key:
-            if module not in self.__status_datos.keys() or module_sub_key not in self.__status_datos[module].keys() or (module_sub_key in self.__status_datos[module].keys() and self.__status_datos[module][module_sub_key] != status):
-                return True
-        else:
-            if module not in self.__status_datos.keys() or (module in self.__status_datos.keys() and self.__status_datos[module] != status):
-                return True
+            l_find.append(module_sub_key)
+
+        if self.status.get_conf(l_find, not status) != status:
+            return True
         return False
 
     def check_module(self, module_name):
@@ -164,9 +164,6 @@ class Monitor(ObjectBase):
             r_mod_check = module.check()
 
             if isinstance(r_mod_check, lib.modules.dict_return_check.ReturnModuleCheck):
-                if module_name not in self.__status_datos.keys():
-                    self.__status_datos[module_name] = {}
-
                 for (key, value) in r_mod_check.items():
                     self.debug.print("Module: {0} - Key: {1} - Val: {2}".format(module_name, key, value),
                                      lib.debug.DebugLevel.debug)
@@ -175,7 +172,7 @@ class Monitor(ObjectBase):
                     tmp_send = r_mod_check.get_send(key)
 
                     if self.check_status(tmp_status, module_name, key):
-                        self.__status_datos[module_name][key] = tmp_status
+                        self.status.set_conf([module_name, key], tmp_status)
                         if tmp_send:
                             self.send_message(tmp_message, tmp_status)
                         self.debug.print('Module: {0}/{1} - New Status: {2}'.format(module_name, key, tmp_status),
@@ -212,10 +209,7 @@ class Monitor(ObjectBase):
 
         changed = False
 
-        # TODO: Mantener self.__status_datos hasta crear función de modificar la configuración en Config.
-        self.__status_datos = {}
-        if self.status:
-            self.__status_datos = self.status.read(True)
+        self.status.read()
 
         max_threads = self.get_conf('threads', self.__default_threads)
         self.debug.print("Monitor Max Threads: {0}".format(max_threads), lib.debug.DebugLevel.debug)
@@ -229,8 +223,7 @@ class Monitor(ObjectBase):
                 except Exception as exc:
                     self.debug.exception(exc)
 
-        self.debug.debug_obj(__name__, self.__status_datos, "Debug Status Save")
+        self.debug.debug_obj(__name__, self.status.data, "Debug Status Save")
         if changed is True:
-            self.status.data = self.__status_datos
             self.status.save()
         self.debug.print("Check End: " + time.strftime("%c"), lib.debug.DebugLevel.info)
