@@ -96,6 +96,7 @@ class Monitor(ObjectBase):
             self.tg = Telegram(self.config.get_conf(['telegram', 'token'], ''),
                                self.config.get_conf(['telegram', 'chat_id'], '')
                                )
+            self.tg.group_messages = self.config.get_conf(['telegram', 'group_messages'], False)
         else:
             self.tg = None
 

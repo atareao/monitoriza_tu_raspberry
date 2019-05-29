@@ -34,6 +34,7 @@ class Telegram(ObjectBase):
 
         tg = None
         __run_while = True
+        __group_messages = True
 
         # https://rstopup.com/ejecutar-un-proceso-y-salir-sin-esperar-a-que-se.html
         # def __init__(self, group=None, target=None, name=None, args=(), kwargs=None, verbose=None):
@@ -46,21 +47,37 @@ class Telegram(ObjectBase):
         #     return
 
         def run(self):
-            # TODO: Pendiente agrupar mensajes
             self.__run_while = True
+            msg_group = ''
             while True:
                 if self.tg and len(self.tg.list_msg) > 0:
                     msg = self.tg.list_msg.pop()
                     self.tg.debug.print("Telegram > Send > Msg: {0}".format(msg))
-                    self.tg.api_send_message(msg)
+                    if self.group_messages:
+                        msg_group += msg + "\n"
+                    else:
+                        self.tg.api_send_message(msg)
                     self.tg.count_msg_send += 1
                 else:
+                    if self.group_messages:
+                        if msg_group:
+                            self.tg.api_send_message(msg_group)
+                            msg_group = ''
+
                     if not self.__run_while:
                         break
             return
 
         def stop(self):
             self.__run_while = False
+
+        @property
+        def group_messages(self) -> bool:
+            return self.__group_messages
+
+        @group_messages.setter
+        def group_messages(self, val: bool):
+            self.__group_messages = val
 
     def __init__(self, token, chat_id):
         self.list_msg = []
@@ -73,6 +90,8 @@ class Telegram(ObjectBase):
         self.pool_send_msg.tg = self
         self.pool_send_msg.setDaemon(True)
         self.pool_send_msg.start()
+
+        self.group_messages = False
 
     def send_message(self, message):
         self.add_list(message)
@@ -109,6 +128,14 @@ class Telegram(ObjectBase):
         if not self.chat_id:
             self.debug.print("Error: Telegram Chat ID is Null", DebugLevel.error)
         return False
+
+    @property
+    def group_messages(self) -> bool:
+        return self.pool_send_msg.group_messages
+
+    @group_messages.setter
+    def group_messages(self, val: bool):
+        self.pool_send_msg.group_messages = val
 
 
 # https://apps.timwhitlock.info/emoji/tables/unicode
