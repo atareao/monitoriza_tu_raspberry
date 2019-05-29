@@ -200,6 +200,10 @@ class Monitor(ObjectBase):
             module_def = os.path.splitext(os.path.basename(module_def))[0]
             if module_def.find('__') == -1:
                 # Debug Control Run Modules
+                # --- MODE NAME -------------------
+                # if module_def != "temperature":
+                #     continue
+                # --- MODE COUNT ------------------
                 # if cont_break < 1:
                 #     list_modules.append(module_def)
                 # cont_break = cont_break + 1

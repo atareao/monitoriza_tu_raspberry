@@ -25,6 +25,7 @@ import lib.tools
 import lib.dict_files_path
 import lib.modules.dict_return_check
 from lib.object_base import ObjectBase
+from lib.config.configControl import ConfigTypeReturn
 
 __all__ = ['ModuleBase']
 
@@ -74,7 +75,8 @@ class ModuleBase(ObjectBase):
             if self._monitor:
                 self._monitor.send_message(message, status)
 
-    def get_conf(self, findkey=None, default_val=None, select_module=None):
+    def get_conf(self, findkey=None, default_val=None, select_module: str = None, str_split: str = None,
+                 r_type: ConfigTypeReturn = ConfigTypeReturn.STR):
         if default_val is None:
             default_val = {}
 
@@ -86,7 +88,10 @@ class ModuleBase(ObjectBase):
                 if findkey is None:
                     return self._monitor.config_modules.get_conf(select_module, default_val)
                 else:
-                    return self._monitor.config_modules.get_conf([select_module, findkey], default_val)
+                    keys_list = self._monitor.config_modules.convert_findkey_to_list(findkey, str_split)
+                    keys_list.insert(0, select_module)
+                    return self._monitor.config_modules.get_conf(keys_list, default_val, str_split = str_split,
+                                                                 r_type=r_type)
 
         if findkey or default_val:
             return default_val

@@ -22,47 +22,95 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-import lib.modules.module_base
+from lib.linux.thermal_info_collection import ThermalInfoCollection
+from lib.modules.module_base import ModuleBase
+from enum import Enum
 
 
-class Watchful(lib.modules.module_base.ModuleBase):
+class Watchful(ModuleBase):
 
     # temperatura en ºC que se usara si no se ha configurado el modulo, o se ha definido un valor igual o menor que 0.
     __default_alert = 80
+    __default_enabled = True
+
+    class ConfigOptions(Enum):
+        enabled = 1
+        alert = 2
+        label = 3
 
     def __init__(self, monitor):
         super().__init__(monitor, __name__)
 
     def check(self):
-        # TODO: Pendiente controlar multiples "thermal_zone*" o sensores.
+        termal_info = ThermalInfoCollection(True)
 
-        temp_alert = self.get_conf("alert", self.__default_alert)
-        if isinstance(temp_alert, str):
-            temp_alert = temp_alert.strip()
-        if not temp_alert or temp_alert <= 0:
-            temp_alert = self.__default_alert
+        for item in termal_info.nodes:
+            if not self.__get_conf(self.ConfigOptions.enabled, item.dev):
+                continue
 
-        temp = self.__cpu_temp()
-        if temp <= float(temp_alert):   # Función OK :)
-            is_warning = False
-        else:                           # Esta echando fuego!!!
-            is_warning = True
+            dev_name = item.dev
+            type_name = item.type
+            type_label = self.__get_conf(self.ConfigOptions.label, dev_name, type_name)
+            temp = item.temp
+            temp_alert = self.__get_conf(self.ConfigOptions.alert, dev_name)
 
-        if is_warning:
-            message = 'Over temperature Warning {0} ºC {1}'.format(temp, u'\U0001F525')
-        else:
-            message = 'Temperature Ok {0} ºC {1}'.format(temp, u'\U00002705')
-        self.dict_return.set("cpu", not is_warning, message)
+            if temp <= temp_alert:  # Función OK :)
+                is_warning = False
+            else:  # Esta echando fuego!!!
+                is_warning = True
+
+            message = "Sensor {0}, ".format(type_label)
+            if is_warning:
+                message += '*over temperature Warning {0:.1f} ºC* {1}'.format(temp, u'\U0001F525')
+            else:
+                message += 'temperature Ok {0:.1f} ºC {1}'.format(temp, u'\U00002705')
+            self.dict_return.set(dev_name, not is_warning, message)
+
         super().check()
         return self.dict_return
 
-    @staticmethod
-    def __cpu_temp():
-        # TODO: Pendiente controlar multiples "thermal_zone*"
-        f = open('/sys/class/thermal/thermal_zone0/temp', 'r')
-        temp = float(f.read().split('\n')[0]) / 1000.0
-        f.close()
-        return temp
+    def __get_conf(self, opt_find: ConfigOptions, dev_name: str, default_val=None):
+        # Sec - Get Default Val
+        if default_val is None:
+            if opt_find == self.ConfigOptions.alert:
+                val_def = self.get_conf(opt_find.name, self.__default_alert)
+
+            elif opt_find == self.ConfigOptions.enabled:
+                val_def = self.get_conf(opt_find.name, self.__default_enabled)
+
+            else:
+                if opt_find is None:
+                    raise ValueError("opt_find it can not be None!")
+                else:
+                    raise TypeError("{0} is not valid option!".format(opt_find.name))
+        else:
+            val_def = default_val
+
+        # Sec - Get Data
+        find_key = [opt_find.name]
+        if dev_name:
+            find_key.insert(0, dev_name)
+            find_key.insert(0, "list")
+        value = self.get_conf(find_key, val_def)
+
+        # Sec - Format Return Data
+        if opt_find == self.ConfigOptions.alert:
+            value = str(value).strip()
+            if not value or not value.isnumeric() or float(value) <= 0:
+                value = val_def
+            return float(value)
+
+        elif opt_find == self.ConfigOptions.enabled:
+            return bool(value)
+
+        elif opt_find == self.ConfigOptions.label:
+            value = str(value).strip()
+            if not value:
+                value = val_def
+            return str(value)
+
+        else:
+            return value
 
 
 if __name__ == '__main__':

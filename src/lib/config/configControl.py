@@ -106,7 +106,7 @@ class ConfigControl(ConfigStore):
         return True
 
     @staticmethod
-    def __convert_findkey_to_list(findkey, str_split: str = None) -> list:
+    def convert_findkey_to_list(findkey, str_split: str = None) -> list:
         lreturn = []
         if isinstance(findkey, str):
             if str_split is None:
@@ -193,7 +193,7 @@ class ConfigControl(ConfigStore):
 
         data_return = None
         if data_dict:
-            keys = self.__convert_findkey_to_list(findkey, str_split)
+            keys = self.convert_findkey_to_list(findkey, str_split)
 
             work_dict = data_dict
             while keys:
@@ -274,7 +274,7 @@ class ConfigControl(ConfigStore):
             data_dict = self.data
 
         if findkey and data_dict:
-            keys = self.__convert_findkey_to_list(findkey, str_split)
+            keys = self.convert_findkey_to_list(findkey, str_split)
             work_dict = data_dict
             while keys:
                 target = keys.pop(0)
@@ -332,7 +332,7 @@ class ConfigControl(ConfigStore):
         """
 
         if findkey:
-            keys = self.__convert_findkey_to_list(findkey, str_split)
+            keys = self.convert_findkey_to_list(findkey, str_split)
             if data_dict is not None:
                 work_dict = data_dict
             elif self.data is not None:
