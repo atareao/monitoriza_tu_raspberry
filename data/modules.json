@@ -30,7 +30,16 @@
     }
   },
   "temperature": {
-    "alert": 80
+    "alert": 80,
+    "enabled": true,
+    "list":
+    {
+      "thermal_zone0": {
+        "enabled": true,
+        "alert": 70,
+        "label": "CPU"
+      }
+    }
   },
   "ram_swap": {
     "alert_ram": 60,
