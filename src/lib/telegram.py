@@ -21,7 +21,6 @@
 
 import threading
 import requests
-import lib.debug
 from lib.object_base import ObjectBase
 from lib.debug import DebugLevel
 from time import sleep
@@ -82,7 +81,7 @@ class Telegram(ObjectBase):
         if self.count_msg > 0:
             s_message = "Summary *{0}*, get *{1}* new Message.".format(hostname, self.count_msg)
             # s_message = "{0} {1} {2} {3}{3}{3}".format(u'\U00002139', u'\U0001F4BB', s_message, u'\U0000261D')
-            s_message = "{0} {2} {3}{3}{3}".format(u'\U00002139', u'\U0001F4BB', s_message, u'\U0000261D')
+            s_message = "{0} {1} {2}{2}{2}".format(u'\U00002139', s_message, u'\U0000261D')
             self.add_list(s_message)
             # Sleep para asegurarnos de que el mensaje anterior esta en la lista antes de iniciar el siguiente While.
             sleep(1)
