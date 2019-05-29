@@ -87,8 +87,8 @@ class Main(ObjectBase):
             self.debug.enabled = True
             # self.debug.enabled = self.cfg_general.get_conf(['global', 'debug'], self.debug.enabled)
 
-        if self.__timer_check_forze:
-            self._timer_check = self.__timer_check_forze
+        if self.__timer_check_force:
+            self._timer_check = self.__timer_check_force
         else:
             self._timer_check = self.cfg_general.get_conf(['daemon', 'timer_check'], self._timer_check)
 
@@ -180,7 +180,7 @@ class Main(ObjectBase):
                     self.__verbose = value
 
                 elif key == 'timer_check':
-                    self.__timer_check_forze = value
+                    self.__timer_check_force = value
 
                 elif key == 'daemon_mode':
                     self.__daemon_mode = value
@@ -191,7 +191,7 @@ class Main(ObjectBase):
                 if key == 'clear_status':
                     if value:
                         if self.monitor:
-                            self.monitor.clearStatus()
+                            self.monitor.clear_status()
 
     @property
     def _daemon_mode(self):
@@ -246,7 +246,7 @@ class Main(ObjectBase):
                     except SystemExit:
                         os._exit(0)
                 except Exception as e:
-                    self.debug.Exception(e)
+                    self.debug.exception(e)
 
 
 def arg_check_dir_path(path):
@@ -258,11 +258,11 @@ def arg_check_dir_path(path):
         raise argparse.ArgumentTypeError("{0} is not a valid path".format(path))
 
 
-def arg_check_timer(timercheck):
-    if timercheck.isnumeric() and int(timercheck) > 0:
-        return timercheck
+def arg_check_timer(timer_check):
+    if timer_check.isnumeric() and int(timer_check) > 0:
+        return timer_check
     else:
-        raise argparse.ArgumentTypeError("{0} is not a valid timer".format(timercheck))
+        raise argparse.ArgumentTypeError("{0} is not a valid timer".format(timer_check))
 
 
 if __name__ == "__main__":

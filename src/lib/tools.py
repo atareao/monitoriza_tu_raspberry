@@ -38,3 +38,20 @@ def execute_call(command, parser=None):
     command_with_args = shlex.split(command)
     return_code = subprocess.call(command_with_args, stdout=open(os.devnull, 'w'), stderr=open(os.devnull, 'w'))
     return return_code
+
+
+def bytes2human(n):
+    # http://code.activestate.com/recipes/577972-disk-usage/
+    # print("Total:", bytes2human(total))
+    # print("Used:", bytes2human(used))
+    # print("Free:", bytes2human(free))
+
+    symbols = ('K', 'M', 'G', 'T', 'P', 'E', 'Z', 'Y')
+    prefix = {}
+    for i, s in enumerate(symbols):
+        prefix[s] = 1 << (i+1)*10
+    for s in reversed(symbols):
+        if n >= prefix[s]:
+            value = float(n) / prefix[s]
+            return '%.1f%s' % (value, s)
+    return "%sB" % n

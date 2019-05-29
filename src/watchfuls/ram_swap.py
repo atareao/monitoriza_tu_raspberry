@@ -22,12 +22,12 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-import re
-import lib.debug
-import lib.modules.module_base
+from lib.linux.mem import Mem
+from lib.debug import DebugLevel
+from lib.modules.module_base import *
 
 
-class Watchful(lib.modules.module_base.ModuleBase):
+class Watchful(ModuleBase):
 
     # porcentaje de RAM/SWAP que se usara si no se ha configurado el modulo, o se ha definido un
     # valor que no esté entre 0 y 100.
@@ -36,7 +36,6 @@ class Watchful(lib.modules.module_base.ModuleBase):
 
     def __init__(self, monitor):
         super().__init__(monitor, __name__)
-        self.path_file.set('free', '/usr/bin/free')
 
     def __check_config(self, key_conf, default_val):
         val_conf = self.get_conf(key_conf, default_val)
@@ -46,37 +45,35 @@ class Watchful(lib.modules.module_base.ModuleBase):
             if not val_conf.isnumeric():
                 val_conf = default_val
                 self.debug("Warning in module {0}, config {1} type incorrect!".format(self.NameModule, key_conf),
-                            lib.debug.DebugLevel.warning)
+                           DebugLevel.warning)
             else:
                 val_conf = int(val_conf)
 
         if not val_conf or val_conf < 0 or val_conf > 100:
             val_conf = default_val
             self.debug("Warning in module {0}, config {1} value not valid!".format(self.NameModule, key_conf),
-                        lib.debug.DebugLevel.warning)
+                       DebugLevel.warning)
 
         return val_conf
 
     def check(self):
-        stdout = self._run_cmd(self.path_file.find('free'))
-        self.debug.print(stdout, lib.debug.DebugLevel.debug)
-
         x = {
             'ram': {
                 'caption': 'RAM',
                 'alarm': self.__check_config("alert_ram", self.__default_alert_ram),
-                'stdout': re.findall(r'Mem\w*:\s+(\d+)\s+(\d+)', stdout)
+                'used': Mem().ram.used_percent
             },
             'swap': {
                 'caption': 'SWAP',
                 'alarm': self.__check_config("alert_swap", self.__default_alert_swap),
-                'stdout': re.findall(r'Swap:\s+(\d+)\s+(\d+)', stdout)
+                'used': Mem().swap.used_percent
             }
         }
 
         for (key, value) in x.items():
-            per = float(value['stdout'][0][1]) / float(value['stdout'][0][0]) * 100.0
-            if per < float(value['alarm']):
+            per = float(value['used'])
+            alert = float(value['alarm'])
+            if per < alert:
                 is_warning = False
             else:
                 is_warning = True
