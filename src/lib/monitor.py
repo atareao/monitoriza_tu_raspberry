@@ -230,4 +230,7 @@ class Monitor(ObjectBase):
         self.debug.debug_obj(__name__, self.status.data, "Debug Status Save")
         if changed is True:
             self.status.save()
+
+        if self.tg is not None:
+            self.tg.send_message_end()
         self.debug.print("Check End: " + time.strftime("%c"), lib.debug.DebugLevel.info)
