@@ -23,6 +23,7 @@ import threading
 import requests
 import lib.debug
 from lib.object_base import ObjectBase
+from lib.debug import DebugLevel
 from time import sleep
 
 __all__ = ['Telegram']
@@ -30,7 +31,7 @@ __all__ = ['Telegram']
 
 class Telegram(ObjectBase):
 
-    class DaemonSendMsg(threading.Thread):
+    class PoolSendMsg(threading.Thread):
 
         tg = None
         __run_while = True
@@ -51,6 +52,7 @@ class Telegram(ObjectBase):
             while True:
                 if self.tg and len(self.tg.list_msg) > 0:
                     msg = self.tg.list_msg.pop()
+                    self.tg.debug.print("Telegram > Send > Msg: {0}".format(msg))
                     self.tg.api_send_message(msg)
                     self.tg.count_msg_send += 1
                 else:
@@ -68,31 +70,30 @@ class Telegram(ObjectBase):
         self.token = token
         self.chat_id = chat_id
 
-        self.daemon_send_msg = self.DaemonSendMsg()
-        self.daemon_send_msg.tg = self
-        self.daemon_send_msg.setDaemon(True)
-        self.daemon_send_msg.start()
+        self.pool_send_msg = self.PoolSendMsg()
+        self.pool_send_msg.tg = self
+        self.pool_send_msg.setDaemon(True)
+        self.pool_send_msg.start()
 
     def send_message(self, message):
         self.add_list(message)
 
-    def send_message_end(self):
-        # Esperamos que la lista se vacíe antes de enviar el mensaje resumen.
+    def send_message_end(self, hostname):
+        if self.count_msg > 0:
+            s_message = "Summary *{0}*, get *{1}* new Message.".format(hostname, self.count_msg)
+            # s_message = "{0} {1} {2} {3}{3}{3}".format(u'\U00002139', u'\U0001F4BB', s_message, u'\U0000261D')
+            s_message = "{0} {2} {3}{3}{3}".format(u'\U00002139', u'\U0001F4BB', s_message, u'\U0000261D')
+            self.add_list(s_message)
+            # Sleep para asegurarnos de que el mensaje anterior esta en la lista antes de iniciar el siguiente While.
+            sleep(1)
+
+        # Esperamos a que la lista de mensajes esta vacía.
         while True:
             if len(self.list_msg) == 0:
                 break
 
-        if self.count_msg > 0:
-            s_message = "{0} Summary, get *{1}* new Message. {2}{2}{2}".format(u'\U00002139', self.count_msg, u'\U0000261D')
-            self.add_list(s_message)
-            # Sleep para evitar que el stop se ejecute antes de que se procese el mensaje de resumen.
-            sleep(1)
-            self.daemon_send_msg.stop()
-
-        # Esperamos a que el damon_send_msg se muera.
-        while True:
-            if not self.daemon_send_msg.isAlive():
-                break
+        self.count_msg = 0
+        self.count_msg_send = 0
 
     def add_list(self, message):
         # Efectuamos insert para mantener el orden.
@@ -105,9 +106,9 @@ class Telegram(ObjectBase):
                           data={'chat_id': self.chat_id, 'text': message, 'parse_mode': 'Markdown'})
             return True
         if not self.token:
-            self.debug.print("Error: Telegram Token is Null", lib.debug.DebugLevel.error)
+            self.debug.print("Error: Telegram Token is Null", DebugLevel.error)
         if not self.chat_id:
-            self.debug.print("Error: Telegram Chat ID is Null", lib.debug.DebugLevel.error)
+            self.debug.print("Error: Telegram Chat ID is Null", DebugLevel.error)
         return False
 
 

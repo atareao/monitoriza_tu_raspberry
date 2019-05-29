@@ -35,6 +35,7 @@ import lib.telegram
 import lib.modules.dict_return_check
 from lib.config.configControl import *
 from lib.object_base import ObjectBase
+from lib.telegram import Telegram
 
 __all__ = ['Monitor']
 
@@ -92,10 +93,9 @@ class Monitor(ObjectBase):
 
     def __init_telegram(self):
         if self.config:
-            self.tg = lib.telegram.Telegram(
-                self.config.get_conf(['telegram', 'token'], ''),
-                self.config.get_conf(['telegram', 'chat_id'], '')
-            )
+            self.tg = Telegram(self.config.get_conf(['telegram', 'token'], ''),
+                               self.config.get_conf(['telegram', 'chat_id'], '')
+                               )
         else:
             self.tg = None
 
@@ -147,6 +147,11 @@ class Monitor(ObjectBase):
                 message = "{0} {1}".format(u'\U0000274E', message)
             self.tg.send_message(message)
 
+    def send_message_end(self):
+        if self.tg is not None:
+            hostname = socket.gethostname()
+            self.tg.send_message_end(hostname)
+
     def check_status(self, status, module, module_sub_key=''):
         l_find = [module]
         if module_sub_key:
@@ -194,6 +199,7 @@ class Monitor(ObjectBase):
 
     def check(self):
         # cont_break = 0  # Debug - Count
+
         self.debug.print("Check Init: " + time.strftime("%c"), lib.debug.DebugLevel.info)
         list_modules = []
         for module_def in glob.glob(os.path.join(self.dir_modules, '*.py')):
@@ -231,6 +237,5 @@ class Monitor(ObjectBase):
         if changed is True:
             self.status.save()
 
-        if self.tg is not None:
-            self.tg.send_message_end()
+        self.send_message_end()
         self.debug.print("Check End: " + time.strftime("%c"), lib.debug.DebugLevel.info)
