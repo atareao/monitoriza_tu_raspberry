@@ -84,7 +84,8 @@ class Watchful(ModuleBase):
             else:
                 message = 'Normal {0} {1}'.format(message, u'\U00002705')
 
-            self.dict_return.set(key, not is_warning, message)
+            other_data = {'used': per, 'alert': alert}
+            self.dict_return.set(key, not is_warning, message, other_data=other_data)
 
         super().check()
         return self.dict_return

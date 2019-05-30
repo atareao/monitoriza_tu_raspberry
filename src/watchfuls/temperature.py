@@ -64,7 +64,8 @@ class Watchful(ModuleBase):
                 message += '*over temperature Warning {0:.1f} ºC* {1}'.format(temp, u'\U0001F525')
             else:
                 message += 'temperature Ok {0:.1f} ºC {1}'.format(temp, u'\U00002705')
-            other_data = {'name': dev_name, 'type': type_name, 'temp': temp}
+
+            other_data = {'type': type_name, 'temp': temp, 'alert': temp_alert}
             self.dict_return.set(dev_name, not is_warning, message, other_data=other_data)
 
         super().check()

@@ -23,10 +23,10 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 import re
-import lib.modules.module_base
+from lib.modules.module_base import ModuleBase
 
 
-class Watchful(lib.modules.module_base.ModuleBase):
+class Watchful(ModuleBase):
 
     # porcentaje que se usara si no se ha configurado el modulo, o se ha definido un valor que no esté entre 0 y 100.
     __default_alert = 85
@@ -63,7 +63,8 @@ class Watchful(lib.modules.module_base.ModuleBase):
                 tmp_status = True
                 tmp_message = 'Filesystem partition {0} ({1}) used {2}% {3}'.format(fs[0], fs[2], fs[1], u'\U00002705')
 
-            self.dict_return.set(fs[0], tmp_status, tmp_message)
+            other_data = {'used': fs[1], 'mount': fs[2], 'alert': for_usage_alert}
+            self.dict_return.set(fs[0], tmp_status, tmp_message, other_data=other_data)
 
         super().check()
         return self.dict_return
