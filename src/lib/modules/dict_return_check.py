@@ -50,12 +50,13 @@ class ReturnModuleCheck(object):
             return True
         return False
 
-    def set(self, key: str, status: bool = True, message='', send_msg: bool = True) -> bool:
+    def set(self, key: str, status: bool = True, message='', send_msg: bool = True, other_data: dict = {}) -> bool:
         if key:
             self.__dict_return[key] = {}
             self.__dict_return[key]['status'] = status
             self.__dict_return[key]['message'] = message
             self.__dict_return[key]['send'] = send_msg
+            self.__dict_return[key]['other_data'] = other_data
             return self.is_exist(key)
         return False
 
@@ -83,4 +84,9 @@ class ReturnModuleCheck(object):
     def get_send(self, key: str) -> bool:
         if self.is_exist(key):
             return self.list[key]['send']
+        return True
+
+    def get_other_data(self, key: str) -> dict:
+        if self.is_exist(key):
+            return self.list[key]['other_data']
         return True

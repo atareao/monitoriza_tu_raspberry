@@ -157,6 +157,7 @@ class Monitor(ObjectBase):
         l_find = [module]
         if module_sub_key:
             l_find.append(module_sub_key)
+        l_find.append('status')
 
         if self.status.get_conf(l_find, not status) != status:
             return True
@@ -176,9 +177,11 @@ class Monitor(ObjectBase):
                     tmp_status = r_mod_check.get_status(key)
                     tmp_message = r_mod_check.get_message(key)
                     tmp_send = r_mod_check.get_send(key)
+                    tmp_other_data = r_mod_check.get_other_data(key)
 
+                    self.status.set_conf([module_name, key, 'other_data'], tmp_other_data)
                     if self.check_status(tmp_status, module_name, key):
-                        self.status.set_conf([module_name, key], tmp_status)
+                        self.status.set_conf([module_name, key, 'status'], tmp_status)
                         if tmp_send:
                             self.send_message(tmp_message, tmp_status)
                         self.debug.print('Module: {0}/{1} - New Status: {2}'.format(module_name, key, tmp_status),
