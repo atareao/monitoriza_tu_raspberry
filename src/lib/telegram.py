@@ -96,7 +96,7 @@ class Telegram(ObjectBase):
         while True:
             if not self.is_entry_list:
                 msg = self.list_msg.pop()
-                self.debug.print("Telegram > Send > Msg: {0}".format(msg))
+                self.debug.print("Telegram >> Send >> Msg: {1}".format(__name__, msg))
                 if self.group_messages:
                     msg_group += msg + "\n"
                 else:
@@ -118,9 +118,9 @@ class Telegram(ObjectBase):
                           data={'chat_id': self.chat_id, 'text': message, 'parse_mode': 'Markdown'})
             return True
         if not self.token:
-            self.debug.print("Error: Telegram Token is Null", DebugLevel.error)
+            self.debug.print("Telegram >> API >> Error: Telegram Token is Null", DebugLevel.error)
         if not self.chat_id:
-            self.debug.print("Error: Telegram Chat ID is Null", DebugLevel.error)
+            self.debug.print("Telegram >> API >> Error: Telegram Chat ID is Null", DebugLevel.error)
         return False
 
 # https://apps.timwhitlock.info/emoji/tables/unicode

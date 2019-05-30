@@ -29,10 +29,9 @@ import socket
 import time
 import pprint
 import concurrent.futures
-import lib.debug
 import lib.modules.module_base
-import lib.telegram
 import lib.modules.dict_return_check
+from lib.debug import *
 from lib.config.configControl import *
 from lib.object_base import ObjectBase
 from lib.telegram import Telegram
@@ -54,7 +53,7 @@ class Monitor(ObjectBase):
         self.__read_config()
         self.__read_status()
         self.__init_telegram()
-        self.debug.print("Monitor Init OK", lib.debug.DebugLevel.debug)
+        self.debug.print("> Monitor >> Monitor Init OK")
 
     @staticmethod
     def __check_dir(path_dir):
@@ -86,7 +85,7 @@ class Monitor(ObjectBase):
 
     def clear_status(self):
         # TODO: Pendiente crear funcion clear en el objeto config
-        self.debug.print("Clear Status", lib.debug.DebugLevel.info)
+        self.debug.print("> Monitor >> Clear Status", DebugLevel.info)
         self.__read_status()
         self.status.data = {}
         self.status.save()
@@ -165,15 +164,18 @@ class Monitor(ObjectBase):
 
     def check_module(self, module_name):
         try:
-            self.debug.print("Module: {0}".format(module_name), lib.debug.DebugLevel.info)
+            self.debug.print("> Monitor > check_module >> Module: {0}".format(module_name), DebugLevel.info)
             module_import = importlib.import_module(module_name)
             module = module_import.Watchful(self)
             r_mod_check = module.check()
 
             if isinstance(r_mod_check, lib.modules.dict_return_check.ReturnModuleCheck):
                 for (key, value) in r_mod_check.items():
-                    self.debug.print("Module: {0} - Key: {1} - Val: {2}".format(module_name, key, value),
-                                     lib.debug.DebugLevel.debug)
+                    self.debug.print(
+                        "> Monitor > check_module >> Module: {0} - Key: {1} - Val: {2}".format(
+                            module_name, key, value
+                        )
+                    )
                     tmp_status = r_mod_check.get_status(key)
                     tmp_message = r_mod_check.get_message(key)
                     tmp_send = r_mod_check.get_send(key)
@@ -184,8 +186,11 @@ class Monitor(ObjectBase):
                         self.status.set_conf([module_name, key, 'status'], tmp_status)
                         if tmp_send:
                             self.send_message(tmp_message, tmp_status)
-                        self.debug.print('Module: {0}/{1} - New Status: {2}'.format(module_name, key, tmp_status),
-                                         lib.debug.DebugLevel.debug)
+                        self.debug.print(
+                            '> Monitor > check_module >> Module: {0}/{1} - New Status: {2}'.format(
+                                module_name, key, tmp_status
+                            )
+                        )
                 return True
 
             else:
@@ -195,7 +200,7 @@ class Monitor(ObjectBase):
                 msg_debug += 'Data Return: {0}\n'.format(pprint.pprint(r_mod_check))
                 msg_debug += '*'*60 + '\n'
                 msg_debug += '*'*60 + '\n\n'
-                self.debug.print(msg_debug, lib.debug.DebugLevel.warning)
+                self.debug.print(msg_debug, DebugLevel.warning)
 
         except Exception as e:
             self.debug.exception(e)
@@ -204,14 +209,14 @@ class Monitor(ObjectBase):
     def check(self):
         # cont_break = 0  # Debug - Count
 
-        self.debug.print("Check Init: " + time.strftime("%c"), lib.debug.DebugLevel.info)
+        self.debug.print("> Monitor > check >> Check Init: {0}".format(time.strftime("%c")), DebugLevel.info)
         list_modules = []
         for module_def in glob.glob(os.path.join(self.dir_modules, '*.py')):
             module_def = os.path.splitext(os.path.basename(module_def))[0]
             if module_def.find('__') == -1:
                 # Debug Control Run Modules
                 # --- MODE NAME -------------------
-                # if module_def != "temperature":
+                # if module_def != "web":
                 #     continue
                 # --- MODE COUNT ------------------
                 # if cont_break < 1:
@@ -226,7 +231,7 @@ class Monitor(ObjectBase):
         self.status.read()
 
         max_threads = self.get_conf('threads', self.__default_threads)
-        self.debug.print("Monitor Max Threads: {0}".format(max_threads), lib.debug.DebugLevel.debug)
+        self.debug.print("> Monitor > check >> Monitor Max Threads: {0}".format(max_threads))
         with concurrent.futures.ThreadPoolExecutor(max_workers=max_threads) as executor:
             future_to_run_module = {executor.submit(self.check_module, module): module for module in list_modules}
             for future in concurrent.futures.as_completed(future_to_run_module):
@@ -242,4 +247,4 @@ class Monitor(ObjectBase):
             self.status.save()
 
         self.send_message_end()
-        self.debug.print("Check End: " + time.strftime("%c"), lib.debug.DebugLevel.info)
+        self.debug.print("> Monitor > check >> Check End: {0}".format(time.strftime("%c")), DebugLevel.info)

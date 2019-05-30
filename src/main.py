@@ -26,8 +26,8 @@ import os
 import sys
 import time
 import argparse
-import lib.debug
 import lib.monitor
+from lib.debug import DebugLevel
 from lib.object_base import ObjectBase
 from lib.config.configControl import *
 
@@ -80,9 +80,9 @@ class Main(ObjectBase):
 
         if self.__verbose:
             self.debug.enabled = True
-            self.debug.level = lib.debug.DebugLevel.null
+            self.debug.level = DebugLevel.null
         else:
-            self.debug.level = lib.debug.DebugLevel.info
+            self.debug.level = DebugLevel.info
             # TODO: Actualizar configuracin para que use level
             self.debug.enabled = True
             # self.debug.enabled = self.cfg_general.get_conf(['global', 'debug'], self.debug.enabled)
@@ -228,19 +228,19 @@ class Main(ObjectBase):
 
     def start(self):
         if not self._daemon_mode:
-            self.debug.print("Run Mode Single Process", lib.debug.DebugLevel.debug)
+            self.debug.print("* Main >> Run Mode Single Process")
             self.monitor.check()
         else:
-            self.debug.print("Run Mode Daemon", lib.debug.DebugLevel.debug)
+            self.debug.print("* Main >> Run Mode Daemon")
             while True:
                 self.monitor.check()
                 if self._timer_check == 0:
                     break
-                self.debug.print("Waiting {0} seconds...".format(args['timer_check']), lib.debug.DebugLevel.debug)
+                self.debug.print("* Main >> Waiting {0} seconds...".format(args['timer_check']))
                 try:
                     time.sleep(self._timer_check)
                 except KeyboardInterrupt:
-                    self.debug.print("Process cancel  by the user!!", lib.debug.DebugLevel.info)
+                    self.debug.print("* Main >> Process cancel  by the user!!", DebugLevel.info)
                     try:
                         sys.exit(0)
                     except SystemExit:
