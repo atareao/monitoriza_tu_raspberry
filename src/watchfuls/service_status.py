@@ -20,11 +20,11 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 import concurrent.futures
-import lib.debug
-import lib.modules.module_base
+from lib.debug import DebugLevel
+from lib.modules.module_base import ModuleBase
 
 
-class Watchful(lib.modules.module_base.ModuleBase):
+class Watchful(ModuleBase):
 
     def __init__(self, monitor):
         super().__init__(monitor, __name__)
@@ -33,7 +33,8 @@ class Watchful(lib.modules.module_base.ModuleBase):
     def check(self):
         list_service = []
         for (key, value) in self.get_conf('list', {}).items():
-            self.debug.print("Service: {0} - Enabled: {1}".format(key, value), lib.debug.DebugLevel.info)
+            self.debug.print(">> PlugIn >> {0} >> Service: {1} - Enabled: {2}".format(self.NameModule, key, value),
+                             DebugLevel.info)
             if value:
                 list_service.append(key)
 
@@ -52,11 +53,11 @@ class Watchful(lib.modules.module_base.ModuleBase):
         return self.dict_return
 
     def __service_check(self, service):
-        status, message = self.__service_return(service)
+        status, error, message = self.__service_return(service)
 
         s_message = 'Service: {0} '.format(service)
         if status:
-            s_message += ' - Running ' + u'\U00002705'
+            s_message += ' - *Running* ' + u'\U00002705'
         else:
             if message:
                 s_message += '- *Error: {0}* '.format(message)
@@ -64,7 +65,9 @@ class Watchful(lib.modules.module_base.ModuleBase):
                 s_message += '- *Stop* '
             s_message += u'\U000026A0'
 
-        self.dict_return.set(service, status, s_message, False)
+        other_data = {'error': error, 'status_detail': message}
+        self.dict_return.set(service, status, s_message, False, other_data)
+
         if self.check_status(status, self.NameModule, service):
             self.send_message(s_message, status)
 
@@ -72,21 +75,32 @@ class Watchful(lib.modules.module_base.ModuleBase):
         cmd = '{0} status {1}'.format(self.path_file.find('systemctl'), service)
         stdout, stderr = self._run_cmd(cmd, True)
         if stdout == '':
-            return False, stderr[:-1]
+            return False, True, stderr[:-1]
 
-        for line in  stdout.split('\n'):
+        for line in stdout.split('\n'):
             s_line = line.split()
             if str(s_line[0]) == 'Active:':
                 if str(s_line[1]) == "active":
                     #    Active: active (running) since Mon 2019-05-27 11:28:46 CEST; 1min 48s ago
-                    return True, ''
+                    if str(s_line[2]) == "(running)":
+                        return True, False, self.__clear_str(s_line[2])
+                    else:
+                        return False, False, self.__clear_str(s_line[2])
                 elif str(s_line[1]) == "inactive":
                     #    Active: inactive (dead) since Mon 2019-05-27 11:30:51 CEST; 1s ago
-                    return False, ''
+                    if str(s_line[2]) == "(dead)":
+                        return False, False, ''
+                    else:
+                        return False, False, self.__clear_str(s_line[2])
                 else:
-                    return False, line
+                    return False, True, line
 
         return False, 'Not detect status in the data!!!'
+
+    @staticmethod
+    def __clear_str(text: str) -> str:
+        if text:
+            return str(text).strip().replace("(", "").replace(")", "")
 
 
 if __name__ == '__main__':

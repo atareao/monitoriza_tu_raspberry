@@ -20,7 +20,6 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 import lib.monitor
-import lib.debug
 import lib.tools
 import lib.dict_files_path
 import lib.modules.dict_return_check

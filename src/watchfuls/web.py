@@ -23,11 +23,11 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 import concurrent.futures
-import lib.debug
-import lib.modules.module_base
+from lib.debug import DebugLevel
+from lib.modules.module_base import ModuleBase
 
 
-class Watchful(lib.modules.module_base.ModuleBase):
+class Watchful(ModuleBase):
 
     def __init__(self, monitor):
         super().__init__(monitor, __name__)
@@ -36,7 +36,8 @@ class Watchful(lib.modules.module_base.ModuleBase):
     def check(self):
         list_url = []
         for (key, value) in self.get_conf('list', {}).items():
-            self.debug.print("Web: {0} - Enabled: {1}".format(key, value), lib.debug.DebugLevel.info)
+            self.debug.print(">> PlugIn >> {0} >> Web: {1} - Enabled: {2}".format(self.NameModule, key, value),
+                             DebugLevel.info)
             if value:
                 list_url.append(key)
 
@@ -55,26 +56,29 @@ class Watchful(lib.modules.module_base.ModuleBase):
         return self.dict_return
 
     def __web_check(self, url):
-        status = self.__web_return(url)
+        status, code = self.__web_return(url)
 
         s_message = 'Web: {0} '.format(url)
         if status:
             s_message += u'\U0001F53C'
         else:
+            s_message += "- Code {0} ".format(code)
             s_message += u'\U0001F53D'
 
-        self.dict_return.set(url, status, s_message, False)
+        other_data = {'code': code}
+        self.dict_return.set(url, status, s_message, False, other_data)
+
         if self.check_status(status, self.NameModule, url):
             self.send_message(s_message, status)
 
     def __web_return(self, url):
         # TODO: Pendiente añadir soporte https.
         cmd = self.path_file.find('curl')
-        cmd += ' -sL -w "%{http_code}\n" http://' + url + ' -o /dev/null'
+        cmd += ' -sL -w "%{http_code}" http://' + url + ' -o /dev/null'
         stdout = self._run_cmd(cmd)
         if stdout.find('200') == -1:
-            return False
-        return True
+            return False, stdout
+        return True, stdout
 
 
 if __name__ == '__main__':
