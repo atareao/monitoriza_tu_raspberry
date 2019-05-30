@@ -25,7 +25,7 @@
 import codecs
 import json
 import os
-import lib.debug
+from lib.debug import DebugLevel
 from lib.object_base import ObjectBase
 
 __all__ = ['ConfigStore']
@@ -61,7 +61,7 @@ class ConfigStore(ObjectBase):
             except Exception as e:
                 self.debug.exception(e)
         else:
-            self.debug.print("Warning: File ({0}) not exist!!!".format(self.file),  lib.debug.DebugLevel.warning)
+            self.debug.print("Config >> Warning: File ({0}) not exist!!!".format(self.file),  DebugLevel.warning)
         return data
 
     def save(self, data):

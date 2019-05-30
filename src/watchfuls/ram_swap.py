@@ -24,7 +24,7 @@
 
 from lib.linux.mem import Mem
 from lib.debug import DebugLevel
-from lib.modules.module_base import *
+from lib.modules.module_base import ModuleBase
 
 
 class Watchful(ModuleBase):
@@ -44,14 +44,14 @@ class Watchful(ModuleBase):
             val_conf = val_conf.strip()
             if not val_conf.isnumeric():
                 val_conf = default_val
-                self.debug("Warning in module {0}, config {1} type incorrect!".format(self.NameModule, key_conf),
+                self.debug("PlugIn > {0} > Warning, config {1} type incorrect!".format(self.NameModule, key_conf),
                            DebugLevel.warning)
             else:
                 val_conf = int(val_conf)
 
         if not val_conf or val_conf < 0 or val_conf > 100:
             val_conf = default_val
-            self.debug("Warning in module {0}, config {1} value not valid!".format(self.NameModule, key_conf),
+            self.debug("PlugIn > {0} > Warning, config {1} value not valid!".format(self.NameModule, key_conf),
                        DebugLevel.warning)
 
         return val_conf
@@ -84,7 +84,8 @@ class Watchful(ModuleBase):
             else:
                 message = 'Normal {0} {1}'.format(message, u'\U00002705')
 
-            self.dict_return.set(key, not is_warning, message)
+            other_data = {'used': per, 'alert': alert}
+            self.dict_return.set(key, not is_warning, message, other_data=other_data)
 
         super().check()
         return self.dict_return
