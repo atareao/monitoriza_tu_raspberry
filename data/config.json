@@ -4,6 +4,7 @@
   },
   "telegram": {
     "token": "",
-    "chat_id": ""
+    "chat_id": "",
+    "group_messages": true
   }
 }
