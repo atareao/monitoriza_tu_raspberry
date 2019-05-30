@@ -20,12 +20,12 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 import time
-import lib.debug
-import lib.modules.module_base
 import concurrent.futures
+from lib.debug import DebugLevel
+from lib.modules.module_base import ModuleBase
 
 
-class Watchful(lib.modules.module_base.ModuleBase):
+class Watchful(ModuleBase):
 
     __default_attempt = 3
     __default_timeout = 5
@@ -37,7 +37,8 @@ class Watchful(lib.modules.module_base.ModuleBase):
     def check(self):
         list_host = []
         for (key, value) in self.get_conf('list', {}).items():
-            self.debug.print("Ping: {0} - Enabled: {1}".format(key, value), lib.debug.DebugLevel.info)
+            self.debug.print(">> PlugIn >> {0} >> Ping: {1} - Enabled: {2}".format(self.NameModule, key, value),
+                             DebugLevel.info)
             if value:
                 list_host.append(key)
 
@@ -69,6 +70,7 @@ class Watchful(lib.modules.module_base.ModuleBase):
             s_message += u'\U0001F53D'
 
         self.dict_return.set(host, status, s_message, False)
+
         if self.check_status(status, self.NameModule, host):
             self.send_message(s_message, status)
 

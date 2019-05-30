@@ -24,7 +24,7 @@
 
 from lib.linux.mem import Mem
 from lib.debug import DebugLevel
-from lib.modules.module_base import *
+from lib.modules.module_base import ModuleBase
 
 
 class Watchful(ModuleBase):
