@@ -96,7 +96,7 @@ class Telegram(ObjectBase):
         while True:
             if not self.is_entry_list:
                 msg = self.list_msg.pop()
-                self.debug.print("Telegram >> Send >> Msg: {1}".format(__name__, msg))
+                self.debug.print("Telegram > Send >> Msg: {0}".format(msg))
                 if self.group_messages:
                     msg_group += msg + "\n"
                 else:
