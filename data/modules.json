@@ -16,7 +16,8 @@
       "www.atareao.es": true,
       "www.cerebelum.net": true,
       "www.dominio.com": false,
-      "www.dominio.net": true
+      "www.dominio.net": false,
+      "www.dominio.unknown": true
     }
   },
   "ping": {
@@ -24,7 +25,12 @@
     "attempt": 3,
     "timeout": 5,
     "list": {
-      "192.168.1.1": true,
+      "192.168.1.1": {
+        "enabled": true,
+        "attempt": 3,
+        "timeout": 5,
+        "label": "Router"
+      },
       "192.168.1.200":  true,
       "192.168.86.4": true
     }
