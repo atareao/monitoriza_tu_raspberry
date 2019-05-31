@@ -25,6 +25,7 @@ import lib.dict_files_path
 import lib.modules.dict_return_check
 from lib.object_base import ObjectBase
 from lib.config.configControl import ConfigTypeReturn
+from enum import Enum
 
 __all__ = ['ModuleBase']
 
@@ -89,12 +90,32 @@ class ModuleBase(ObjectBase):
                 else:
                     keys_list = self._monitor.config_modules.convert_findkey_to_list(findkey, str_split)
                     keys_list.insert(0, select_module)
-                    return self._monitor.config_modules.get_conf(keys_list, default_val, str_split = str_split,
+                    return self._monitor.config_modules.get_conf(keys_list, default_val, str_split=str_split,
                                                                  r_type=r_type)
 
         if findkey or default_val:
             return default_val
         return []
+
+    def get_conf_in_list(self, opt_find: str, key: str, def_val=None):
+        if isinstance(opt_find, Enum):
+            find_key = [opt_find.name]
+        elif isinstance(opt_find, str):
+            find_key = [opt_find]
+        elif isinstance(opt_find, list):
+            find_key = opt_find.copy()
+        elif isinstance(opt_find, int) or isinstance(opt_find, float):
+            find_key = [str(opt_find)]
+        elif isinstance(opt_find, tuple):
+            find_key = list(opt_find)
+        else:
+            raise TypeError("opt_find is not valid type ({0})!".format(type(opt_find)))
+
+        if key:
+            find_key.insert(0, key)
+            find_key.insert(0, "list")
+        value = self.get_conf(find_key, def_val)
+        return value
 
     def check_status(self, status, module, module_subkey):
         if self._monitor:
@@ -102,7 +123,7 @@ class ModuleBase(ObjectBase):
         return None
 
     @staticmethod
-    def _run_cmd(cmd, return_sterr=False):
+    def _run_cmd(cmd, return_sterr: bool = False):
         stdout, stderr = lib.tools.execute(cmd)
         if return_sterr:
             return stdout, stderr
