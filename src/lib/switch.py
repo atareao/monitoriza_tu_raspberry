@@ -34,7 +34,7 @@ class Switch:
     def __enter__(self):
         return self
 
-    def __exit__(self, type, value, traceback):
+    def __exit__(self, exception_type, exception_value, traceback):
         # Allows a traceback to occur
         return False
 
