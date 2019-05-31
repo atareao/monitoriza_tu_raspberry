@@ -28,3 +28,6 @@ class EnumConfigOptions(Enum):
     enabled = 1
     alert = 2
     label = 3
+    # Plugins a partir del numero 100 en adelante.
+    # Plugins from number 100 onwards.
+
