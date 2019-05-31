@@ -26,19 +26,30 @@ __all__ = ['Switch']
 
 
 class Switch:
-    def __init__(self, value, invariant_culture_ignore_case=False):
+    def __init__(self, value, invariant_culture_ignore_case=False, check_isinstance=False):
         self.value = value
         self.invariant_culture_ignore_case = invariant_culture_ignore_case
+        self.check_isinstance = check_isinstance
 
     def __enter__(self):
         return self
 
     def __exit__(self, type, value, traceback):
-        return False # Allows a traceback to occur
+        # Allows a traceback to occur
+        return False
 
     def __call__(self, *values):
-        if self.invariant_culture_ignore_case and (isinstance(self.value, str) and isinstance(values, str)):
+        if self.check_isinstance:
+            # Efectúa check isinstance
+            for item in values:
+                if isinstance(self.value, item):
+                    return True
+            return False
+
+        elif self.invariant_culture_ignore_case and isinstance(self.value, str):
             # Comparativa ignorando Mayúsculas y Minúsculas.
-            return self.value.lower() == values.lower()
-        else:
-            return self.value in values
+            for item in values:
+                if isinstance(item, str) and (self.value.lower() == item.lower()):
+                    return True
+
+        return self.value in values

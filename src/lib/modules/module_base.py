@@ -23,6 +23,7 @@ import lib.monitor
 import lib.tools
 import lib.dict_files_path
 import lib.modules.dict_return_check
+from lib.switch import Switch
 from lib.object_base import ObjectBase
 from lib.config.configControl import ConfigTypeReturn
 from enum import Enum
@@ -98,18 +99,19 @@ class ModuleBase(ObjectBase):
         return []
 
     def get_conf_in_list(self, opt_find: str, key: str, def_val=None):
-        if isinstance(opt_find, Enum):
-            find_key = [opt_find.name]
-        elif isinstance(opt_find, str):
-            find_key = [opt_find]
-        elif isinstance(opt_find, list):
-            find_key = opt_find.copy()
-        elif isinstance(opt_find, int) or isinstance(opt_find, float):
-            find_key = [str(opt_find)]
-        elif isinstance(opt_find, tuple):
-            find_key = list(opt_find)
-        else:
-            raise TypeError("opt_find is not valid type ({0})!".format(type(opt_find)))
+        with Switch(opt_find, check_isinstance=True) as case:
+            if case(Enum):
+                find_key = [opt_find.name]
+            elif case(str):
+                find_key = [opt_find]
+            elif case(list):
+                find_key = opt_find.copy()
+            elif case(int, float):
+                find_key = [str(opt_find)]
+            elif case(tuple):
+                find_key = list(opt_find)
+            else:
+                raise TypeError("opt_find is not valid type ({0})!".format(type(opt_find)))
 
         if key:
             find_key.insert(0, key)
