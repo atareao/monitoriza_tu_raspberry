@@ -83,8 +83,10 @@ class ConfigControl(ConfigStore):
         if return_data:
             return self.data
 
-    def save(self) -> bool:
-        if super().save(self.data):
+    def save(self, data=None) -> bool:
+        if data is None:
+            data = self.data
+        if super().save(data):
             self.__load = datetime.datetime.now()
             self.__update = self.__load
             return True

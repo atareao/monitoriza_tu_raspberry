@@ -65,7 +65,7 @@ class ConfigStore(ObjectBase):
             self.debug.print("Config >> Warning: File ({0}) not exist!!!".format(self.file),  DebugLevel.warning)
         return return_date
 
-    def save(self, data):
+    def save(self, data) -> bool:
         try:
             f = codecs.open(self.file, 'w', 'utf-8')
             f.write(json.dumps(data))
