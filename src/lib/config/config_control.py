@@ -82,7 +82,7 @@ class ConfigControl(ConfigStore):
 
         if return_data:
             return self.data
-        
+
     def save(self) -> bool:
         if super().save(self.data):
             self.__load = datetime.datetime.now()
