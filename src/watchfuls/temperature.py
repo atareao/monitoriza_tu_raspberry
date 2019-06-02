@@ -22,10 +22,10 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-from lib.switch import Switch
-from lib.linux.thermal_info_collection import ThermalInfoCollection
-from lib.modules.module_base import ModuleBase
-from lib.modules.enum_config_options import EnumConfigOptions as ConfigOptions
+from lib import Switch
+from lib.linux import ThermalInfoCollection
+from lib.modules import ModuleBase
+from lib.modules import EnumConfigOptions as ConfigOptions
 from enum import Enum
 
 

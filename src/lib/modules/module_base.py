@@ -21,11 +21,12 @@
 
 import lib.monitor
 import lib.tools
-import lib.dict_files_path
-import lib.modules.dict_return_check
-from lib.switch import Switch
-from lib.object_base import ObjectBase
-from lib.config.configControl import ConfigTypeReturn
+
+from lib import Switch
+from lib import ObjectBase
+from lib import DictFilesPath
+from lib.config import ConfigTypeReturn
+from lib.modules import ReturnModuleCheck
 from enum import Enum
 
 __all__ = ['ModuleBase']
@@ -45,8 +46,8 @@ class ModuleBase(ObjectBase):
         else:
             self.__name_module = __name__
 
-        self.path_file = lib.dict_files_path.DictFilesPath()
-        self.dict_return = lib.modules.dict_return_check.ReturnModuleCheck()
+        self.path_file = DictFilesPath()
+        self.dict_return = ReturnModuleCheck()
 
     def check(self):
         self.debug.debug_obj(self.name_module, self.dict_return.list, "Data Return")
@@ -90,7 +91,7 @@ class ModuleBase(ObjectBase):
                 if findkey is None:
                     return self._monitor.config_modules.get_conf(select_module, default_val)
                 else:
-                    keys_list = self._monitor.config_modules.convert_findkey_to_list(findkey, str_split)
+                    keys_list = self._monitor.config_modules.convert_find_key_to_list(findkey, str_split)
                     keys_list.insert(0, select_module)
                     return self._monitor.config_modules.get_conf(keys_list, default_val, str_split=str_split,
                                                                  r_type=r_type)

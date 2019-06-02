@@ -19,15 +19,15 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-from lib.debug import Debug
-from lib.debug import DebugLevel
+from enum import Enum
 
-__all__ = ['ObjectBase']
+__all__ = ['ConfigTypeReturn']
 
 
-class ObjectBase(object):
-
-    debug = Debug(True, DebugLevel.info)
-
-    def __init__(self):
-        pass
+class ConfigTypeReturn(Enum):
+    STR = 1
+    INT = 2
+    BOOL = 3
+    LIST = 4
+    DICT = 5
+    TUPLE = 6

@@ -26,10 +26,11 @@ import os
 import sys
 import time
 import argparse
-import lib.monitor
+
+from lib import Monitor
+from lib import ObjectBase
 from lib.debug import DebugLevel
-from lib.object_base import ObjectBase
-from lib.config.configControl import *
+from lib.config import ConfigControl
 
 
 class Main(ObjectBase):
@@ -100,7 +101,7 @@ class Main(ObjectBase):
                     sys.path.append(f)
 
     def __init_monitor(self):
-        self.monitor = lib.monitor.Monitor(self._dir, self._config_dir, self._modules_dir, self._var_dir)
+        self.monitor = Monitor(self._dir, self._config_dir, self._modules_dir, self._var_dir)
 
     @property
     def _is_mode_dev(self):
@@ -308,3 +309,4 @@ if __name__ == "__main__":
 
     main = Main(args)
     main.start()
+
