@@ -46,7 +46,7 @@ class Watchful(ModuleBase):
         self.path_file.set('ping', '/bin/ping')
 
     def __debug(self, msg: str, level: DebugLevel = DebugLevel.debug):
-        super().debug.print(">> PlugIn >> {0} >> {1}".format(self.NameModule, msg), level)
+        super().debug.print(">> PlugIn >> {0} >> {1}".format(self.name_module, msg), level)
 
     def check(self):
         list_host = self.__check_get_list_hosts()
@@ -100,7 +100,7 @@ class Watchful(ModuleBase):
 
         self.dict_return.set(host, status, s_message, False)
 
-        if self.check_status(status, self.NameModule, host):
+        if self.check_status(status, self.name_module, host):
             self.send_message(s_message, status)
 
     def __ping_return(self, host, timeout, attempt):

@@ -41,21 +41,22 @@ class ModuleBase(ObjectBase):
     def __init__(self, obj_monitor, name=None):
         self._monitor = obj_monitor
         if name:
-            self.__nameModule = name
+            self.__name_module = name
         else:
-            self.__nameModule = __name__
+            self.__name_module = __name__
+
         self.path_file = lib.dict_files_path.DictFilesPath()
         self.dict_return = lib.modules.dict_return_check.ReturnModuleCheck()
 
-    @property
-    def NameModule(self):
-        return self.__nameModule
-
     def check(self):
-        self.debug.debug_obj(self.NameModule, self.dict_return.list, "Data Return")
+        self.debug.debug_obj(self.name_module, self.dict_return.list, "Data Return")
 
     @property
-    def isMonitorExist(self):
+    def name_module(self):
+        return self.__name_module
+
+    @property
+    def is_monitor_exist(self):
         if self._monitor and isinstance(self._monitor, lib.monitor.Monitor):
             return True
         return False
@@ -73,7 +74,7 @@ class ModuleBase(ObjectBase):
 
     def send_message(self, message, status=None):
         if message:
-            if self._monitor:
+            if self.is_monitor_exist:
                 self._monitor.send_message(message, status)
 
     def get_conf(self, findkey=None, default_val=None, select_module: str = None, str_split: str = None,
@@ -81,9 +82,9 @@ class ModuleBase(ObjectBase):
         if default_val is None:
             default_val = {}
 
-        if self.isMonitorExist:
+        if self.is_monitor_exist:
             if not select_module:
-                select_module = self.NameModule
+                select_module = self.name_module
 
             if select_module:
                 if findkey is None:
@@ -120,7 +121,7 @@ class ModuleBase(ObjectBase):
         return value
 
     def check_status(self, status, module, module_subkey):
-        if self._monitor:
+        if self.is_monitor_exist:
             return self._monitor.check_status(status, module, module_subkey)
         return None
 
