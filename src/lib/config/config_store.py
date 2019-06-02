@@ -52,18 +52,18 @@ class ConfigStore(ObjectBase):
     def file(self, val):
         self.__file = val
 
-    def read(self):
-        data = {}
+    def read(self, def_return=None):
+        return_date = def_return
         if self.is_exist_file:
             try:
                 f = codecs.open(self.file, 'r', 'utf-8')
-                data = json.loads(f.read())
+                return_date = json.loads(f.read())
                 f.close()
             except Exception as e:
                 self.debug.exception(e)
         else:
             self.debug.print("Config >> Warning: File ({0}) not exist!!!".format(self.file),  DebugLevel.warning)
-        return data
+        return return_date
 
     def save(self, data):
         try:

@@ -72,29 +72,23 @@ class ConfigControl(ConfigStore):
         return False
 
     def read(self, return_data=True):
-        try:
-            self.data = super().read()
+        self.data = super().read()
+        if self.data is not None:
             self.__load = datetime.datetime.now()
             self.__update = self.__load
-
-        except Exception as e:
-            self.debug.exception(e)
+        else:
             self.__load = None
             self.__update = None
 
         if return_data:
             return self.data
-        return None
-
+        
     def save(self) -> bool:
-        try:
-            super().save(self.data)
+        if super().save(self.data):
             self.__load = datetime.datetime.now()
             self.__update = self.__load
-        except Exception as e:
-            self.debug.exception(e)
-            return False
-        return True
+            return True
+        return False
 
     @staticmethod
     def convert_find_key_to_list(find_key, str_split: str = None) -> list:
