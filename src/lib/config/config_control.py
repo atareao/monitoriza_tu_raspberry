@@ -71,8 +71,8 @@ class ConfigControl(ConfigStore):
             return True
         return False
 
-    def read(self, return_data=True):
-        self.data = super().read()
+    def read(self, return_data=True, def_return=None):
+        self.data = super().read(def_return)
         if self.data is not None:
             self.__load = datetime.datetime.now()
             self.__update = self.__load
