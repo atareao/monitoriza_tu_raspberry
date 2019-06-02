@@ -44,14 +44,14 @@ class Watchful(ModuleBase):
             val_conf = val_conf.strip()
             if not val_conf.isnumeric():
                 val_conf = default_val
-                self.debug("PlugIn > {0} > Warning, config {1} type incorrect!".format(self.name_module, key_conf),
+                self.debug("PlugIn > {0} > Warning, config {1} type incorrect!".format(self.name_module(), key_conf),
                            DebugLevel.warning)
             else:
                 val_conf = int(val_conf)
 
         if not val_conf or val_conf < 0 or val_conf > 100:
             val_conf = default_val
-            self.debug("PlugIn > {0} > Warning, config {1} value not valid!".format(self.name_module, key_conf),
+            self.debug("PlugIn > {0} > Warning, config {1} value not valid!".format(self.name_module(), key_conf),
                        DebugLevel.warning)
 
         return val_conf
