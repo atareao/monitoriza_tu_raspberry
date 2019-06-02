@@ -29,12 +29,12 @@ import socket
 import time
 import pprint
 import concurrent.futures
-import lib.modules.module_base
-import lib.modules.dict_return_check
-from lib.debug import *
-from lib.config.configControl import *
-from lib.object_base import ObjectBase
-from lib.telegram import Telegram
+
+from lib.modules import ReturnModuleCheck
+from lib.debug import DebugLevel
+from lib.config import ConfigControl
+from lib import ObjectBase
+from lib import Telegram
 
 __all__ = ['Monitor']
 
@@ -78,7 +78,7 @@ class Monitor(ObjectBase):
         if self.dir_var:
             self.__check_dir(self.dir_var)
             self.status = ConfigControl(os.path.join(self.dir_var, 'status.json'), {})
-            if not self.status.is_exist:
+            if not self.status.is_exist_file:
                 self.status.save()
         else:
             self.status = ConfigControl(None, {})
@@ -169,7 +169,7 @@ class Monitor(ObjectBase):
             module = module_import.Watchful(self)
             r_mod_check = module.check()
 
-            if isinstance(r_mod_check, lib.modules.dict_return_check.ReturnModuleCheck):
+            if isinstance(r_mod_check, ReturnModuleCheck):
                 for (key, value) in r_mod_check.items():
                     self.debug.print(
                         "> Monitor > check_module >> Module: {0} - Key: {1} - Val: {2}".format(
@@ -216,7 +216,7 @@ class Monitor(ObjectBase):
             if module_def.find('__') == -1:
                 # Debug Control Run Modules
                 # --- MODE NAME -------------------
-                # if module_def != "web":
+                # if module_def != "ping":
                 #     continue
                 # --- MODE COUNT ------------------
                 # if cont_break < 1:

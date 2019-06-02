@@ -22,9 +22,9 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-from lib.linux.mem import Mem
+from lib.linux import Mem
 from lib.debug import DebugLevel
-from lib.modules.module_base import ModuleBase
+from lib.modules import ModuleBase
 
 
 class Watchful(ModuleBase):

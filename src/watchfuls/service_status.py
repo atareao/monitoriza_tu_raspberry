@@ -21,7 +21,7 @@
 
 import concurrent.futures
 from lib.debug import DebugLevel
-from lib.modules.module_base import ModuleBase
+from lib.modules import ModuleBase
 
 
 class Watchful(ModuleBase):

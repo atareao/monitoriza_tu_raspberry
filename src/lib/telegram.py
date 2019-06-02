@@ -24,8 +24,8 @@
 
 import threading
 import requests
-from lib.object_base import ObjectBase
 from lib.debug import DebugLevel
+from lib import ObjectBase
 from time import sleep
 
 __all__ = ['Telegram']

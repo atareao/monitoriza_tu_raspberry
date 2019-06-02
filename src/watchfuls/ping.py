@@ -21,9 +21,9 @@
 
 import time
 import concurrent.futures
-from lib.switch import Switch
+from lib import Switch
 from lib.debug import DebugLevel
-from lib.modules.module_base import ModuleBase
+from lib.modules import ModuleBase
 from enum import Enum
 
 

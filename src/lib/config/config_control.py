@@ -21,21 +21,12 @@
 
 import datetime
 import collections
-from lib.config.configStore import *
-from enum import Enum
+from lib.config import ConfigTypeReturn
+from lib.config import ConfigStore
 
-__all__ = ['ConfigControl', 'ConfigTypeReturn']
+__all__ = ['ConfigControl']
 
 """Configuration module"""
-
-
-class ConfigTypeReturn(Enum):
-    STR = 1
-    INT = 2
-    BOOL = 3
-    LIST = 4
-    DICT = 5
-    TUPLE = 6
 
 
 class ConfigControl(ConfigStore):
@@ -106,65 +97,59 @@ class ConfigControl(ConfigStore):
         return True
 
     @staticmethod
-    def convert_findkey_to_list(findkey, str_split: str = None) -> list:
-        lreturn = []
-        if isinstance(findkey, str):
+    def convert_find_key_to_list(find_key, str_split: str = None) -> list:
+        list_return = []
+        if isinstance(find_key, str):
             if str_split is None:
-                lreturn = findkey.split()
+                list_return = find_key.split()
             else:
-                lreturn = findkey.split(str_split)
-        elif isinstance(findkey, list):
-            lreturn = findkey.copy()
-        elif isinstance(findkey, tuple):
-            lreturn = list(findkey)
+                list_return = find_key.split(str_split)
+        elif isinstance(find_key, list):
+            list_return = find_key.copy()
+        elif isinstance(find_key, tuple):
+            list_return = list(find_key)
         else:
-            raise TypeError('Invalid type: findkey must be a string, list or tuple, not {0}.'.format(type(findkey)))
-        return lreturn
+            raise TypeError('Invalid type: find_key must be a string, list or tuple, not {0}.'.format(type(find_key)))
+        return list_return
 
     def __convert_list_to_dict(self, list_items, val):
-        dreturn = {}
+        dict_return = {}
         if isinstance(list_items, list):
             target = list_items.pop(0)
             if list_items:
-                dreturn[target] = self.__convert_list_to_dict(list_items, val)
+                dict_return[target] = self.__convert_list_to_dict(list_items, val)
             else:
-                dreturn[target] = val
+                dict_return[target] = val
         else:
-            dreturn[list_items] = val
-        return dreturn
+            dict_return[list_items] = val
+        return dict_return
 
-    def __update_value_findkey(self, source, overrides):
+    def __update_value_find_key(self, source, overrides):
         # https://stackoverflow.com/questions/3232943/update-value-of-a-nested-dictionary-of-varying-depth
         for key, val in overrides.items():
             if isinstance(source, collections.Mapping):
                 if isinstance(val, collections.Mapping):
-                    source[key] = self.__update_value_findkey(source.get(key, {}), val)
+                    source[key] = self.__update_value_find_key(source.get(key, {}), val)
                 else:
                     source[key] = val
             else:
                 source = {key: overrides[key]}
         return source
 
-    def get_conf(self, findkey, def_val=None, str_split: str = None, data_dict: dict = None, r_type: ConfigTypeReturn = ConfigTypeReturn.STR):
+    def get_conf(self, find_key, def_val=None, str_split: str = None, data_dict: dict = None, r_type: ConfigTypeReturn = ConfigTypeReturn.STR):
         """ Return value of the key that we are looking for and if this key does not exist, it
         will return def_val. If def_val is None it will return an object (empty) of the type
         that is defined in r_type.
 
-        :param findkey (:obj:`list`of :obj:`tuple` of :obj:`str`): the target keys structure, which
-        should be present. Support type [string | tuple | list].
-        :param def_val (optional): It is the value that returns if the key we are looking for is not found.
-        :param str_split (obj:`str`, optional): character that will be used to separate findkey if it is
-        string type in the list conversion.
-        :param data_dict (obj:`dict`, optional): the dictionary to be searched in. By default the self.data
-        will be used.
-        :param r_type (:obj:`list`of :obj:`tuple` of :obj:`str` of :obj:`int` of :obj:`bool`, optional): It is
-        the type of object (empty), which will return if def_val is not defined or def_val is None and the key
-        we are looking for was not found. For example, if we specify r_type = list, it returns [].
-        :raises TypeError: if findkey is not a string, tuple or list or if r_type is not a string, list, dict,
-        tuple, int or bool.
+        :param find_key: the target keys structure, which should be present. Support type [string | tuple | list].
+        :param def_val: It is the value that returns if the key we are looking for is not found.
+        :param str_split: character that will be used to separate find_key if it is string type in the list conversion.
+        :param data_dict: the dictionary to be searched in. By default the self.data will be used.
+        :param r_type: It is the type of object (empty), which will return if def_val is not defined or def_val is None and the key we are looking for was not found. For example, if we specify r_type = list, it returns [].
+        :raises TypeError: if find_key is not a string, tuple or list or if r_type is not a string, list, dict, tuple, int or bool.
 
         Note:
-            Parameter 'findkey' is not support type 'dict'.
+            Parameter 'find_key' is not support type 'dict'.
             https://docs.python.org/3/library/collections.html#collections.OrderedDict
 
             Ordered dictionaries are just like regular dictionaries but have some
@@ -183,7 +168,7 @@ class ConfigControl(ConfigStore):
             'Not Exist!'
             >>> x.get_conf('level1', 'Not Exist!')
             {'level2': 'OK'}
-            >>> x.get_conf('level2', r_type=lib.config.ConfigTypeReturn.LIST)
+            >>> x.get_conf('level2', r_type=ConfigTypeReturn.LIST)
             []
 
         """
@@ -193,17 +178,17 @@ class ConfigControl(ConfigStore):
 
         data_return = None
         if data_dict:
-            keys = self.convert_findkey_to_list(findkey, str_split)
+            keys = self.convert_find_key_to_list(find_key, str_split)
 
             work_dict = data_dict
             while keys:
                 target = keys.pop(0)
                 if isinstance(work_dict, dict):
                     if target in work_dict.keys():
-                        if not keys:    # this is the last element in the findkey, and it is in the data_dict
+                        if not keys:    # this is the last element in the find_key, and it is in the data_dict
                             data_return = work_dict[target]
                             break
-                        else:   # not the last element of findkey, change the temp var
+                        else:   # not the last element of find_key, change the temp var
                             work_dict = work_dict[target]
                     else:
                         continue
@@ -230,19 +215,19 @@ class ConfigControl(ConfigStore):
                 raise TypeError('Invalid type: r_type must be a string, list, dict, tuple, int or bool, not {0}.'.format(type(r_type)))
         return def_val
 
-    def is_exist_conf(self, findkey, str_split: str = None, data_dict: dict = None):
-        """ Return True if the given findkey is present within the structure of the source dictionary, False otherwise.
+    def is_exist_conf(self, find_key, str_split: str = None, data_dict: dict = None):
+        """ Return True if the given find_key is present within the structure of the source dictionary, False otherwise.
 
-        The findkey format is list, taple, or string in which the str_split parameter is used as the deleting character.
+        The find_key format is list, taple, or string in which the str_split parameter is used as the deleting character.
 
-        :param findkey: the target keys structure, which should be present. Support type [string | tuple | list].
-        :param str_split (obj:`str`, optional): character that will be used to separate findkey if it is string type in the list conversion.
-        :param data_dict (obj:`dict`, optional): the dictionary to be searched in.
-        :returns Boolean: is the findkey structure present in data.
-        :raises TypeError: if findkey is not a string, tuple or list
+        :param find_key: the target keys structure, which should be present. Support type [string | tuple | list].
+        :param str_split: character that will be used to separate find_key if it is string type in the list conversion.
+        :param data_dict: the dictionary to be searched in.
+        :returns Boolean: is the find_key structure present in data.
+        :raises TypeError: if find_key is not a string, tuple or list
 
         Note:
-            Parameter 'findkey' is not support type 'dict'.
+            Parameter 'find_key' is not support type 'dict'.
             https://docs.python.org/3/library/collections.html#collections.OrderedDict
 
             Ordered dictionaries are just like regular dictionaries but have some
@@ -273,16 +258,16 @@ class ConfigControl(ConfigStore):
         if data_dict is None:
             data_dict = self.data
 
-        if findkey and data_dict:
-            keys = self.convert_findkey_to_list(findkey, str_split)
+        if find_key and data_dict:
+            keys = self.convert_find_key_to_list(find_key, str_split)
             work_dict = data_dict
             while keys:
                 target = keys.pop(0)
                 if isinstance(work_dict, dict):
                     if target in work_dict.keys():
-                        if not keys:    # this is the last element in the findkey, and it is in the data_dict
+                        if not keys:    # this is the last element in the find_key, and it is in the data_dict
                             return True
-                        else:   # not the last element of findkey, change the temp var
+                        else:   # not the last element of find_key, change the temp var
                             work_dict = work_dict[target]
                     else:
                         return False
@@ -290,21 +275,21 @@ class ConfigControl(ConfigStore):
                     return False
         return False
 
-    def set_conf(self, findkey, val, str_split: str = None, data_dict: dict = None):
+    def set_conf(self, find_key, val, str_split: str = None, data_dict: dict = None):
         """ Return true if the process was successful, False otherwise.
 
-        The findkey format is list, taple, or string in which the str_split parameter is used as the deleting character.
+        The find_key format is list, tuple, or string in which the str_split parameter is used as the deleting character.
 
-        :param findkey: the target keys structure, which should be present. Support type [string | tuple | list].
+        :param find_key: the target keys structure, which should be present. Support type [string | tuple | list].
         :param val: new value
-        :param str_split (obj:`str`, optional): character that will be used to separate findkey if it is string type in the list conversion.
-        :param data_dict (obj:`dict`, optional): the dictionary to be searched in. By default the self.data will be used.
+        :param str_split: character that will be used to separate find_key if it is string type in the list conversion.
+        :param data_dict: the dictionary to be searched in. By default the self.data will be used.
         :returns Boolean: if it has been processed correctly.
         :returns Dict: if it has been processed correctly and data_dict is a dict.
-        :raises TypeError: if findkey is not a string, tuple or list
+        :raises TypeError: if find_key is not a string, tuple or list
 
         Note:
-            Parameter 'findkey' is not support type 'dict'.
+            Parameter 'find_key' is not support type 'dict'.
             https://docs.python.org/3/library/collections.html#collections.OrderedDict
 
             Ordered dictionaries are just like regular dictionaries but have some
@@ -331,8 +316,8 @@ class ConfigControl(ConfigStore):
 
         """
 
-        if findkey:
-            keys = self.convert_findkey_to_list(findkey, str_split)
+        if find_key:
+            keys = self.convert_find_key_to_list(find_key, str_split)
             if data_dict is not None:
                 work_dict = data_dict
             elif self.data is not None:
@@ -340,8 +325,8 @@ class ConfigControl(ConfigStore):
             else:
                 work_dict = {}
 
-            keyupdate = self.__convert_list_to_dict(keys, val)
-            work_dict = self.__update_value_findkey(work_dict, keyupdate)
+            key_update = self.__convert_list_to_dict(keys, val)
+            work_dict = self.__update_value_find_key(work_dict, key_update)
 
             if data_dict is not None:
                 return work_dict

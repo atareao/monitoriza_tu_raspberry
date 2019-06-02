@@ -25,8 +25,9 @@
 import codecs
 import json
 import os
+from lib import ObjectBase
 from lib.debug import DebugLevel
-from lib.object_base import ObjectBase
+
 
 __all__ = ['ConfigStore']
 
@@ -37,7 +38,7 @@ class ConfigStore(ObjectBase):
         self.file = file
 
     @property
-    def is_exist(self):
+    def is_exist_file(self):
         if self.file:
             if os.path.isfile(self.file):
                 return True
@@ -53,7 +54,7 @@ class ConfigStore(ObjectBase):
 
     def read(self):
         data = {}
-        if self.is_exist:
+        if self.is_exist_file:
             try:
                 f = codecs.open(self.file, 'r', 'utf-8')
                 data = json.loads(f.read())
