@@ -21,10 +21,13 @@
 
 import lib.monitor
 import lib.tools
-import lib.dict_files_path
-import lib.modules.dict_return_check
-from lib.object_base import ObjectBase
-from lib.config.configControl import ConfigTypeReturn
+
+from lib import Switch
+from lib import ObjectBase
+from lib import DictFilesPath
+from lib.config import ConfigTypeReturn
+from lib.modules import ReturnModuleCheck
+from enum import Enum
 
 __all__ = ['ModuleBase']
 
@@ -39,21 +42,22 @@ class ModuleBase(ObjectBase):
     def __init__(self, obj_monitor, name=None):
         self._monitor = obj_monitor
         if name:
-            self.__nameModule = name
+            self.__name_module = name
         else:
-            self.__nameModule = __name__
-        self.path_file = lib.dict_files_path.DictFilesPath()
-        self.dict_return = lib.modules.dict_return_check.ReturnModuleCheck()
+            self.__name_module = __name__
 
-    @property
-    def NameModule(self):
-        return self.__nameModule
+        self.path_file = DictFilesPath()
+        self.dict_return = ReturnModuleCheck()
 
     def check(self):
-        self.debug.debug_obj(self.NameModule, self.dict_return.list, "Data Return")
+        self.debug.debug_obj(self.name_module, self.dict_return.list, "Data Return")
 
     @property
-    def isMonitorExist(self):
+    def name_module(self):
+        return self.__name_module
+
+    @property
+    def is_monitor_exist(self):
         if self._monitor and isinstance(self._monitor, lib.monitor.Monitor):
             return True
         return False
@@ -71,7 +75,7 @@ class ModuleBase(ObjectBase):
 
     def send_message(self, message, status=None):
         if message:
-            if self._monitor:
+            if self.is_monitor_exist:
                 self._monitor.send_message(message, status)
 
     def get_conf(self, findkey=None, default_val=None, select_module: str = None, str_split: str = None,
@@ -79,30 +83,51 @@ class ModuleBase(ObjectBase):
         if default_val is None:
             default_val = {}
 
-        if self.isMonitorExist:
+        if self.is_monitor_exist:
             if not select_module:
-                select_module = self.NameModule
+                select_module = self.name_module
 
             if select_module:
                 if findkey is None:
                     return self._monitor.config_modules.get_conf(select_module, default_val)
                 else:
-                    keys_list = self._monitor.config_modules.convert_findkey_to_list(findkey, str_split)
+                    keys_list = self._monitor.config_modules.convert_find_key_to_list(findkey, str_split)
                     keys_list.insert(0, select_module)
-                    return self._monitor.config_modules.get_conf(keys_list, default_val, str_split = str_split,
+                    return self._monitor.config_modules.get_conf(keys_list, default_val, str_split=str_split,
                                                                  r_type=r_type)
 
         if findkey or default_val:
             return default_val
         return []
 
+    def get_conf_in_list(self, opt_find: str, key: str, def_val=None):
+        with Switch(opt_find, check_isinstance=True) as case:
+            if case(Enum):
+                find_key = [opt_find.name]
+            elif case(str):
+                find_key = [opt_find]
+            elif case(list):
+                find_key = opt_find.copy()
+            elif case(int, float):
+                find_key = [str(opt_find)]
+            elif case(tuple):
+                find_key = list(opt_find)
+            else:
+                raise TypeError("opt_find is not valid type ({0})!".format(type(opt_find)))
+
+        if key:
+            find_key.insert(0, key)
+            find_key.insert(0, "list")
+        value = self.get_conf(find_key, def_val)
+        return value
+
     def check_status(self, status, module, module_subkey):
-        if self._monitor:
+        if self.is_monitor_exist:
             return self._monitor.check_status(status, module, module_subkey)
         return None
 
     @staticmethod
-    def _run_cmd(cmd, return_sterr=False):
+    def _run_cmd(cmd, return_sterr: bool = False):
         stdout, stderr = lib.tools.execute(cmd)
         if return_sterr:
             return stdout, stderr

@@ -24,7 +24,7 @@
 
 import concurrent.futures
 from lib.debug import DebugLevel
-from lib.modules.module_base import ModuleBase
+from lib.modules import ModuleBase
 
 
 class Watchful(ModuleBase):
@@ -36,7 +36,7 @@ class Watchful(ModuleBase):
     def check(self):
         list_url = []
         for (key, value) in self.get_conf('list', {}).items():
-            self.debug.print(">> PlugIn >> {0} >> Web: {1} - Enabled: {2}".format(self.NameModule, key, value),
+            self.debug.print(">> PlugIn >> {0} >> Web: {1} - Enabled: {2}".format(self.name_module, key, value),
                              DebugLevel.info)
             if value:
                 list_url.append(key)
@@ -68,7 +68,7 @@ class Watchful(ModuleBase):
         other_data = {'code': code}
         self.dict_return.set(url, status, s_message, False, other_data)
 
-        if self.check_status(status, self.NameModule, url):
+        if self.check_status(status, self.name_module, url):
             self.send_message(s_message, status)
 
     def __web_return(self, url):

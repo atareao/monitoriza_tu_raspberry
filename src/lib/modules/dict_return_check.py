@@ -50,8 +50,10 @@ class ReturnModuleCheck(object):
             return True
         return False
 
-    def set(self, key: str, status: bool = True, message='', send_msg: bool = True, other_data: dict = {}) -> bool:
+    def set(self, key: str, status: bool = True, message='', send_msg: bool = True, other_data: dict = None) -> bool:
         if key:
+            if other_data is None:
+                other_data = {}
             self.__dict_return[key] = {}
             self.__dict_return[key]['status'] = status
             self.__dict_return[key]['message'] = message

@@ -54,7 +54,7 @@ class ThermalInfoCollection(object):
             if type_return is not None:
                 type_return = str(type_return).strip()
             else:
-                type_return = "Unknow"
+                type_return = "Unknown"
             return type_return
 
         @property

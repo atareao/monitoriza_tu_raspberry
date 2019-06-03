@@ -23,7 +23,7 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 import re
-from lib.modules.module_base import ModuleBase
+from lib.modules import ModuleBase
 
 
 class Watchful(ModuleBase):

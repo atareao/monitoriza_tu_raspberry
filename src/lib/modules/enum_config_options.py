@@ -19,15 +19,15 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-from lib.debug import Debug
-from lib.debug import DebugLevel
+from enum import Enum
 
-__all__ = ['ObjectBase']
+__all__ = ['EnumConfigOptions']
 
 
-class ObjectBase(object):
+class EnumConfigOptions(Enum):
+    enabled = 1
+    alert = 2
+    label = 3
+    # Plugins a partir del numero 100 en adelante.
+    # Plugins from number 100 onwards.
 
-    debug = Debug(True, DebugLevel.info)
-
-    def __init__(self):
-        pass

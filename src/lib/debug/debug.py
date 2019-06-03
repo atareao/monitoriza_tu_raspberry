@@ -21,18 +21,9 @@
 
 import pprint
 import traceback
-from enum import Enum
+from lib.debug import DebugLevel
 
-__all__ = ['DebugLevel', 'Debug']
-
-
-class DebugLevel(Enum):
-    null = 0
-    debug = 1
-    info = 2
-    warning = 3
-    error = 4
-    emergency = 5
+__all__ = ['Debug']
 
 
 class Debug(object):
