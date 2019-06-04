@@ -19,6 +19,8 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+"""Configuration module"""
+
 import datetime
 import collections
 from lib.config import ConfigTypeReturn
@@ -26,13 +28,13 @@ from lib.config import ConfigStore
 
 __all__ = ['ConfigControl']
 
-"""Configuration module"""
-
 
 class ConfigControl(ConfigStore):
+
     """Class to Storage and processing of configuration parameters."""
 
     def __init__(self, file, init_data: dict = None):
+        """ Init object. """
         self.__load = None
         self.__update = None
         super().__init__(file)
@@ -214,7 +216,7 @@ class ConfigControl(ConfigStore):
     def is_exist_conf(self, find_key, str_split: str = None, data_dict: dict = None):
         """ Return True if the given find_key is present within the structure of the source dictionary, False otherwise.
 
-        The find_key format is list, taple, or string in which the str_split parameter is used as the deleting character.
+        The find_key format is list, tuple, or string in which the str_split parameter is used as the deleting character.
 
         :param find_key: the target keys structure, which should be present. Support type [string | tuple | list].
         :param str_split: character that will be used to separate find_key if it is string type in the list conversion.

@@ -33,20 +33,20 @@ class Debug(object):
         self.level = level
 
     @property
-    def enabled(self):
+    def enabled(self) -> bool:
         return self.__enabled
 
     @enabled.setter
-    def enabled(self, val):
-        self.__enabled = val
+    def enabled(self, value: bool):
+        self.__enabled = value
 
     @property
     def level(self) -> DebugLevel:
         return self.__level
 
     @level.setter
-    def level(self, val: DebugLevel = DebugLevel.null):
-        self.__level = val
+    def level(self, value: DebugLevel = DebugLevel.null):
+        self.__level = value
 
     def print(self, message, msg_level: DebugLevel = DebugLevel.debug, force: bool = False):
         show_msg = True
