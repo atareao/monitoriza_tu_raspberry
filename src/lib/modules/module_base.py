@@ -78,7 +78,7 @@ class ModuleBase(ObjectBase):
             if self.is_monitor_exist:
                 self._monitor.send_message(message, status)
 
-    def get_conf(self, findkey=None, default_val=None, select_module: str = None, str_split: str = None,
+    def get_conf(self, find_key=None, default_val=None, select_module: str = None, str_split: str = None,
                  r_type: ConfigTypeReturn = ConfigTypeReturn.STR):
         if default_val is None:
             default_val = {}
@@ -88,15 +88,15 @@ class ModuleBase(ObjectBase):
                 select_module = self.name_module
 
             if select_module:
-                if findkey is None:
+                if find_key is None:
                     return self._monitor.config_modules.get_conf(select_module, default_val)
                 else:
-                    keys_list = self._monitor.config_modules.convert_find_key_to_list(findkey, str_split)
+                    keys_list = self._monitor.config_modules.convert_find_key_to_list(find_key, str_split)
                     keys_list.insert(0, select_module)
                     return self._monitor.config_modules.get_conf(keys_list, default_val, str_split=str_split,
                                                                  r_type=r_type)
 
-        if findkey or default_val:
+        if find_key or default_val:
             return default_val
         return []
 
@@ -121,15 +121,15 @@ class ModuleBase(ObjectBase):
         value = self.get_conf(find_key, def_val)
         return value
 
-    def check_status(self, status, module, module_subkey):
+    def check_status(self, status, module, module_sub_key):
         if self.is_monitor_exist:
-            return self._monitor.check_status(status, module, module_subkey)
+            return self._monitor.check_status(status, module, module_sub_key)
         return None
 
     @staticmethod
-    def _run_cmd(cmd, return_sterr: bool = False):
+    def _run_cmd(cmd, return_str_err: bool = False):
         stdout, stderr = lib.tools.execute(cmd)
-        if return_sterr:
+        if return_str_err:
             return stdout, stderr
         return stdout
 

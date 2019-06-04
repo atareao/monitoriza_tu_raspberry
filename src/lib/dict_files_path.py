@@ -61,24 +61,24 @@ class DictFilesPath(object):
 if __name__ == "__main__":
 
     t = DictFilesPath()
-    t.set("File1", "Path1")
+    t.set("test.tmp", "/tmp/test.tmp")
     print("1:", t.files)
     print("")
 
-    t.set("File1", "Path1.1")
+    t.set("test.tmp", "/tmp/test_dir/test.tmp")
     print("2:", t.files)
     print("")
 
-    t.set("File2", "Path2")
+    t.set("test2.tmp", "/tmp/test2.tmp")
     print("3:", t.files)
     print("")
 
-    t.remove("File2")
+    t.remove("test2.tmp")
     print("4:", t.files)
     print("")
     print("")
 
-    x = t.find("File1", "Path1Default")
+    x = t.find("test.tmp", "/dev/null")
     print("Find1:", x)
-    x = t.find("File11", "Path11Default")
+    x = t.find("test00.tmp", "/dev/null")
     print("Find2:", x)
