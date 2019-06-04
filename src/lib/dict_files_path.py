@@ -20,8 +20,7 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 
-"""
-Almacenamos una lista de nombre de archivos con su path correspondiente.
+""" Almacenamos una lista de nombre de archivos con su path correspondiente.
 
 Ejemplo:
     >>> t = DictFilesPath()
@@ -133,7 +132,7 @@ class DictFilesPath(object):
         """
         Elimina el archivo que le especificamos de la lista.
 
-        :param file_find: Nombre del archivo a eliminar.
+        :param file_find: Nombre del archivo a eliminar de la lista.
         :return: True si se ha eliminado correctamente, False si se produce error.
 
         """

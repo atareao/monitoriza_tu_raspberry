@@ -83,17 +83,17 @@ __all__ = ['Switch']
 
 
 class Switch:
-    """
-    Main class
-    """
+
+    """ Main Class. """
+
     def __init__(self, value, invariant_culture_ignore_case=False, check_isinstance=False):
-        """
-        The switch is initialized and configured as it will act.
+        """ The switch is initialized and configured as it will act.
 
         :param value: Value against which comparisons will be made.
         :param invariant_culture_ignore_case: If it is set to True and the type of value to be compared is a String,
         the difference between uppercase and lowercase will be ignored when doing the verification.
         :param check_isinstance: If set to True, the check will not be content value but the type of object it is.
+
         """
         self.value = value
         self.invariant_culture_ignore_case = invariant_culture_ignore_case
@@ -107,11 +107,11 @@ class Switch:
         return False
 
     def __call__(self, *values):
-        """
-        Check if any of the values passed to you match the value that was defined when the object was created.
+        """ Check if any of the values passed to you match the value that was defined when the object was created.
 
         :param values: List of values that are compared to the value specified when creating the switch.
         :return: True if any of the values that have been passed match, False if none matches.
+
         """
         if self.check_isinstance:
             # Efectúa check isinstance
