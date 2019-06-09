@@ -41,7 +41,6 @@
   "temperature": {
     "enabled": true,
     "alert": 80,
-    "enabled": true,
     "list":
     {
       "thermal_zone0": {

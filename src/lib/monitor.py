@@ -217,7 +217,7 @@ class Monitor(ObjectBase):
             if module_def.find('__') == -1:
                 # Debug Control Run Modules
                 # --- MODE NAME -------------------
-                # if module_def != "temperature":
+                # if module_def != "mysql":
                 #     continue
                 # --- MODE COUNT ------------------
                 # if cont_break < 1:
@@ -225,7 +225,7 @@ class Monitor(ObjectBase):
                 # cont_break = cont_break + 1
                 # continue
                 # Debug - End
-                
+
                 if self.config_modules.get_conf([module_def, "enabled"], self.__default_enabled):
                     list_modules.append(module_def)
 
