@@ -63,5 +63,19 @@
       "/": 80,
       "/boot": 80
     }
+  },
+  "mysql": {
+    "enabled": true,
+    "list": {
+      "MariaDB01": {
+        "enabled": true,
+        "host": "db01.dominio.lan",
+        "port": 3307,
+        "user": "test",
+        "password": "",
+        "db": "test",
+        "socket": ""
+      }
+    }
   }
 }

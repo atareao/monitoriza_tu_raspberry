@@ -132,7 +132,7 @@ class ModuleBase(ObjectBase):
             return default_val
         return []
 
-    def get_conf_in_list(self, opt_find: str, key_name_module: str, def_val=None):
+    def get_conf_in_list(self, opt_find, key_name_module: str, def_val=None):
         """
         Obtenemos los datos que deseamos buscar de la sección 'list' de la configuración del modulo.
 
@@ -161,6 +161,20 @@ class ModuleBase(ObjectBase):
             find_key.insert(0, "list")
         value = self.get_conf(find_key, def_val)
         return value
+
+    def get_status(self, key_name_module: str, def_val=None):
+        if def_val is None:
+            def_val = {}
+        if not self.is_monitor_exist:
+            return def_val
+        return self._monitor.status.get_conf(key_name_module, def_val)
+
+    def get_status_find(self, opt_find: str, key_name_module: str, def_val=None):
+        if def_val is None:
+            def_val = {}
+        if not self.is_monitor_exist:
+            return def_val
+        return self.get_status(key_name_module).get(opt_find, def_val)
 
     def check_status(self, status, module, module_sub_key):
         """ Comprobamos el status del modulo y sub modulo. """
