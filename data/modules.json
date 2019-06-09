@@ -1,5 +1,6 @@
 {
   "service_status": {
+    "enabled": true,
     "threads": 5,
     "list": {
       "bind9": true,
@@ -11,6 +12,7 @@
     }
   },
   "web": {
+    "enabled": true,
     "threads": 5,
     "list": {
       "www.atareao.es": true,
@@ -21,6 +23,7 @@
     }
   },
   "ping": {
+    "enabled": true,
     "threads": 5,
     "attempt": 3,
     "timeout": 5,
@@ -36,6 +39,7 @@
     }
   },
   "temperature": {
+    "enabled": true,
     "alert": 80,
     "enabled": true,
     "list":
@@ -48,10 +52,12 @@
     }
   },
   "ram_swap": {
+    "enabled": true,
     "alert_ram": 60,
     "alert_swap": 60
   },
   "filesystemusage": {
+    "enabled": true,
     "alert": 85,
     "list": {
       "/": 80,
