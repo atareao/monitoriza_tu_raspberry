@@ -24,9 +24,10 @@ __all__ = ['ReturnModuleCheck']
 
 class ReturnModuleCheck(object):
 
-    __dict_return = None
+    """ Main Class. """
 
     def __init__(self):
+        """ Inicializa Objeto. """
         self.__dict_return = {}
 
     @property
@@ -37,20 +38,56 @@ class ReturnModuleCheck(object):
 
     @property
     def count(self) -> int:
+        """
+        Obtenemos el numero de returns que contiene el objeto.
+
+        :return: Numero de returns.
+
+        """
         return len(self.list)
 
     def items(self):
+        """
+        Lista de items del diccionario return.
+
+        :return: Lista de items.
+
+        """
         return self.list.items()
 
     def keys(self):
+        """
+        Lista de keys del diccionario return.
+
+        :return: Lista de keys.
+
+        """
         return self.list.keys()
 
     def is_exist(self, key: str) -> bool:
+        """
+        Comprueba si la key que le especificamos existe en la lista de returns.
+
+        :param key: Key que buscamos.
+        :return:  True si existe, False si no existe.
+
+        """
         if key in self.list.keys():
             return True
         return False
 
     def set(self, key: str, status: bool = True, message='', send_msg: bool = True, other_data: dict = None) -> bool:
+        """
+        Crea un nuevo return y si ya existe lo actualiza.
+
+        :param key: Key del return
+        :param status: True si el Status es OK, False si el status es Error/Warning/Etc.. todo lo que no es OK.
+        :param message: Mensaje que se enviara pro telegram.
+        :param send_msg: True el mensaje hay que enviarlo, False el mensaje no hay que enviarlo.
+        :param other_data: Diccionario con otros datos.
+        :return: True se ha guardado ok, False algo ha fallado.
+
+        """
         if key:
             if other_data is None:
                 other_data = {}
@@ -63,32 +100,42 @@ class ReturnModuleCheck(object):
         return False
 
     def remove(self, key: str) -> bool:
+        """
+        Eliminamos el key que le especificamos de la lista de returns.
+
+        :param key: Key a eliminar.
+        :return: True se ha eliminado, False algo ha fallado.
+
+        """
         if self.is_exist(key):
             del self.__dict_return[key]
             return True
         return False
 
     def get(self, key: str) -> dict:
+        """
+        Obtenemos el diccionario de la key que buscamos.
+
+        :param key: Key que buscamos.
+        :return: Diccionario con los datos de la key que buscamos y si no existe esa key retorna diccionario vacio.
+
+        """
         if self.is_exist(key):
             return self.list[key]
         return {}
 
     def get_status(self, key: str) -> bool:
-        if self.is_exist(key):
-            return self.list[key]['status']
-        return False
+        """ Obtenemos el Status del key que especificamos. """
+        return self.get(key).get('status', False)
 
     def get_message(self, key: str) -> str:
-        if self.is_exist(key):
-            return self.list[key]['message']
-        return ''
+        """ Obtenemos el mensaje del key que especificamos. """
+        return self.get(key).get('message', '')
 
     def get_send(self, key: str) -> bool:
-        if self.is_exist(key):
-            return self.list[key]['send']
-        return True
+        """ Obtenemos el Send del key que especificamos. """
+        return self.get(key).get('send', True)
 
     def get_other_data(self, key: str) -> dict:
-        if self.is_exist(key):
-            return self.list[key]['other_data']
-        return True
+        """ Obtenemos other_data del key que especificamos. """
+        return self.get(key).get('other_data', {})

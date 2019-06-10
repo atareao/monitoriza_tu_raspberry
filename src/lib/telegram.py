@@ -34,14 +34,15 @@ __all__ = ['Telegram']
 class Telegram(ObjectBase):
 
     def __init__(self, token, chat_id):
-        self.list_msg = []
-        self.count_msg = 0
-        self.count_msg_send = 0
         self.token = token
         self.chat_id = chat_id
-        self.group_messages = False
-        self.stop = False
-        self.reset_count()
+        # Set values
+        self.list_msg = None
+        self.count_msg = None
+        self.count_msg_send = None
+        self.group_messages = None
+        self.stop = None
+        self.__default()
         self.__init_pool()
 
     def __init_pool(self):
@@ -56,6 +57,14 @@ class Telegram(ObjectBase):
     @group_messages.setter
     def group_messages(self, val: bool):
         self.__group_messages = val
+
+    def __default(self):
+        self.group_messages = False
+        self.clear()
+
+    def clear(self):
+        self.list_msg = []
+        self.reset_count()
 
     def reset_count(self):
         self.count_msg = 0
@@ -81,25 +90,29 @@ class Telegram(ObjectBase):
 
     @property
     def is_entry_list(self) -> bool:
-        if len(self.list_msg) == 0:
-            return True
-        return False
+        if self.list_msg and len(self.list_msg) > 0:
+            return False
+        return True
 
     def add_list(self, message):
         # Efectuamos insert para mantener el orden.
-        self.list_msg.insert(0, message)
+        if self.list_msg is None:
+            self.clear()
+        self.list_msg.append(message)
         self.count_msg += 1
 
     def pool_run(self):
         self.stop = False
         msg_group = ''
-        while True:
+        while_run = True
+        while while_run:
             if not self.is_entry_list:
-                msg = self.list_msg.pop()
+                msg = self.list_msg.pop(0)
                 self.debug.print("Telegram > Send >> Msg: {0}".format(msg))
                 if self.group_messages:
                     msg_group += msg + "\n"
                 else:
+                    # TODO: Pendiente que hacer cuando falle el envío.
                     self.api_send_message(msg)
                 self.count_msg_send += 1
             else:
@@ -109,18 +122,27 @@ class Telegram(ObjectBase):
                         msg_group = ''
                 else:
                     if self.stop:
-                        break
+                        while_run = False
         return
 
     def api_send_message(self, message):
+        code_return = 0
         if message and self.token and self.chat_id:
-            requests.post('https://api.telegram.org/bot{0}/sendMessage'.format(self.token),
-                          data={'chat_id': self.chat_id, 'text': message, 'parse_mode': 'Markdown'})
-            return True
-        if not self.token:
-            self.debug.print("Telegram >> API >> Error: Telegram Token is Null", DebugLevel.error)
-        if not self.chat_id:
-            self.debug.print("Telegram >> API >> Error: Telegram Chat ID is Null", DebugLevel.error)
-        return False
+            result = requests.post('https://api.telegram.org/bot{0}/sendMessage'.format(self.token),
+                                   data={'chat_id': self.chat_id, 'text': message, 'parse_mode': 'Markdown'})
+            code_return = result.status_code
+        else:
+            if not self.token:
+                self.debug.print("Telegram >> API >> Error: Telegram Token is Null", DebugLevel.error)
+                code_return -= 1
+            if not self.chat_id:
+                self.debug.print("Telegram >> API >> Error: Telegram Chat ID is Null", DebugLevel.error)
+                code_return -= 2
+
+        # >0 = HTTP Status_Code
+        # -1 = Token is Null
+        # -2 = Chat Id is Null
+        # -3 = Token And Chat Id is Null
+        return True if code_return == 200 else False, code_return
 
 # https://apps.timwhitlock.info/emoji/tables/unicode

@@ -74,7 +74,7 @@ __author__ = "Javier Pastor, Ian Bell"
 __copyright__ = "Copyright © 2019, Javier Pastor"
 __credits__ = "Javier Pastor"
 __license__ = "GPL"
-__version__ = "0.0.1"
+__version__ = "0.0.2"
 __maintainer__ = 'Javier Pastor'
 __email__ = "python@cerebelum.net"
 __status__ = "Development"
@@ -83,21 +83,24 @@ __all__ = ['Switch']
 
 
 class Switch:
-    """
-    Main class
-    """
-    def __init__(self, value, invariant_culture_ignore_case=False, check_isinstance=False):
-        """
-        The switch is initialized and configured as it will act.
+
+    """ Main Class. """
+
+    def __init__(self, value, invariant_culture_ignore_case=False, check_isinstance=False, check_contain=False):
+        """ The switch is initialized and configured as it will act.
 
         :param value: Value against which comparisons will be made.
         :param invariant_culture_ignore_case: If it is set to True and the type of value to be compared is a String,
         the difference between uppercase and lowercase will be ignored when doing the verification.
         :param check_isinstance: If set to True, the check will not be content value but the type of object it is.
+        :param check_contain: If it is true, it will check if the value that is specified is part of the text that
+        we check.
+
         """
         self.value = value
         self.invariant_culture_ignore_case = invariant_culture_ignore_case
         self.check_isinstance = check_isinstance
+        self.check_contain = check_contain
 
     def __enter__(self):
         return self
@@ -107,11 +110,11 @@ class Switch:
         return False
 
     def __call__(self, *values):
-        """
-        Check if any of the values passed to you match the value that was defined when the object was created.
+        """ Check if any of the values passed to you match the value that was defined when the object was created.
 
         :param values: List of values that are compared to the value specified when creating the switch.
         :return: True if any of the values that have been passed match, False if none matches.
+
         """
         if self.check_isinstance:
             # Efectúa check isinstance
@@ -120,10 +123,24 @@ class Switch:
                     return True
             return False
 
-        elif self.invariant_culture_ignore_case and isinstance(self.value, str):
-            # Comparativa ignorando Mayúsculas y Minúsculas.
+        elif isinstance(self.value, str):
             for item in values:
-                if isinstance(item, str) and (self.value.lower() == item.lower()):
-                    return True
+                if isinstance(item, str):
+                    if self.invariant_culture_ignore_case:
+                        # Comparativa ignorando Mayúsculas y Minúsculas.
+                        tmp_item = item.lower()
+                        tmp_value = self.value.lower()
+                    else:
+                        tmp_item = item
+                        tmp_value = self.value
+
+                    if self.check_contain:
+                        # Comprueba si el item esta dentro del valor.
+                        if tmp_item in tmp_value:
+                            return True
+                    else:
+                        # Comprueba si el item es igual valor.
+                        if tmp_item == tmp_value:
+                            return True
 
         return self.value in values

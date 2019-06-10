@@ -43,6 +43,7 @@ class Monitor(ObjectBase):
 
     # Nº de hilos que se usaran para procesamiento en paralelo como valor por defecto.
     __default_threads = 5
+    __default_enabled = True
 
     def __init__(self, dir_base, dir_config, dir_modules, dir_var):
         self.dir_base = dir_base
@@ -216,7 +217,7 @@ class Monitor(ObjectBase):
             if module_def.find('__') == -1:
                 # Debug Control Run Modules
                 # --- MODE NAME -------------------
-                # if module_def != "ping":
+                # if module_def != "mysql":
                 #     continue
                 # --- MODE COUNT ------------------
                 # if cont_break < 1:
@@ -224,7 +225,9 @@ class Monitor(ObjectBase):
                 # cont_break = cont_break + 1
                 # continue
                 # Debug - End
-                list_modules.append(module_def)
+
+                if self.config_modules.get_conf([module_def, "enabled"], self.__default_enabled):
+                    list_modules.append(module_def)
 
         changed = False
 

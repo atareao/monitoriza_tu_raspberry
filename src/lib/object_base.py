@@ -27,6 +27,7 @@ __all__ = ['ObjectBase']
 
 class ObjectBase(object):
 
+    # Creamos el objeto aquí, de esta forma sera el mismo objeto para todos los objetos que lo hereden.
     debug = Debug(True, DebugLevel.info)
 
     def __init__(self):

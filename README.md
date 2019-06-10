@@ -5,6 +5,7 @@
 
 ## Requirements
 * `python3-requests`
+* `python3-pymysql`
 
 ## Install:
 ```
