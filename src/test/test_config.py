@@ -26,7 +26,8 @@ from multiprocessing.dummy import Pool as ThreadPool
 sys.path.append("..")
 sys.path.append(os.path.join('..', 'lib'))
 
-from lib.config.configControl import *
+from lib.config import ConfigControl
+from lib.config import ConfigTypeReturn
 
 
 aa = ConfigControl("modules.json")
@@ -156,32 +157,31 @@ for y in range(ltmp_num_loop):
 def set_cfg(num):
     # print(num)
     findkey = [str(num)]
-    ltmpC = 0
+    ltmp_c = 0
 
     msg = ''
     if aa.is_exist_conf(findkey):
         msg = '{0} SIExisteA: {1}\n'.format(msg, num)
 
-        ltmpC = aa.get_conf(findkey, 0)
-        msg = '{0} Read({1}): {2}\n'.format(msg, num, ltmpC)
-        if ltmpC:
+        ltmp_c = aa.get_conf(findkey, 0)
+        msg = '{0} Read({1}): {2}\n'.format(msg, num, ltmp_c)
+        if ltmp_c:
             msg = '{0} SIExisteB: {1}\n'.format(msg, num)
         else:
             msg = '{0} NOExisteB: {1}\n'.format(msg, num)
     else:
         msg = '{0} NOExisteA: {1}\n'.format(msg, num)
     
-    ltmpB = ltmpC + 1
-    aa.set_conf(findkey, ltmpB)
+    ltmp_b = ltmp_c + 1
+    aa.set_conf(findkey, ltmp_b)
 
-    ltmpC = aa.get_conf(findkey, 0)
-    msg = '{0} Read Despues ({1}): {2}\n'.format(msg, num, ltmpC)
+    ltmp_c = aa.get_conf(findkey, 0)
+    msg = '{0} Read Despues ({1}): {2}\n'.format(msg, num, ltmp_c)
 
     msg = msg + '-'*20
     # print(msg)
 
 
-lReturn = []
 pool = ThreadPool(200)
 lReturn = pool.map(set_cfg, ltmp)
 pool.close()
