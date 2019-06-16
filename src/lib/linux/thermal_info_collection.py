@@ -76,7 +76,7 @@ class ThermalInfoCollection(object):
                 return default_none
 
         def __is_exist_file(self, path_check):
-            if str(self.dev).strip():
+            if str(path_check).strip():
                 if os.path.isfile(self.__path_temp):
                     return True
             return False
