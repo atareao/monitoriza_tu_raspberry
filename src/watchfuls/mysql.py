@@ -158,6 +158,7 @@ class Watchful(ModuleBase):
                                              cursorclass=pymysql.cursors.DictCursor)
 
         except Exception as e:
+            connection = None
             self.debug.print(">> PlugIn >> {0} >> {1} >> Exception: {2}".format(self.name_module, db_name, repr(e)),
                              DebugLevel.error)
             return_msg = repr(e)
@@ -172,7 +173,7 @@ class Watchful(ModuleBase):
                 else:
                     return_status = "-9999"
 
-        if not return_msg:
+        if connection is not None:
             try:
                 with connection.cursor() as cursor:
                     cursor.execute("SHOW GLOBAL STATUS")
