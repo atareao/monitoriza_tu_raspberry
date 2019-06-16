@@ -40,6 +40,7 @@ class Watchful(ModuleBase):
             for (key, value) in list_md.items():
                 # print("key:", key, " - Val:", value)
 
+                other_data = {}
                 is_warning = True
                 with Switch(value.get("update", '')) as case:
                     if case(RAID_Mdstat.UpdateStatus.ok):
@@ -50,17 +51,16 @@ class Watchful(ModuleBase):
                         message = "*RAID {0} is degraded.* {1}".format(key, u'\U000026A0')
 
                     elif case(RAID_Mdstat.UpdateStatus.recovery):
+                        other_data['percent'] = value.get("recovery", {}).get('percent', -1)
+                        other_data['finish'] = value.get("recovery", {}).get('finish', -1)
+                        other_data['speed'] = value.get("recovery", {}).get('speed', -1)
+
                         message = "*RAID {0} is degraded, recovery status {1}%, estimate time to finish {2}.* {3}".\
-                            format(key,
-                                   value.get("recovery", {}).get('percent', -1),
-                                   value.get("recovery", {}).get('finish', -1),
-                                   u'\U000026A0'
-                                   )
+                            format(key, other_data['percent'], other_data['finish'], u'\U000026A0')
 
                     else:
                         message = "*RAID {0} Unknown Error*. {1}".format(key, u'\U000026A0')
 
-                other_data = {}
                 self.dict_return.set(key, not is_warning, message, other_data=other_data)
 
         super().check()
