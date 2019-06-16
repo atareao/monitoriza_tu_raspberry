@@ -35,7 +35,7 @@ class RaidMdstat(object):
         error = 2
         recovery = 3
 
-    def __init__(self, mdstat = None):
+    def __init__(self, mdstat=None):
         if mdstat is None:
             self.__path_mdstat = self.__default_path_mdstat
         else:
