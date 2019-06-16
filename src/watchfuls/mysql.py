@@ -80,7 +80,7 @@ class Watchful(ModuleBase):
                 max_workers=self.get_conf('threads', self._default_threads)) as executor:
             future_to_db = {executor.submit(self.__db_check, db): db for db in list_db}
             for future in concurrent.futures.as_completed(future_to_db):
-                db = future_to_db =[future]
+                db = future_to_db[future]
                 try:
                     future.result()
                 except Exception as exc:
