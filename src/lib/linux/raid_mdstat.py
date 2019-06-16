@@ -109,6 +109,4 @@ class RaidMdstat(object):
                         md_actual = None
                         continue
 
-            md_actual = None
-
         return md_list

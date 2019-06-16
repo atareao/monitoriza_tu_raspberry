@@ -178,7 +178,7 @@ def set_cfg(num):
     ltmp_c = aa.get_conf(findkey, 0)
     msg = '{0} Read Despues ({1}): {2}\n'.format(msg, num, ltmp_c)
 
-    msg = msg + '-'*20
+    msg += '-'*20
     # print(msg)
 
 
