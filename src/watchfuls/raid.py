@@ -21,7 +21,7 @@
 
 from lib import Switch
 from lib.modules import ModuleBase
-from lib.linux import RAID_Mdstat
+from lib.linux import RaidMdstat
 
 
 class Watchful(ModuleBase):
@@ -32,7 +32,7 @@ class Watchful(ModuleBase):
         super().__init__(monitor, __name__)
 
     def check(self):
-        list_md = RAID_Mdstat(self.__path_mdstat).read_status()
+        list_md = RaidMdstat(self.__path_mdstat).read_status()
         if len(list_md) == 0:
             message = "*No RAID's* in the system. {0}".format(u'\U00002705')
             self.dict_return.set("None", True, message)
@@ -43,14 +43,14 @@ class Watchful(ModuleBase):
                 other_data = {}
                 is_warning = True
                 with Switch(value.get("update", '')) as case:
-                    if case(RAID_Mdstat.UpdateStatus.ok):
+                    if case(RaidMdstat.UpdateStatus.ok):
                         is_warning = False
                         message = "RAID *{0}* in good status. {1}".format(key, u'\U00002705')
 
-                    elif case(RAID_Mdstat.UpdateStatus.error):
+                    elif case(RaidMdstat.UpdateStatus.error):
                         message = "*RAID {0} is degraded.* {1}".format(key, u'\U000026A0')
 
-                    elif case(RAID_Mdstat.UpdateStatus.recovery):
+                    elif case(RaidMdstat.UpdateStatus.recovery):
                         other_data['percent'] = value.get("recovery", {}).get('percent', -1)
                         other_data['finish'] = value.get("recovery", {}).get('finish', -1)
                         other_data['speed'] = value.get("recovery", {}).get('speed', -1)

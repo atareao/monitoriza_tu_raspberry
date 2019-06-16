@@ -22,10 +22,10 @@
 import os.path
 from enum import Enum
 
-__all__ = ['RAID_Mdstat']
+__all__ = ['RaidMdstat']
 
 
-class RAID_Mdstat(object):
+class RaidMdstat(object):
 
     __default_path_mdstat = "/proc/mdstat"
 
