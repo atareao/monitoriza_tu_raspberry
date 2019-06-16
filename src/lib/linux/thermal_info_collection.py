@@ -102,7 +102,7 @@ class ThermalInfoCollection(object):
         self.nodes.clear()
 
     def count(self) -> int:
-        return self.nodes.count()
+        return self.nodes.count
 
     def detect(self):
         self.clear()
