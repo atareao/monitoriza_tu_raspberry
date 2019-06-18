@@ -17,9 +17,13 @@
     "list": {
       "www.atareao.es": true,
       "www.cerebelum.net": true,
-      "www.dominio.com": false,
-      "www.dominio.net": false,
-      "www.dominio.unknown": true
+      "www.domain.com": false,
+      "www.domain.net": false,
+      "www.domain.unknown": true,
+      "www.domain.unknown/forbidden": {
+        "enabled": true,
+        "code": 403
+      }
     }
   },
   "ping": {
