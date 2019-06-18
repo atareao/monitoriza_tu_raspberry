@@ -43,7 +43,7 @@ class Watchful(ModuleBase):
 
     def __init__(self, monitor):
         super().__init__(monitor, __name__)
-        self.path_file.set('ping', '/bin/ping')
+        self.paths.set('ping', '/bin/ping')
 
     def __debug(self, msg: str, level: DebugLevel = DebugLevel.debug):
         super().debug.print(">> PlugIn >> {0} >> {1}".format(self.name_module, msg), level)
@@ -106,7 +106,7 @@ class Watchful(ModuleBase):
     def __ping_return(self, host, timeout, attempt):
         counter = 0
         while counter < attempt:
-            cmd = '{0} -c 1 -W {1} {2}'.format(self.path_file.find('ping'), timeout, host)
+            cmd = '{0} -c 1 -W {1} {2}'.format(self.paths.find('ping'), timeout, host)
             r_code = self._run_cmd_call(cmd)
             if r_code == 0:
                 return True
@@ -157,9 +157,3 @@ class Watchful(ModuleBase):
 
             else:
                 return value
-
-
-if __name__ == '__main__':
-
-    wf = Watchful(None)
-    print(wf.check())

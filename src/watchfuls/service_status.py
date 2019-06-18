@@ -28,7 +28,7 @@ class Watchful(ModuleBase):
 
     def __init__(self, monitor):
         super().__init__(monitor, __name__)
-        self.path_file.set('systemctl', '/bin/systemctl')
+        self.paths.set('systemctl', '/bin/systemctl')
 
     def check(self):
         list_service = []
@@ -72,7 +72,7 @@ class Watchful(ModuleBase):
             self.send_message(s_message, status)
 
     def __service_return(self, service):
-        cmd = '{0} status {1}'.format(self.path_file.find('systemctl'), service)
+        cmd = '{0} status {1}'.format(self.paths.find('systemctl'), service)
         stdout, stderr = self._run_cmd(cmd, True)
         if stdout == '':
             return False, True, stderr[:-1]
@@ -101,9 +101,3 @@ class Watchful(ModuleBase):
     def __clear_str(text: str) -> str:
         if text:
             return str(text).strip().replace("(", "").replace(")", "")
-
-
-if __name__ == '__main__':
-
-    wf = Watchful(None)
-    print(wf.check())

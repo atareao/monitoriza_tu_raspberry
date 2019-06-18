@@ -26,13 +26,12 @@ from lib.linux import RaidMdstat
 
 class Watchful(ModuleBase):
 
-    __path_mdstat = "/proc/mdstat"
-
     def __init__(self, monitor):
         super().__init__(monitor, __name__)
+        self.paths.set('mdstat', '/proc/mdstat')
 
     def check(self):
-        list_md = RaidMdstat(self.__path_mdstat).read_status()
+        list_md = RaidMdstat(self.paths.find('mdstat')).read_status()
         if len(list_md) == 0:
             message = "*No RAID's* in the system. {0}".format(u'\U00002705')
             self.dict_return.set("None", True, message)

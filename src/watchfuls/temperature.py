@@ -108,9 +108,3 @@ class Watchful(ModuleBase):
 
             else:
                 return value
-
-
-if __name__ == '__main__':
-
-    wf = Watchful(None)
-    print(wf.check())

@@ -33,7 +33,7 @@ class Watchful(ModuleBase):
 
     def __init__(self, monitor):
         super().__init__(monitor, __name__)
-        self.path_file.set('df', '/bin/df')
+        self.paths.set('df', '/bin/df')
 
     def check(self):
         list_partition = self.get_conf('list', {})
@@ -44,7 +44,7 @@ class Watchful(ModuleBase):
         if not usage_alert or usage_alert < 0 or usage_alert > 100:
             usage_alert = self.__default_alert
 
-        cmd = '{0} -x squashfs -x tmpfs  -x devtmpfs'.format(self.path_file.find('df'))
+        cmd = '{0} -x squashfs -x tmpfs  -x devtmpfs'.format(self.paths.find('df'))
         stdout = self._run_cmd(cmd)
         reg = r'\/dev\/([^\s]*)\s+\d+\s+\d+\s+\d+\s+(\d+)\%\s+([^\n]*)'
 
@@ -68,9 +68,3 @@ class Watchful(ModuleBase):
 
         super().check()
         return self.dict_return
-
-
-if __name__ == '__main__':
-
-    wf = Watchful(None)
-    print(wf.check())

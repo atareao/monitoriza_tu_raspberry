@@ -44,14 +44,14 @@ class ModuleBase(ObjectBase):
             self.__name_module = __name__
 
         # Set var's
-        self.path_file = None
+        self.paths = None
         self.dict_return = None
 
         # Init Var's
         self.__init_var()
 
     def __init_var(self):
-        self.path_file = DictFilesPath()
+        self.paths = DictFilesPath()
         self.dict_return = ReturnModuleCheck()
 
     def check(self):

@@ -21,13 +21,12 @@
 
 import os.path
 from enum import Enum
+from lib import DictFilesPath
 
 __all__ = ['RaidMdstat']
 
 
 class RaidMdstat(object):
-
-    __default_path_mdstat = "/proc/mdstat"
 
     class UpdateStatus(Enum):
         unknown = 0
@@ -36,14 +35,17 @@ class RaidMdstat(object):
         recovery = 3
 
     def __init__(self, mdstat=None):
-        if mdstat is None:
-            self.__path_mdstat = self.__default_path_mdstat
-        else:
-            self.__path_mdstat = mdstat
+        self.paths = DictFilesPath()
+        self.paths.set('mdstat', '/proc/mdstat')
+        if mdstat is not None:
+            self.paths.set('mdstat', mdstat)
 
     @property
     def is_exist(self) -> bool:
-        return os.path.exists(self.__path_mdstat)
+        if os.path.isdir(self.paths.find('mdstat')):
+            return False
+        else:
+            return os.path.exists(self.paths.find('mdstat'))
 
     def read_status(self):
 
@@ -51,7 +53,7 @@ class RaidMdstat(object):
         md_actual = None
 
         if self.is_exist:
-            with open(self.__path_mdstat, 'r') as f_buffer:
+            with open(self.paths.find('mdstat'), 'r') as f_buffer:
                 for l_buffer in f_buffer:
                     l_buffer = str(l_buffer).strip()
 

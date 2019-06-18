@@ -89,9 +89,3 @@ class Watchful(ModuleBase):
 
         super().check()
         return self.dict_return
-
-
-if __name__ == '__main__':
-
-    wf = Watchful(None)
-    print(wf.check())
