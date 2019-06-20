@@ -23,11 +23,15 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 import concurrent.futures
+from lib import Switch
 from lib.debug import DebugLevel
 from lib.modules import ModuleBase
 
 
 class Watchful(ModuleBase):
+
+    __default_enabled = True
+    __default_http_code = 200
 
     def __init__(self, monitor):
         super().__init__(monitor, __name__)
@@ -36,9 +40,17 @@ class Watchful(ModuleBase):
     def check(self):
         list_url = []
         for (key, value) in self.get_conf('list', {}).items():
-            self.debug.print(">> PlugIn >> {0} >> Web: {1} - Enabled: {2}".format(self.name_module, key, value),
+
+            is_enabled = self.__default_enabled
+            with Switch(value, check_isinstance=True) as case:
+                if case(bool):
+                    is_enabled = value
+                elif case(dict):
+                    is_enabled = value.get("enabled", is_enabled)
+
+            self.debug.print(">> PlugIn >> {0} >> Web: {1} - Enabled: {2}".format(self.name_module, key, is_enabled),
                              DebugLevel.info)
-            if value:
+            if is_enabled:
                 list_url.append(key)
 
         with concurrent.futures.ThreadPoolExecutor(
@@ -56,13 +68,14 @@ class Watchful(ModuleBase):
         return self.dict_return
 
     def __web_check(self, url):
-        status, code = self.__web_return(url)
+        code = int(self.__web_return(url))
+        code_true = self.get_conf_in_list("code", url, self.__default_http_code)
+        status = True if code == code_true else False
 
-        s_message = 'Web: {0} '.format(url)
+        s_message = 'Web: {0} - *({1})*'.format(url, code)
         if status:
             s_message += u'\U0001F53C'
         else:
-            s_message += "- Code {0} ".format(code)
             s_message += u'\U0001F53D'
 
         other_data = {'code': code}
@@ -76,12 +89,4 @@ class Watchful(ModuleBase):
         cmd = self.path_file.find('curl')
         cmd += ' -sL -w "%{http_code}" http://' + url + ' -o /dev/null'
         stdout = self._run_cmd(cmd)
-        if stdout.find('200') == -1:
-            return False, stdout
-        return True, stdout
-
-
-if __name__ == '__main__':
-
-    wf = Watchful(None)
-    print(wf.check())
+        return str(stdout).strip()
