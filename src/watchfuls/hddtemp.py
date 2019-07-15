@@ -21,7 +21,6 @@
 
 import concurrent.futures
 import telnetlib
-import socket
 from lib import Switch
 from lib.debug import DebugLevel
 from lib.modules import ModuleBase
