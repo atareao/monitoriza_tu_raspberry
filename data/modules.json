@@ -23,6 +23,10 @@
       "www.domain.unknown/forbidden": {
         "enabled": true,
         "code": 403
+      },
+      "test.domain.unknown:1234": {
+        "enabled": true,
+        "code": 400
       }
     }
   },
@@ -83,5 +87,19 @@
   },
   "raid": {
     "enabled": true
+  },
+  "hddtemp": {
+    "enabled": true,
+    "threads": 5,
+    "timeout": 5,
+    "alert": 50,
+    "list": {
+      "Server01": {
+        "enabled": true,
+        "host": "192.168.0.254",
+        "port": 7634,
+        "exclude": ["/dev/sdy", "/dev/sdz"]
+      }
+    }
   }
 }

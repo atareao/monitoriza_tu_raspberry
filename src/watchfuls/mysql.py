@@ -159,8 +159,7 @@ class Watchful(ModuleBase):
 
         except Exception as e:
             connection = None
-            self.debug.print(">> PlugIn >> {0} >> {1} >> Exception: {2}".format(self.name_module, db_name, repr(e)),
-                             DebugLevel.error)
+            self.__debug("{0} >> Exception: {1}".format(db_name, repr(e)), DebugLevel.error)
             return_msg = repr(e)
 
             err_array = str(e).split(",")
@@ -185,8 +184,7 @@ class Watchful(ModuleBase):
                     return_status = "OK"
 
             except Exception as e:
-                self.debug.print(">> PlugIn >> {0} >> {1} >> Exception: {2}".format(self.name_module, db_name, repr(e)),
-                                 DebugLevel.error)
+                self.__debug("{0} >> Exception: {1}".format(db_name, repr(e)), DebugLevel.error)
                 return_msg = repr(e)
                 return_status = "-9999"
 
