@@ -67,14 +67,14 @@ class Watchful(ModuleBase):
             else:
                 s_message += '- *Stop* '
             s_message += u'\U000026A0'
-            if service['remediation']:
-                self.__service_remediation(service_name)
- 
+
         other_data = {'error': error, 'status_detail': message}
         self.dict_return.set(service_name, status, s_message, False, other_data)
 
         if self.check_status(status, self.name_module, service_name):
             self.send_message(s_message, status)
+            if !status and service['remediation']:
+                self.__service_remediation(service_name)
 
     def __service_remediation(self, service_name):
         cmd = '{0} start {1}'.format(self.paths.find('systemctl'), service_name)
