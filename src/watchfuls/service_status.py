@@ -73,7 +73,7 @@ class Watchful(ModuleBase):
 
         if self.check_status(status, self.name_module, service_name):
             self.send_message(s_message, status)
-            if !status and service['remediation']:
+            if not status and service['remediation']:
                 self.__service_remediation(service_name)
 
     def __service_remediation(self, service_name):
