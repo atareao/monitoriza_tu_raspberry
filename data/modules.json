@@ -3,12 +3,12 @@
     "enabled": true,
     "threads": 5,
     "list": {
-      "bind9": true,
-      "mariabd": true,
-      "nginx": true,
-      "slapd": true,
-      "snmpd": true,
-      "webmin": true
+      "bind9": {"enabled": false, "remediation": false},
+      "mariabd": {"enabled": false, "remediation": false},
+      "nginx": {"enabled": false, "remediation": false},
+      "slapd": {"enabled": false, "remediation": false},
+      "snmpd": {"enabled": false, "remediation": false},
+      "webmin": {"enabled": false, "remediation": false}
     }
   },
   "web": {
@@ -16,16 +16,16 @@
     "threads": 5,
     "list": {
       "www.atareao.es": true,
-      "www.cerebelum.net": true,
+      "www.cerebelum.net": false,
       "www.domain.com": false,
       "www.domain.net": false,
-      "www.domain.unknown": true,
+      "www.domain.unknown": false,
       "www.domain.unknown/forbidden": {
-        "enabled": true,
+        "enabled": false,
         "code": 403
       },
       "test.domain.unknown:1234": {
-        "enabled": true,
+        "enabled": false,
         "code": 400
       }
     }

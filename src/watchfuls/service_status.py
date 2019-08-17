@@ -33,10 +33,12 @@ class Watchful(ModuleBase):
     def check(self):
         list_service = []
         for (key, value) in self.get_conf('list', {}).items():
-            self.debug.print(">> PlugIn >> {0} >> Service: {1} - Enabled: {2}".format(self.name_module, key, value),
+            enabled = value['enabled']
+            remediation = value['remediation']
+            self.debug.print(">> PlugIn >> {0} >> Service: {1} - Enabled: {2} - Remediation: {3}".format(self.name_module, key, enabled, remediation),
                              DebugLevel.info)
-            if value:
-                list_service.append(key)
+            if enabled:
+                list_service.append({"service": key, "remediation": remediation})
 
         with concurrent.futures.ThreadPoolExecutor(
                 max_workers=self.get_conf('threads', self._default_threads)) as executor:
@@ -53,9 +55,10 @@ class Watchful(ModuleBase):
         return self.dict_return
 
     def __service_check(self, service):
-        status, error, message = self.__service_return(service)
+        service_name = service['service']
+        status, error, message = self.__service_return(service_name)
 
-        s_message = 'Service: {0} '.format(service)
+        s_message = 'Service: {0} '.format(service_name)
         if status:
             s_message += ' - *Running* ' + u'\U00002705'
         else:
@@ -64,15 +67,21 @@ class Watchful(ModuleBase):
             else:
                 s_message += '- *Stop* '
             s_message += u'\U000026A0'
-
+            if service['remediation']:
+                self.__service_remediation(service_name)
+ 
         other_data = {'error': error, 'status_detail': message}
-        self.dict_return.set(service, status, s_message, False, other_data)
+        self.dict_return.set(service_name, status, s_message, False, other_data)
 
-        if self.check_status(status, self.name_module, service):
+        if self.check_status(status, self.name_module, service_name):
             self.send_message(s_message, status)
 
-    def __service_return(self, service):
-        cmd = '{0} status {1}'.format(self.paths.find('systemctl'), service)
+    def __service_remediation(self, service_name):
+        cmd = '{0} start {1}'.format(self.paths.find('systemctl'), service_name)
+        self._run_cmd(cmd)
+
+    def __service_return(self, service_name):
+        cmd = '{0} status {1}'.format(self.paths.find('systemctl'), service_name)
         stdout, stderr = self._run_cmd(cmd, True)
         if stdout == '':
             return False, True, stderr[:-1]
