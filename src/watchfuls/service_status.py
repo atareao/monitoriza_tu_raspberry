@@ -62,7 +62,7 @@ class Watchful(ModuleBase):
         if status:
             s_message += ' - *Running* ' + u'\U00002705'
         else:
-           if message:
+            if message:
                 s_message += '- *Error: {0}* '.format(message)
             else:
                 s_message += '- *Stop* '
