@@ -35,7 +35,7 @@ class Watchful(ModuleBase):
 
     def __init__(self, monitor):
         super().__init__(monitor, __name__)
-        self.path_file.set('curl', '/usr/bin/curl')
+        self.paths.set('curl', '/usr/bin/curl')
 
     def check(self):
         list_url = []
@@ -86,7 +86,7 @@ class Watchful(ModuleBase):
 
     def __web_return(self, url):
         # TODO: Pendiente añadir soporte https.
-        cmd = self.path_file.find('curl')
+        cmd = self.paths.find('curl')
         cmd += ' -sL -w "%{http_code}" http://' + url + ' -o /dev/null'
         stdout = self._run_cmd(cmd)
         return str(stdout).strip()
