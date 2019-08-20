@@ -19,6 +19,8 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+from lib.switch import Switch
+
 __all__ = ['ReturnModuleCheck']
 
 
@@ -97,6 +99,28 @@ class ReturnModuleCheck(object):
             self.__dict_return[key]['send'] = send_msg
             self.__dict_return[key]['other_data'] = other_data
             return self.is_exist(key)
+        return False
+
+    def update(self, key: str, option: str, value) -> bool:
+        """
+        Actualiza alguna de las propiedades de un return que ya existe.
+
+        :param key: Key del return
+        :param option: Nombre de la opción.
+        :param value: Nuevo valor.
+        :return: True si todo ha ido bien y False si algo ha fallado.
+
+        """
+
+        if key:
+            with Switch(option, invariant_culture_ignore_case=True) as case:
+                if case("status", "message", "send", "other_data"):
+                    if self.is_exist(key):
+                        self.__dict_return[key][option] = value
+                        return True
+                else:
+                    # Opción no valida!!
+                    pass
         return False
 
     def remove(self, key: str) -> bool:
