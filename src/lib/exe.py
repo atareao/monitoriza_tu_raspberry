@@ -20,7 +20,6 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 
-import os
 import shlex
 import subprocess
 import paramiko
@@ -37,7 +36,7 @@ __maintainer__ = 'Javier Pastor'
 __email__ = "python@cerebelum.net"
 __status__ = "Development"
 
-__all__ = ['EnumLocationExec', 'Exec', 'execute_call_local']
+__all__ = ['EnumLocationExec', 'Exec']
 
 
 class EnumLocationExec(Enum):
@@ -133,6 +132,7 @@ class Exec(object):
 
             data_return['out'] = stdout.decode()
             data_return['err'] = stderr.decode()
+            data_return['code'] = execution.returncode
 
         return data_return
 
@@ -182,7 +182,7 @@ class Exec(object):
                 elif case(EnumLocationExec.remote):
                     tmp_exec = self.__execute_remote()
 
-        return tmp_exec['out'], tmp_exec['err']
+        return tmp_exec['out'], tmp_exec['err'], tmp_exec['code']
 
     def set_remote(self, host: str = "", port: int = 22, user: str = "root", password: str = None):
         """ Configuramos los datos de conexión al host remoto.
@@ -218,9 +218,3 @@ class Exec(object):
             tmp_exec.location = EnumLocationExec.remote
             tmp_exec.set_remote(host=host, port=port, user=user, password=password)
         return tmp_exec.start()
-
-
-def execute_call_local(command):
-    command_with_args = shlex.split(command)
-    return_code = subprocess.call(command_with_args, stdout=open(os.devnull, 'w'), stderr=open(os.devnull, 'w'))
-    return return_code
