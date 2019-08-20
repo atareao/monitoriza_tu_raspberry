@@ -74,9 +74,6 @@ class Watchful(ModuleBase):
             self.send_message(s_message, status)
             if not status and service['remediation']:
                 self.__service_remediation(service_name)
-
-            if not status and service['remediation']:
-                self.__service_remediation(service_name)
                 status, error, message = self.__service_return(service_name)
 
                 s_message = '*Recovery* Service: {0} '.format(service_name)
