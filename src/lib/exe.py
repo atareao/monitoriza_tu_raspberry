@@ -68,7 +68,7 @@ class Exec(object):
         return self.__location
 
     @location.setter
-    def command(self, val: EnumLocationExec):
+    def location(self, val: EnumLocationExec):
         self.__location = val
 
     @property
