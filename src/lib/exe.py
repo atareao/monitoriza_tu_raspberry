@@ -157,7 +157,7 @@ class Exec(object):
                 shell = client.invoke_shell()
 
                 # TODO: Pendiente añadir soporte para multiples commands.
-                _, stdout, stderr = client.exec_command(self.password)
+                _, stdout, stderr = client.exec_command(self.command)
 
                 # Espera a que termine de ejecutarse el comando y obtenemos el exit code.
                 exit_code = stdout.channel.recv_exit_status()
