@@ -55,6 +55,7 @@ class Watchful(ModuleBase):
         return self.dict_return
 
     def __service_check(self, service):
+        remediation_use = None
         service_name = service['service']
         status, error, message = self.__service_return(service_name)
 
@@ -67,14 +68,31 @@ class Watchful(ModuleBase):
             else:
                 s_message += '- *Stop* '
             s_message += u'\U000026A0'
-            if service['remediation']:
-                self.__service_remediation(service_name)
- 
-        other_data = {'error': error, 'status_detail': message}
-        self.dict_return.set(service_name, status, s_message, False, other_data)
 
+        # Solo se ejecuta la primera vez, cuando cambia de estado.
         if self.check_status(status, self.name_module, service_name):
             self.send_message(s_message, status)
+
+            if not status and service['remediation']:
+                self.__service_remediation(service_name)
+                status, error, message = self.__service_return(service_name)
+
+                s_message = '*Recovery* Service: {0} '.format(service_name)
+                if status:
+                    remediation_use = True
+                    s_message += ' - *OK* ' + u'\U00002705'
+                else:
+                    remediation_use = False
+                    if message:
+                        s_message += '- *Error: {0}* '.format(message)
+                    else:
+                        s_message += '- *UNSUCCESSFUL* '
+                    s_message += u'\U000026A0'
+
+                self.send_message(s_message, status)
+
+        other_data = {'error': error, 'status_detail': message, 'remediation': remediation_use}
+        self.dict_return.set(service_name, status, s_message, False, other_data)
 
     def __service_remediation(self, service_name):
         cmd = '{0} start {1}'.format(self.paths.find('systemctl'), service_name)
