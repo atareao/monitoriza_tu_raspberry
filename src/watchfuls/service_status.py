@@ -72,6 +72,8 @@ class Watchful(ModuleBase):
         # Solo se ejecuta la primera vez, cuando cambia de estado.
         if self.check_status(status, self.name_module, service_name):
             self.send_message(s_message, status)
+            if not status and service['remediation']:
+                self.__service_remediation(service_name)
 
             if not status and service['remediation']:
                 self.__service_remediation(service_name)
