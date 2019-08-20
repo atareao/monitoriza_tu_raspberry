@@ -191,7 +191,8 @@ class ModuleBase(ObjectBase):
         :return: Retornamos el resultado de la ejecución del comando que hemos pasado.
 
         """
-        stdout, stderr = lib.tools.execute(cmd)
+
+        stdout, stderr = lib.Exec.execute(command=cmd)
         if return_str_err:
             return stdout, stderr
         return stdout
@@ -203,5 +204,5 @@ class ModuleBase(ObjectBase):
         :param cmd: Comando a ejecutar.
         :return: Código que retorna el programa al finalizar.
         """
-        return_code = lib.tools.execute_call(cmd)
+        return_code = lib.exe.execute_call_local(cmd)
         return return_code

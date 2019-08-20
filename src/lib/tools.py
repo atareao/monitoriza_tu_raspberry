@@ -22,23 +22,6 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-import os
-import shlex
-import subprocess
-
-
-def execute(command):
-    command_with_args = shlex.split(command)
-    execution = subprocess.Popen(command_with_args, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-    stdout, stderr = execution.communicate()
-    return stdout.decode(), stderr.decode()
-
-
-def execute_call(command):
-    command_with_args = shlex.split(command)
-    return_code = subprocess.call(command_with_args, stdout=open(os.devnull, 'w'), stderr=open(os.devnull, 'w'))
-    return return_code
-
 
 def bytes2human(n):
     # http://code.activestate.com/recipes/577972-disk-usage/
