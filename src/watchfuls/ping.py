@@ -107,7 +107,7 @@ class Watchful(ModuleBase):
         counter = 0
         while counter < attempt:
             cmd = '{0} -c 1 -W {1} {2}'.format(self.paths.find('ping'), timeout, host)
-            r_code = self._run_cmd_call(cmd)
+            _, r_code = self._run_cmd(cmd, return_exit_code=True)
             if r_code == 0:
                 return True
             time.sleep(1)

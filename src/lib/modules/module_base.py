@@ -182,7 +182,7 @@ class ModuleBase(ObjectBase):
             return self._monitor.check_status(status, module, module_sub_key)
 
     @staticmethod
-    def _run_cmd(cmd, return_str_err: bool = False):
+    def _run_cmd(cmd, return_str_err: bool = False, return_exit_code: bool = False):
         """
         Ejecutamos el programa que le pasamos y leemos lo que retorna.
 
@@ -191,17 +191,13 @@ class ModuleBase(ObjectBase):
         :return: Retornamos el resultado de la ejecución del comando que hemos pasado.
 
         """
-        stdout, stderr = lib.tools.execute(cmd)
-        if return_str_err:
-            return stdout, stderr
-        return stdout
 
-    @staticmethod
-    def _run_cmd_call(cmd):
-        """
-        Ejecutamos el comando y obtenemos el código de retorno del programa.
-        :param cmd: Comando a ejecutar.
-        :return: Código que retorna el programa al finalizar.
-        """
-        return_code = lib.tools.execute_call(cmd)
-        return return_code
+        stdout, stderr, exit_code = lib.Exec.execute(command=cmd)
+        if return_str_err and return_exit_code:
+            return stdout, stderr, exit_code
+        elif return_str_err and not return_exit_code:
+            return stdout, stderr
+        elif not return_str_err and return_exit_code:
+            return stdout, exit_code
+        else:
+            return stdout

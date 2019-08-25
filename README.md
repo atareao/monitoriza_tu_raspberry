@@ -6,6 +6,7 @@
 ## Requirements
 * `python3-requests`
 * `python3-pymysql`
+* `python3-paramiko`
 
 ## Install:
 ```
