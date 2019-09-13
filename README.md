@@ -6,7 +6,7 @@
 ## Requirements
 * `python3-requests`
 * `python3-pymysql`
-* `python3-paramiko`
+* `python3-paramiko >= 2.5 (version 2.4 da errores CryptographyDeprecationWarning)`
 
 ## Install:
 ```

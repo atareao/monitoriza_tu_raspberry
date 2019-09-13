@@ -61,6 +61,7 @@ class Exec(object):
         self.__port = 0
         self.__user = ""
         self.__password = ""
+        self.__timeout = 30
         self.set_remote()
 
     @property
@@ -111,6 +112,14 @@ class Exec(object):
     def password(self, val: str):
         self.__password = val
 
+    @property
+    def timeout(self) -> float:
+        return self.__timeout
+
+    @timeout.setter
+    def timeout(self, val: float):
+        self.__timeout = val
+
     def __is_command_exist(self) -> bool:
         if self.command and len(self.command.strip()) > 0:
             return True
@@ -133,6 +142,7 @@ class Exec(object):
             data_return['out'] = stdout.decode()
             data_return['err'] = stderr.decode()
             data_return['code'] = execution.returncode
+            data_return['exception'] = None
 
         return data_return
 
@@ -146,14 +156,19 @@ class Exec(object):
         # https://stackoverflow.com/questions/7002878/basic-paramiko-exec-command-help
         # https://www.programcreek.com/python/example/4561/paramiko.SSHClient
 
-        data_return = {'out': None, 'err': None, 'code': None}
+        data_return = {'out': None, 'err': None, 'code': None, 'exception': None}
 
         if self.__is_command_exist():
+            shell = None
+            client = None
             try:
                 client = paramiko.SSHClient()
                 client.set_missing_host_key_policy(paramiko.AutoAddPolicy())
-
-                client.connect(hostname=self.host, port=self.port, username=self.user, password=self.password)
+                client.connect(hostname=self.host,
+                               port=self.port,
+                               username=self.user,
+                               password=self.password,
+                               timeout=self.timeout)
                 shell = client.invoke_shell()
 
                 # TODO: Pendiente añadir soporte para multiples commands.
@@ -162,11 +177,25 @@ class Exec(object):
                 # Espera a que termine de ejecutarse el comando y obtenemos el exit code.
                 exit_code = stdout.channel.recv_exit_status()
 
-                data_return = {'out': stdout, 'err': stderr, 'code': exit_code}
+                # read_out = stdout if stdout else ""
+                # read_err = stderr if stdout else ""
+
+                read_out = stdout.read().decode() if stdout else ""
+                read_err = stderr.read().decode() if stdout else ""
+
+                data_return = {'out': read_out, 'err': read_err, 'code': exit_code, 'exception': None}
+
+            except Exception as ex:
+                # http://docs.paramiko.org/en/2.6/api/ssh_exception.html
+                # print("Exception:", ex)
+                # Authentication failed.
+                data_return = {'out': None, 'err': None, 'code': None, 'exception': ex}
 
             finally:
-                shell.close()
-                client.close()
+                if shell:
+                    shell.close()
+                if client:
+                    client.close()
 
         return data_return
 
@@ -182,33 +211,41 @@ class Exec(object):
                 elif case(EnumLocationExec.remote):
                     tmp_exec = self.__execute_remote()
 
-        return tmp_exec['out'], tmp_exec['err'], tmp_exec['code']
+        return tmp_exec['out'], tmp_exec['err'], tmp_exec['code'], tmp_exec['exception']
 
-    def set_remote(self, host: str = "", port: int = 22, user: str = "root", password: str = None):
+    def set_remote(self, host: str = "", port: int = 22, user: str = "root", password: str = None,
+                   timeout: float = None):
         """ Configuramos los datos de conexión al host remoto.
 
         :param host: Nombre del host o IP
         :param port: Puerto que usa SSH
         :param user: Nombre de usuario con el que nos logeamos en el sistema.
         :param password: Password del usuario.
+        :param timeout: Timeout al intentar conectar.
         :return:
 
         """
+
+        # TODO: Pendiente añadir soporte key public/private
 
         self.host = host
         self.port = port
         self.user = user
         self.password = password
+        if timeout is not None:
+            self.timeout = timeout
 
     @staticmethod
-    def execute(command: str = "", host: str = "", port: int = 22, user: str = "", password: str = ""):
+    def execute(command: str = "", host: str = "", port: int = 22, user: str = "", password: str = "",
+                timeout: float = None):
         """ Ejecuta el comando que le pasamos sin tener que crear el objeto Exec.
 
         :param command: Comando ha ejecutar.
         :param host: Host o IP
         :param port: Puerto SSH
         :param user: Usuario login
-        :param password: Password Logn
+        :param password: Password Login
+        :param timeout: Tiempo en segundos hasta que falla el intento de conexión.
         :return: Retorna stdout y stderr
 
         """
@@ -216,5 +253,5 @@ class Exec(object):
         tmp_exec = Exec(command=command)
         if len(host.strip()) > 0:
             tmp_exec.location = EnumLocationExec.remote
-            tmp_exec.set_remote(host=host, port=port, user=user, password=password)
+            tmp_exec.set_remote(host=host, port=port, user=user, password=password, timeout=timeout)
         return tmp_exec.start()
