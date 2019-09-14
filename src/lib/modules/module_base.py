@@ -132,13 +132,14 @@ class ModuleBase(ObjectBase):
             return default_val
         return []
 
-    def get_conf_in_list(self, opt_find, key_name_module: str, def_val=None):
+    def get_conf_in_list(self, opt_find, key_name_module: str, def_val=None, key_name_list: str = "list"):
         """
         Obtenemos los datos que deseamos buscar de la sección 'list' de la configuración del modulo.
 
         :param opt_find: Opción a buscar.
         :param key_name_module: Nombre del modulo del que deseamos obtener la sección 'list'.
         :param def_val: Valor por defecto si no existe la opción que buscamos.
+        :param key_name_list: Key de la configuración donde se almacena el listado donde vamos a buscar.
         :return: Valor obtenido de la configuración.
 
         """
@@ -158,7 +159,7 @@ class ModuleBase(ObjectBase):
 
         if key_name_module:
             find_key.insert(0, key_name_module)
-            find_key.insert(0, "list")
+            find_key.insert(0, key_name_list)
         value = self.get_conf(find_key, def_val)
         return value
 
@@ -192,7 +193,7 @@ class ModuleBase(ObjectBase):
 
         """
 
-        stdout, stderr, exit_code = lib.Exec.execute(command=cmd)
+        stdout, stderr, exit_code, _ = lib.Exec.execute(command=cmd)
         if return_str_err and return_exit_code:
             return stdout, stderr, exit_code
         elif return_str_err and not return_exit_code:

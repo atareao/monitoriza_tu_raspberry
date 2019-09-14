@@ -16,7 +16,7 @@
     "threads": 5,
     "list": {
       "www.atareao.es": true,
-      "www.cerebelum.net": false,
+      "www.cerebelum.net": true,
       "www.domain.com": false,
       "www.domain.net": false,
       "www.domain.unknown": false,
@@ -42,8 +42,8 @@
         "timeout": 5,
         "label": "Router"
       },
-      "192.168.1.200":  true,
-      "192.168.86.4": true
+      "192.168.1.200":  false,
+      "192.168.86.4": false
     }
   },
   "temperature": {
@@ -75,7 +75,7 @@
     "enabled": true,
     "list": {
       "MariaDB01": {
-        "enabled": true,
+        "enabled": false,
         "host": "db01.dominio.lan",
         "port": 3307,
         "user": "test",
@@ -86,7 +86,26 @@
     }
   },
   "raid": {
-    "enabled": true
+    "enabled": true,
+    "local": true,
+    "threads": 5,
+    "timeout": 5,
+    "remote": {
+      "1": {
+        "label": "Servidor1",
+        "host": "192.168.1.10",
+        "port": 22,
+        "user": "pi",
+        "password": "pi"
+      },
+      "2": {
+        "label": "Servidor2",
+        "host": "192.168.1.11",
+        "port": 122,
+        "user": "pi",
+        "password": ""
+      }
+    }
   },
   "hddtemp": {
     "enabled": true,
@@ -95,8 +114,8 @@
     "alert": 50,
     "list": {
       "Server01": {
-        "enabled": true,
-        "host": "192.168.0.254",
+        "enabled": false,
+        "host": "127.0.0.1",
         "port": 7634,
         "exclude": ["/dev/sdy", "/dev/sdz"]
       }

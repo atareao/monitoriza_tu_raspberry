@@ -21,6 +21,7 @@
 
 import os.path
 from enum import Enum
+from lib.exe import Exec
 from lib import DictFilesPath
 
 __all__ = ['RaidMdstat']
@@ -34,26 +35,99 @@ class RaidMdstat(object):
         error = 2
         recovery = 3
 
-    def __init__(self, mdstat=None):
+    def __init__(self, mdstat=None, host=None, port=22, user=None, password=None, timeout=None):
         self.paths = DictFilesPath()
         self.paths.set('mdstat', '/proc/mdstat')
         if mdstat is not None:
             self.paths.set('mdstat', mdstat)
+        self.__host = host
+        self.__port = port
+        self.__user = user
+        self.__pass = password
+        self.__timeout = timeout
+
+    @property
+    def is_remote(self) -> bool:
+        if self.__host:
+            return True
+        return False
+
+    @property
+    def validate_remote(self) -> bool:
+        if self.is_remote:
+            if str(self.__host).strip() and int(self.__port) > 0 and str(self.__user).strip():
+                return True
+        return False
 
     @property
     def is_exist(self) -> bool:
-        if os.path.isdir(self.paths.find('mdstat')):
-            return False
+        path_md_stat = self.paths.find('mdstat')
+        if self.is_remote:
+            if self.validate_remote:
+                str_check = "exists"
+                remote_cmd = "test -e {0} && echo {1}".format(path_md_stat, str_check)
+                stdout, stderr, _, stdexcept = Exec.execute(remote_cmd,
+                                                            self.__host,
+                                                            self.__port,
+                                                            self.__user,
+                                                            self.__pass,
+                                                            self.__timeout)
+
+                str_err = "** RAID_Mdstat ** >> {0}!! >> REMOTE >> Failed to check existence of {1}: {2}!"
+                if stderr:
+                    print(str_err.format("ERROR", path_md_stat, stderr))
+                    return False
+
+                if stdexcept:
+                    print(str_err.format("EXCEPTION", path_md_stat, stdexcept))
+                    raise Exception(stdexcept)
+
+                return True if stdout.strip() == str_check else False
+
+            else:
+                print(
+                    "** RAID_Mdstat ** >> WARNING!! >> REMOTE >> CONFIG NOT VALID ({0}:{1}@{1}) NOT VALID!".format(
+                        self.__host, self.__pass, self.__user))
+                return False
+
         else:
-            return os.path.exists(self.paths.find('mdstat'))
+            if os.path.isdir(path_md_stat):
+                return False
+            else:
+                return os.path.exists(path_md_stat)
 
     def read_status(self):
-
         md_list = {}
         md_actual = None
 
-        if self.is_exist:
-            with open(self.paths.find('mdstat'), 'r') as f_buffer:
+        try:
+            is_exist = self.is_exist
+        except Exception as ex:
+            raise Exception(ex)
+
+        if is_exist:
+            f_buffer = None
+            if self.is_remote:
+                remote_cmd = "cat {0}".format(self.paths.find('mdstat'))
+                stdout, stderr, _, stdexcept = Exec.execute(remote_cmd,
+                                                            self.__host,
+                                                            self.__port,
+                                                            self.__user,
+                                                            self.__pass,
+                                                            self.__timeout)
+
+                str_err = "** RAID_Mdstat ** >> {0}!! >> REMOTE >> ({1}): {2}!"
+                if stderr:
+                    raise Exception(str_err.format("ERROR", remote_cmd, stderr))
+
+                if stdexcept:
+                    raise Exception(str_err.format("EXCEPTION", remote_cmd, stdexcept))
+
+                f_buffer = stdout.splitlines()
+            else:
+                f_buffer = open(self.paths.find('mdstat'), 'r')
+
+            if f_buffer:
                 for l_buffer in f_buffer:
                     l_buffer = str(l_buffer).strip()
 
