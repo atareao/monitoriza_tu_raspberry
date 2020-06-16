@@ -11,7 +11,7 @@
 ## Install:
 ```
 $ cd /usr/src
-$ git clone https://github.com/vsc55/monitoriza_tu_raspberry.git
+$ git clone https://github.com/atareao/monitoriza_tu_raspberry.git
 $ cd monitoriza_tu_raspberry
 $ chmod +x *.sh
 $ sudo ./install.sh
